@@ -1,0 +1,195 @@
+import {
+  Block,
+  TransactionResponse,
+  TransactionReceipt,
+} from "@ethersproject/abstract-provider";
+import { expect } from "chai";
+import { BigNumber } from "ethers";
+import { ethers } from "hardhat";
+
+export const { provider } = ethers;
+export const { AddressZero: ZERO_ADDRESS, MaxUint256: MAX_UINT256 } =
+  ethers.constants;
+export type BN = BigNumber;
+
+export function BN(value: string | number): BN {
+  return BigNumber.from(value.toString());
+}
+
+//---------------------Chain Parameters----------------------------------
+
+export async function getBlock(): Promise<Block> {
+  const latestBlock = await provider.getBlock("latest");
+  return latestBlock;
+}
+
+export async function getTimestamp(): Promise<number> {
+  const latestBlock = await getBlock();
+  return latestBlock.timestamp;
+}
+
+export async function getBlockNumber(): Promise<number> {
+  const latestBlock = await getBlock();
+  return latestBlock.number;
+}
+
+export async function skipBlock(blockNumber: number) {
+  for (let index = 0; index < blockNumber; index++) {
+    await ethers.provider.send("evm_mine", []);
+  }
+}
+
+export async function skipTime(seconds: number) {
+  await provider.send("evm_increaseTime", [seconds]);
+  await provider.send("evm_mine", []);
+}
+
+export async function setTime(time: number) {
+  await provider.send("evm_setNextBlockTimestamp", [time]);
+  await provider.send("evm_mine", []);
+}
+
+//---------------------Balance Helper Function---------------------------
+
+export async function getBalance(
+  address: string,
+  tokenAddress: string = ZERO_ADDRESS
+): Promise<BN> {
+  if (tokenAddress === ZERO_ADDRESS) return provider.getBalance(address);
+  else
+    return (await ethers.getContractFactory("ERC20"))
+      .attach(tokenAddress)
+      .balanceOf(address);
+}
+
+export interface TransactionReceiptWithFee extends TransactionReceipt {
+  fee: BN;
+  error?: any;
+}
+
+export async function getTxInfo(
+  transaction: Promise<TransactionResponse>
+): Promise<TransactionReceiptWithFee> {
+  try {
+    const transactionResponse: TransactionResponse = await transaction;
+    const transactionReceipt: TransactionReceipt =
+      await transactionResponse.wait();
+    const gasUsed: BN = transactionReceipt.gasUsed;
+    return {
+      ...transactionReceipt,
+      fee: gasUsed.mul(transactionReceipt.effectiveGasPrice),
+    };
+  } catch (error) {
+    if (!(error as any).transactionHash) throw error;
+
+    const transactionReceipt = await ethers.provider.getTransactionReceipt(
+      (error as TransactionReceipt).transactionHash
+    );
+    const gasUsed = transactionReceipt.gasUsed;
+
+    return {
+      error,
+      ...transactionReceipt,
+      fee: gasUsed.mul(transactionReceipt.effectiveGasPrice),
+    };
+  }
+}
+
+export async function updateTxInfo(
+  transaction: Promise<TransactionResponse>,
+  onUpdate: (txInfo: TransactionReceiptWithFee) => any
+): Promise<TransactionResponse> {
+  const txInfo: TransactionReceiptWithFee = await getTxInfo(transaction);
+  await onUpdate(txInfo);
+  return transaction;
+}
+
+export type BalanceSnapshot = Record<string, BN>;
+export type BalanceSnapshotDiff = {
+  balanceBefore: BN;
+  balanceAfter: BN;
+  delta: BN;
+};
+
+export class BalanceTracker {
+  static instances: Record<string, BalanceTracker> = {};
+
+  wallet: string = ZERO_ADDRESS;
+  coins: string[] = [ZERO_ADDRESS];
+  totalFee: BN = BN(0);
+  snapshots: Record<string, BalanceSnapshot> = {};
+
+  static async updateFee(transaction: Promise<TransactionResponse>) {
+    const { from, fee } = await getTxInfo(transaction);
+
+    const instance = BalanceTracker.instances[from];
+    instance.totalFee = instance.totalFee.add(fee);
+
+    return transaction;
+  }
+
+  static expect(
+    transaction:
+      | Promise<TransactionResponse>
+      | (() => Promise<TransactionResponse>)
+  ): Chai.Assertion {
+    if (typeof transaction == "function")
+      return expect(() => BalanceTracker.updateFee(transaction()));
+    else return expect(BalanceTracker.updateFee(transaction));
+  }
+
+  constructor(wallet: string, tokens = []) {
+    this.wallet = wallet;
+    this.coins = [...this.coins, ...tokens];
+
+    BalanceTracker.instances[wallet] = this;
+  }
+
+  addToken(address: string): void {
+    this.coins = [...this.coins, address];
+  }
+
+  async takeSnapshot(name: string): Promise<Record<string, BalanceSnapshot>> {
+    const snapshot: BalanceSnapshot = {};
+    for (let coinId in this.coins) {
+      const coin = this.coins[coinId]!;
+      snapshot[coin] = await getBalance(this.wallet, coin);
+    }
+
+    this.snapshots[name] = snapshot;
+    return this.snapshots;
+  }
+
+  diff(
+    snapshotNameA: string,
+    snapshotNameB: string
+  ): Record<string, BalanceSnapshotDiff> {
+    if (!(this.snapshots[snapshotNameA] && this.snapshots[snapshotNameB]))
+      throw new Error("Snapshot is not found");
+
+    const result: Record<string, BalanceSnapshotDiff> = {};
+
+    const snapshot1 = this.snapshots[snapshotNameA];
+    const snapshot2 = this.snapshots[snapshotNameB];
+
+    for (let coinId in this.coins) {
+      const coin = this.coins[coinId];
+      const balanceBefore = snapshot1[coin];
+      const balanceAfter = snapshot2[coin];
+
+      result[coin] = {
+        balanceBefore,
+        balanceAfter,
+        delta: balanceAfter.sub(balanceBefore),
+      };
+    }
+
+    return result;
+  }
+
+  reset(): void {
+    this.totalFee = BN(0);
+    this.snapshots = {};
+  }
+}
+

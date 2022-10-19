@@ -1,0 +1,32 @@
+{
+  "endOfLine": "crlf",
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "excludeFiles": ["utils.ts"],
+      "options": {
+        "printWidth": 240,
+        "tabWidth": 2,
+        "useTabs": true,
+        "singleQuote": false,
+        "bracketSpacing": true,
+        "trailingComma": "es5",
+        "explicitTypes": "preserve",
+        "proseWrap": "preserve"
+      }
+    },
+    {
+      "files": ["*.sol"],
+      "options": {
+        "printWidth": 160,
+        "tabWidth": 4,
+        "useTabs": false,
+        "singleQuote": false,
+        "bracketSpacing": true,
+        "trailingComma": "es5",
+        "explicitTypes": "preserve",
+        "proseWrap": "preserve"
+      }
+    }
+  ]
+}
