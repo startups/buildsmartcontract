@@ -171,7 +171,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
             require(
                 projectData[projectId_].initiator == msg.sender ||
                     owner() == msg.sender,
-                "caller is not the project initiator nor the owner"
+                "caller is not project initiator/owner"
             );
         } else {
             require(owner() == msg.sender, "caller is not the owner");
@@ -276,7 +276,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     ) external nonEmptyUintArray(scores_) onlyOwner {
         require(
             collaborators_.length == scores_.length,
-            "collaborators' and scores' length are not the same"
+            "arrays length mismatch"
         );
         uint256 _totalBonusScores;
         for (uint256 i = 0; i < collaborators_.length; i++) {
