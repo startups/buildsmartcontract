@@ -27,23 +27,23 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     // Token Factory contract address
     address public tokenFactory;
 
-    mapping(bytes32 => Project) internal projectData;
+    mapping(bytes32 => Project) private projectData;
 
-    mapping(bytes32 => mapping(bytes32 => Package)) internal packageData;
+    mapping(bytes32 => mapping(bytes32 => Package)) private packageData;
 
     // address of approved collaborator with perticular package
-    mapping(bytes32 => mapping(address => bool)) internal approvedUser;
+    mapping(bytes32 => mapping(address => bool)) private approvedUser;
 
     // Boolean to know if there is a dispute against a paticular collaborator in a particular package
-    mapping(address => mapping(bytes32 => bool)) internal isDispute;
+    mapping(address => mapping(bytes32 => bool)) private isDispute;
 
     // projectId => packageId => address collaborator
     mapping(bytes32 => mapping(bytes32 => mapping(address => Collaborator)))
-        internal collaboratorData;
+        private collaboratorData;
 
     // projectId => packageId => address observer
     mapping(bytes32 => mapping(bytes32 => mapping(address => Observer)))
-        internal observerData;
+        private observerData;
 
     constructor(
         address treasury_,
@@ -60,7 +60,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      * @dev Throws if amount provided is zero
      */
     modifier nonZero(uint256 amount_) {
-        require(amount_ != 0, "amount must be greater than 0");
+        require(amount_ != 0, "Zero amount");
         _;
     }
 
@@ -68,7 +68,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      * @dev Throws if amount provided bytes32 array length is zero
      */
     modifier nonEmptyBytesArray(bytes32[] memory array_) {
-        require(array_.length != 0, "array length must > 0");
+        require(array_.length != 0, "Empty array");
         _;
     }
 
@@ -76,7 +76,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      * @dev Throws if amount provided uint256 array length is zero
      */
     modifier nonEmptyUintArray(uint256[] memory array_) {
-        require(array_.length != 0, "array length must > 0");
+        require(array_.length != 0, "Empty array");
         _;
     }
 
@@ -86,7 +86,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     modifier onlyInitiator(bytes32 projectId_) {
         require(
             projectData[projectId_].initiator == msg.sender,
-            "caller is not the project initiator"
+            "caller is not project initiator"
         );
         _;
     }
@@ -144,7 +144,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      * @dev Starts project
      * @param projectId_ Id of the project
      */
-    function _startProject(bytes32 projectId_) internal {
+    function _startProject(bytes32 projectId_) private {
         uint256 _paidAmount = projectData[projectId_].budget;
         projectData[projectId_]._startProject(
             treasury,
@@ -166,7 +166,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 packageId_,
         address collaborator_,
         bool approve_
-    ) internal {
+    ) private {
         if (approve_) {
             require(
                 projectData[projectId_].initiator == msg.sender ||
@@ -195,7 +195,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 projectId_,
         bytes32 packageId_,
         address observer_
-    ) internal {
+    ) private {
         require(observer_ != address(0), "observer address is zero");
         Observer storage _observer = observerData[projectId_][packageId_][
             observer_
@@ -212,14 +212,14 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 projectId_,
         bytes32 packageId_,
         address collaborator_
-    ) internal {
+    ) private {
         require(collaborator_ != address(0), "collaborator's address is zero");
         collaboratorData[projectId_][packageId_][collaborator_]
             ._removeCollaboratorByInitiator();
     }
 
     function _paidObserverFee(bytes32 projectId_, bytes32 packageId_)
-        internal
+        private
         returns (uint256)
     {
         Observer storage _observer = observerData[projectId_][packageId_][msg.sender];
@@ -312,12 +312,13 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     ) external {
         require(
             msg.sender == projectData[_projectId].initiator ||
-                approvedUser[_packageId][msg.sender] == true
+                approvedUser[_packageId][msg.sender] == true,
+            "Caller is not authorized"
         );
+        require(!isDispute[_collaborator][_packageId], "Collaborator already in dispute");
         collaboratorData[_projectId][_packageId][_collaborator]
             .isDisputeRaised = true;
         // _raiseDispute(_packageId, _collaborator);
-        require(isDispute[_collaborator][_packageId] == false);
         isDispute[_collaborator][_packageId] = true;
     }
 
@@ -500,7 +501,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 packageId_,
         address collaborator_
     ) public onlyInitiator(projectId_) {
-        require(!isDispute[collaborator_][packageId_]);
+        require(!isDispute[collaborator_][packageId_], "Collaborator still in dispute");
         require(
             !collaboratorData[projectId_][packageId_][collaborator_].isMGPPaid,
             "MGP Paid"
@@ -717,7 +718,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         address collaborator_
     ) public nonReentrant returns (uint256 amount_) {
         require(msg.sender == collaborator_, "Only Collaborator Can Call!");
-        require(!isDispute[collaborator_][packageId_]);
+        require(!isDispute[collaborator_][packageId_], "Collaborator still in dispute");
         require(
             !collaboratorData[projectId_][packageId_][collaborator_].isMGPPaid,
             "MGP Paid"
@@ -752,7 +753,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         address collaborator_
     ) external nonReentrant returns (uint256 amount_) {
         require(msg.sender == collaborator_, "Only Collaborator Can Call!");
-        require(!isDispute[collaborator_][packageId_]);
+        require(!isDispute[collaborator_][packageId_], "Collaborator still in dispute");
         require(
             !collaboratorData[projectId_][packageId_][collaborator_].isBonusPaid,
             "Bonus already paid"
