@@ -53,27 +53,31 @@ library ProjectLibrary {
      * @dev Starts project, if project own token auto approve, otherwise deploys IOUToken, transfers fee to DAO wallet
      * @param project_ reference to Project struct
      * @param treasury_ address of DAO wallet
-     * @param feeDaoAmount_ DAO fee amount
      * @param tokenFactory_ address of token factory contract
      */
     function _startProject(
         Project storage project_,
         address treasury_,
-        uint256 feeDaoAmount_,
         address tokenFactory_
     ) public onlyExistingProject(project_) {
         require(project_.timeStarted == 0, "project already started");
         require(project_.timeApproved != 0, "project is not approved");
-        if (project_.isOwnToken)
+        if (project_.isOwnToken) {
             IERC20(project_.token).safeTransferFrom(
                 msg.sender,
                 address(this),
-                project_.budget * 10e17
+                project_.budget
             );
-        else
+            IERC20(project_.token).safeTransferFrom(
+                msg.sender,
+                treasury_,
+                (project_.budget * 5) / 100
+            );
+        } else {
             project_.token = ITokenFactory(tokenFactory_).deployToken(
-                project_.budget * 10e17
+                project_.budget
             );
+        }
         project_.budgetAllocated = 0;
         project_.budgetPaid = 0;
         project_.timeStarted = block.timestamp;
@@ -99,9 +103,9 @@ library ProjectLibrary {
             if (project_.isOwnToken)
                 IERC20(project_.token).safeTransfer(
                     project_.initiator,
-                    budgetLeft_ * 10e17
+                    budgetLeft_
                 );
-            else IIOUToken(address(project_.token)).burn(budgetLeft_ * 10e17);
+            else IIOUToken(address(project_.token)).burn(budgetLeft_);
         }
     }
 
@@ -161,7 +165,7 @@ library ProjectLibrary {
         public
         onlyExistingProject(project_)
     {
-        IERC20(project_.token).safeTransfer(msg.sender, amount_ * 10e17);
+        IERC20(project_.token).safeTransfer(msg.sender, amount_);
         project_.budgetPaid += amount_;
     }
 }

@@ -17,8 +17,7 @@ interface IReBakedDAO {
         bytes32 indexed projectId,
         bytes32 indexed packageId,
         uint256 budget,
-        uint256 bonus,
-        uint256 budgetWithDeduction_
+        uint256 bonus
     );
     event CreatedPackages(
         bytes32 indexed projectId,

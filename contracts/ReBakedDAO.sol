@@ -35,7 +35,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     mapping(bytes32 => mapping(address => bool)) internal approvedUser;
 
     // Boolean to know if there is a dispute against a paticular collaborator in a particular package
-    mapping(address => mapping(bytes32 => bool)) isDispute;
+    mapping(address => mapping(bytes32 => bool)) internal isDispute;
 
     // projectId => packageId => address collaborator
     mapping(bytes32 => mapping(bytes32 => mapping(address => Collaborator)))
@@ -68,7 +68,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      * @dev Throws if amount provided bytes32 array length is zero
      */
     modifier nonEmptyBytesArray(bytes32[] memory array_) {
-        require(array_.length != 0, "array length must be greater than 0");
+        require(array_.length != 0, "array length must > 0");
         _;
     }
 
@@ -76,7 +76,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      * @dev Throws if amount provided uint256 array length is zero
      */
     modifier nonEmptyUintArray(uint256[] memory array_) {
-        require(array_.length != 0, "array length must be greater than 0");
+        require(array_.length != 0, "array length must > 0");
         _;
     }
 
@@ -145,14 +145,13 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      * @param projectId_ Id of the project
      */
     function _startProject(bytes32 projectId_) internal {
-        uint256 _feeDaoAmount = projectData[projectId_].budget;
+        uint256 _paidAmount = projectData[projectId_].budget;
         projectData[projectId_]._startProject(
             treasury,
-            _feeDaoAmount,
             tokenFactory
         );
         emit StartedProject(projectId_);
-        emit PaidDao(projectId_, _feeDaoAmount);
+        emit PaidDao(projectId_, _paidAmount);
     }
 
     /**
@@ -404,7 +403,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
             .isBonusPaid = false;
         // _downDispute(_projectId,_collaborator);
         isDispute[_collaborator][_packageId] = false;
-        IERC20(_token).safeTransfer(_initiator, _feesToBeRevert * 10e17);
+        IERC20(_token).safeTransfer(_initiator, _feesToBeRevert);
     }
 
     /***************************************
@@ -467,22 +466,13 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
             observerBudget_,
             bonus_
         );
-        address _token = projectData[projectId_].token;
         uint256 total = budget_ + bonus_ + observerBudget_;
-        uint256 budgetWithDeduction_ = (total * 5) / 100;
-        total -= budgetWithDeduction_;
-        projectData[projectId_]._reservePackagesBudget(budgetWithDeduction_, 1);
-        IERC20(_token).safeTransferFrom(
-            msg.sender,
-            treasury,
-            total * 5 * 10e15
-        );
+        projectData[projectId_]._reservePackagesBudget(total, 1);
         emit CreatedPackage(
             projectId_,
             packageId_,
             budget_,
-            bonus_,
-            budgetWithDeduction_
+            bonus_
         );
     }
 
@@ -526,7 +516,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
             .timeMgpPaid = block.timestamp;
         IERC20(projectData[projectId_].token).safeTransfer(
             collaborator_,
-            amount_ * 10e17
+            amount_
         );
     }
 
@@ -683,7 +673,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         observerData[projectId_][packageId_][observer_].isFeePaid = true;
         IERC20(projectData[projectId_].token).safeTransfer(
             observer_,
-            concernedFee * 10e17
+            concernedFee
         );
     }
 
