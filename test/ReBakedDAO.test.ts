@@ -69,9 +69,6 @@ describe("ReBakedDAO", () => {
 			expect(projectTreasury).to.equal(treasury.address);
 
 			await iouToken.connect(accounts[0]).approve(reBakedDAO.address, "30000000000000000000");
-
-			// const projectId = await reBakedDAO.connect(accounts[0]).createProject(iouToken.address, "10");
-
 			expect(await tokenFactory.reBakedDao()).to.equal(reBakedDAO.address);
 		});
 	});
