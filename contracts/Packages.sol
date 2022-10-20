@@ -172,7 +172,7 @@ contract Packages is Observers, Collaborators {
         bytes32 packageId_,
         uint256 amount_
     ) internal {
-        packageData[projectId_][packageId_]._paidBonus(amount_);
+        packageData[projectId_][packageId_]._claimBonus(amount_);
         super._paidBonus(projectId_, packageId_);
     }
 
@@ -188,7 +188,7 @@ contract Packages is Observers, Collaborators {
         bytes32 packageId_,
         uint256 amount_
     ) internal {
-        packageData[projectId_][packageId_]._paidBonus(amount_);
+        packageData[projectId_][packageId_]._claimBonus(amount_);
         super._paidBonusForApprovedPayment(projectId_, packageId_, msg.sender);
     }
 
@@ -208,7 +208,6 @@ contract Packages is Observers, Collaborators {
      * @param packageId_ Id of the package
      * @param collaborator_ paid amount
      */
-
     function _downDispute(bytes32 packageId_, address collaborator_) internal {
         isDispute[collaborator_][packageId_] = false;
     }
