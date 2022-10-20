@@ -1,10 +1,6 @@
-import {
-  Block,
-  TransactionResponse,
-  TransactionReceipt,
-} from "@ethersproject/abstract-provider";
+import { Block } from "@ethersproject/abstract-provider";
 import { expect } from "chai";
-import { BigNumber } from "ethers";
+import { BigNumber, ContractTransaction, ContractReceipt } from "ethers";
 import { ethers } from "hardhat";
 
 export const { provider } = ethers;
@@ -62,17 +58,17 @@ export async function getBalance(
       .balanceOf(address);
 }
 
-export interface TransactionReceiptWithFee extends TransactionReceipt {
+export interface TransactionReceiptWithFee extends ContractReceipt {
   fee: BN;
   error?: any;
 }
 
 export async function getTxInfo(
-  transaction: Promise<TransactionResponse>
+  transaction: Promise<ContractTransaction>
 ): Promise<TransactionReceiptWithFee> {
   try {
-    const transactionResponse: TransactionResponse = await transaction;
-    const transactionReceipt: TransactionReceipt =
+    const transactionResponse: ContractTransaction = await transaction;
+    const transactionReceipt: ContractReceipt =
       await transactionResponse.wait();
     const gasUsed: BN = transactionReceipt.gasUsed;
     return {
@@ -83,7 +79,7 @@ export async function getTxInfo(
     if (!(error as any).transactionHash) throw error;
 
     const transactionReceipt = await ethers.provider.getTransactionReceipt(
-      (error as TransactionReceipt).transactionHash
+      (error as ContractReceipt).transactionHash
     );
     const gasUsed = transactionReceipt.gasUsed;
 
@@ -96,9 +92,9 @@ export async function getTxInfo(
 }
 
 export async function updateTxInfo(
-  transaction: Promise<TransactionResponse>,
+  transaction: Promise<ContractTransaction>,
   onUpdate: (txInfo: TransactionReceiptWithFee) => any
-): Promise<TransactionResponse> {
+): Promise<ContractTransaction> {
   const txInfo: TransactionReceiptWithFee = await getTxInfo(transaction);
   await onUpdate(txInfo);
   return transaction;
@@ -119,7 +115,7 @@ export class BalanceTracker {
   totalFee: BN = BN(0);
   snapshots: Record<string, BalanceSnapshot> = {};
 
-  static async updateFee(transaction: Promise<TransactionResponse>) {
+  static async updateFee(transaction: Promise<ContractTransaction>) {
     const { from, fee } = await getTxInfo(transaction);
 
     const instance = BalanceTracker.instances[from];
@@ -130,8 +126,8 @@ export class BalanceTracker {
 
   static expect(
     transaction:
-      | Promise<TransactionResponse>
-      | (() => Promise<TransactionResponse>)
+      | Promise<ContractTransaction>
+      | (() => Promise<ContractTransaction>)
   ): Chai.Assertion {
     if (typeof transaction == "function")
       return expect(() => BalanceTracker.updateFee(transaction()));
