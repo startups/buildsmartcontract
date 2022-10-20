@@ -40,7 +40,6 @@ contract Projects is Packages {
     ) internal {
         projectData[projectId_]._startProject(
             treasury_,
-            feeDaoAmount_,
             tokenFactory_
         );
     }
