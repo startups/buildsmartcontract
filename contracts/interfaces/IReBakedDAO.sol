@@ -10,8 +10,7 @@ interface IReBakedDAO {
         uint256 budget
     );
     event ApprovedProject(bytes32 indexed projectId);
-    event ApprovedProjects(bytes32[] projectIds);
-    event StartedProject(bytes32 indexed projectId);
+    event StartedProject(bytes32 indexed projectId, uint256 indexed paidAmount);
     event FinishedProject(bytes32 indexed projectId);
     event CreatedPackage(
         bytes32 indexed projectId,
@@ -19,21 +18,10 @@ interface IReBakedDAO {
         uint256 budget,
         uint256 bonus
     );
-    event CreatedPackages(
-        bytes32 indexed projectId,
-        bytes32[] packageIds,
-        uint256[] budgets,
-        uint256[] bonuses
-    );
     event AddedObserver(
         bytes32 indexed projectId,
         bytes32[] indexed packageId,
         address observer
-    );
-    event AddedObservers(
-        bytes32 indexed projectId,
-        bytes32 indexed packageId,
-        address[] observers
     );
     event AddedCollaborator(
         bytes32 indexed projectId,
@@ -41,23 +29,11 @@ interface IReBakedDAO {
         address collaborator,
         uint256 mgp
     );
-    event AddedCollaborators(
-        bytes32 indexed projectId,
-        bytes32 indexed packageId,
-        address[] collaborators,
-        uint256[] mgps
-    );
     event ApprovedCollaborator(
         bytes32 indexed projectId,
         bytes32 indexed packageId,
         address collaborator,
         bool approve
-    );
-    event ApprovedCollaborators(
-        bytes32 indexed projectId,
-        bytes32 indexed packageId,
-        address[] collaborators,
-        bool[] approves
     );
     event FinishedPackage(
         bytes32 indexed projectId,
@@ -70,16 +46,9 @@ interface IReBakedDAO {
         address[] collaborators,
         uint256[] scores
     );
-    event PaidDao(bytes32 indexed projectId, uint256 amount);
     event PaidMgp(
         bytes32 indexed projectId,
         bytes32 indexed packageId,
-        address collaborator,
-        uint256 amount
-    );
-    event PaidMgps(
-        bytes32 indexed projectId,
-        bytes32[] packageIds,
         address collaborator,
         uint256 amount
     );
@@ -89,21 +58,9 @@ interface IReBakedDAO {
         address collaborator,
         uint256 amount
     );
-    event PaidBonuses(
-        bytes32 indexed projectId,
-        bytes32[] packageIds,
-        address collaborator,
-        uint256 amount
-    );
     event PaidObserverFee(
         bytes32 indexed projectId,
         bytes32 indexed packageId,
-        address observer,
-        uint256 amount
-    );
-    event PaidObserverFees(
-        bytes32 indexed projectId,
-        bytes32[] packageIds,
         address observer,
         uint256 amount
     );
