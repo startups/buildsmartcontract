@@ -26,7 +26,7 @@ library ProjectLibrary {
         Project storage project_,
         address token_,
         uint256 budget_
-    ) public {
+    ) internal {
         project_.initiator = msg.sender;
         project_.token = token_;
         project_.budget = budget_;
@@ -42,7 +42,7 @@ library ProjectLibrary {
      * @param project_ reference to Project struct
      */
     function _approveProject(Project storage project_)
-        public
+        internal
         onlyExistingProject(project_)
     {
         require(project_.timeApproved == 0, "already approved project");
@@ -52,14 +52,12 @@ library ProjectLibrary {
     /**
      * @dev Starts project, if project own token auto approve, otherwise deploys IOUToken, transfers fee to DAO wallet
      * @param project_ reference to Project struct
-     * @param treasury_ address of DAO wallet
      * @param tokenFactory_ address of token factory contract
      */
     function _startProject(
         Project storage project_,
-        address treasury_,
         address tokenFactory_
-    ) public onlyExistingProject(project_) {
+    ) internal {
         require(project_.timeStarted == 0, "project already started");
         require(project_.timeApproved != 0, "project is not approved");
         if (project_.isOwnToken) {
@@ -67,11 +65,6 @@ library ProjectLibrary {
                 msg.sender,
                 address(this),
                 project_.budget
-            );
-            IERC20(project_.token).safeTransferFrom(
-                msg.sender,
-                treasury_,
-                (project_.budget * 5) / 100
             );
         } else {
             project_.token = ITokenFactory(tokenFactory_).deployToken(
@@ -88,24 +81,30 @@ library ProjectLibrary {
      * unallocated budget returned to initiator or burned (in case of IOUToken)
      * @param project_ reference to Project struct
      */
-    function _finishProject(Project storage project_)
-        public
-        onlyExistingProject(project_)
+    function _finishProject(Project storage project_, address treasury_)
+        internal
     {
+        require(project_.timeStarted != 0, "project not started");
         require(project_.timeFinished == 0, "already finished project");
         require(
             project_.totalPackages == project_.totalFinishedPackages,
-            "unfinished packages left in project"
+            "unfinished packages left"
         );
         project_.timeFinished = block.timestamp;
         uint256 budgetLeft_ = project_.budget - project_.budgetAllocated;
-        if (project_.timeStarted != 0 && budgetLeft_ != 0) {
-            if (project_.isOwnToken)
+        if (budgetLeft_ != 0) {
+            if (project_.isOwnToken) {
+                uint256 refundAmount_ = budgetLeft_ * 5 / 100;
+                budgetLeft_ -= refundAmount_;
                 IERC20(project_.token).safeTransfer(
                     project_.initiator,
+                    refundAmount_
+                );
+                IERC20(project_.token).safeTransfer(
+                    treasury_,
                     budgetLeft_
                 );
-            else IIOUToken(address(project_.token)).burn(budgetLeft_);
+            } else IIOUToken(address(project_.token)).burn(budgetLeft_);
         }
     }
 
@@ -120,7 +119,7 @@ library ProjectLibrary {
         Project storage project_,
         uint256 totalBudget_,
         uint256 count_
-    ) public onlyExistingProject(project_) {
+    ) internal {
         require(project_.timeStarted != 0, "project is not started");
         require(project_.timeFinished == 0, "project is finished");
         uint256 _projectBudgetAvailable = project_.budget - project_.budgetAllocated;
@@ -135,7 +134,7 @@ library ProjectLibrary {
     function _revertPackageBudget(
         Project storage project_,
         uint256 budgetToBeReverted_
-    ) public onlyExistingProject(project_) {
+    ) internal {
         require(project_.timeStarted != 0, "project is not started");
         require(project_.timeFinished == 0, "project is finished");
         project_.budgetAllocated -= budgetToBeReverted_;
@@ -149,8 +148,7 @@ library ProjectLibrary {
      * @param budgetLeft_ amount of budget left
      */
     function _finishPackage(Project storage project_, uint256 budgetLeft_)
-        public
-        onlyExistingProject(project_)
+        internal
     {
         if (budgetLeft_ != 0) project_.budgetAllocated -= budgetLeft_;
         project_.totalFinishedPackages++;
@@ -162,7 +160,7 @@ library ProjectLibrary {
      * @param amount_ amount to pay
      */
     function _pay(Project storage project_, uint256 amount_)
-        public
+        internal
         onlyExistingProject(project_)
     {
         IERC20(project_.token).safeTransfer(msg.sender, amount_);

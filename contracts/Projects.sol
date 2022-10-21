@@ -34,12 +34,9 @@ contract Projects is Packages {
      */
     function _startProject(
         bytes32 projectId_,
-        address treasury_,
-        uint256 feeDaoAmount_,
         address tokenFactory_
     ) internal {
         projectData[projectId_]._startProject(
-            treasury_,
             tokenFactory_
         );
     }
@@ -48,8 +45,8 @@ contract Projects is Packages {
      * @dev Finishes project
      * @param projectId_ Id of the project
      */
-    function _finishProject(bytes32 projectId_) internal {
-        projectData[projectId_]._finishProject();
+    function _finishProject(bytes32 projectId_, address treasury_) internal {
+        projectData[projectId_]._finishProject(treasury_);
     }
 
     /**

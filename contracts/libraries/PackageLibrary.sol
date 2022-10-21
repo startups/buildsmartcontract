@@ -28,7 +28,7 @@ library PackageLibrary {
         uint256 budget_,
         uint256 feeObserversBudget_,
         uint256 bonus_
-    ) public {
+    ) internal {
         package_.budget = budget_;
         package_.budgetAllocated = 0;
         package_.budgetObservers = feeObserversBudget_;
@@ -38,7 +38,7 @@ library PackageLibrary {
     }
 
     function _cancelPackage(Package storage package_)
-        public
+        internal
         onlyExistingPackage(package_)
         activePackage(package_)
     {
@@ -53,7 +53,7 @@ library PackageLibrary {
      * @param count_ number observer addresses
      */
     function _addObservers(Package storage package_, uint256 count_)
-        public
+        internal
         onlyExistingPackage(package_)
         activePackage(package_)
     {
@@ -71,7 +71,7 @@ library PackageLibrary {
         Package storage package_,
         uint256 count_,
         uint256 amount_
-    ) public onlyExistingPackage(package_) activePackage(package_) {
+    ) internal onlyExistingPackage(package_) activePackage(package_) {
         require(package_.timeFinished == 0, "already finished package");
         require(
             package_.budget - package_.budgetAllocated >= amount_,
@@ -82,7 +82,7 @@ library PackageLibrary {
     }
 
     function _revertBudget(Package storage package_)
-        public
+        internal
         view
         onlyExistingPackage(package_)
         activePackage(package_)
@@ -101,7 +101,7 @@ library PackageLibrary {
         Package storage package_,
         bool approve_,
         uint256 mgp_
-    ) public onlyExistingPackage(package_) activePackage(package_) {
+    ) internal onlyExistingPackage(package_) activePackage(package_) {
         if (!approve_) {
             package_.budgetAllocated -= mgp_;
             package_.totalCollaborators--;
@@ -116,7 +116,7 @@ library PackageLibrary {
      * @param package_ reference to Package struct
      */
     function _finishPackage(Package storage package_)
-        public
+        internal
         onlyExistingPackage(package_)
         activePackage(package_)
         returns (uint256 budgetLeft_)
@@ -141,7 +141,7 @@ library PackageLibrary {
         Package storage package_,
         uint256 totalBonusScores_,
         uint256 maxBonusScores_
-    ) public onlyExistingPackage(package_) activePackage(package_) {
+    ) internal onlyExistingPackage(package_) activePackage(package_) {
         require(package_.bonus != 0, "bonus budget is zero");
         require(package_.timeFinished != 0, "package is not finished");
         require(
@@ -173,9 +173,10 @@ library PackageLibrary {
      * @param amount_ MGP amount
      */
     function _getMgp(Package storage package_, uint256 amount_)
-        public
+        internal
         onlyExistingPackage(package_)
     {
+        require(package_.timeFinished != 0, "package not finished");
         package_.budgetPaid += amount_;
     }
 
@@ -184,8 +185,8 @@ library PackageLibrary {
      * @param package_ reference to Package struct
      * @param amount_ Bonus amount
      */
-    function _paidBonus(Package storage package_, uint256 amount_)
-        public
+    function _claimBonus(Package storage package_, uint256 amount_)
+        internal
         onlyExistingPackage(package_)
         activePackage(package_)
     {

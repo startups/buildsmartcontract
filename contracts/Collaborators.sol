@@ -118,7 +118,7 @@ contract Collaborators {
      * @param packageId_ Id of the package
      */
     function _paidBonus(bytes32 projectId_, bytes32 packageId_) internal {
-        collaboratorData[projectId_][packageId_][msg.sender]._paidBonus();
+        collaboratorData[projectId_][packageId_][msg.sender]._claimBonus();
     }
 
     /**
