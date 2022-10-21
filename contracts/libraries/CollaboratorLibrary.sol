@@ -53,8 +53,7 @@ library CollaboratorLibrary {
         bool approve_
     ) public onlyExistingCollaborator(collaborator_) {
         require(
-            collaborator_.timeMgpApproved == 0 ||
-                collaborator_.isMGPPaid == false,
+            collaborator_.timeMgpApproved == 0,
             "already approved collaborator mgp"
         );
         if (approve_) {
