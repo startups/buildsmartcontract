@@ -161,15 +161,15 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         address collaborator_,
         bool approve_
     ) private {
-        // if (approve_) {
-        //     require(
-        //         projectData[projectId_].initiator == msg.sender ||
-        //             owner() == msg.sender,
-        //         "caller is not project initiator/owner"
-        //     );
-        // } else {
-        //     require(owner() == msg.sender, "caller is not the owner");
-        // }
+        if (approve_) {
+            require(
+                projectData[projectId_].initiator == msg.sender ||
+                    owner() == msg.sender,
+                "caller is not project initiator/owner"
+            );
+        } else {
+            require(owner() == msg.sender, "caller is not the owner");
+        }
         // return super._approveCollaborator(projectId_, packageId_, collaborator_, approve_);
         uint256 mgp_ = collaboratorData[projectId_][packageId_][collaborator_]
             .mgp;
