@@ -231,8 +231,7 @@ interface IReBakedDAO {
     function removeObserver(
         bytes32 projectId_,
         bytes32[] calldata packageId_,
-        address observer_,
-        bool[] calldata packageStatus
+        address observer_
     ) external;
 
     /**
@@ -260,8 +259,7 @@ interface IReBakedDAO {
      */
     function getMgp(
         bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_
+        bytes32 packageId_
     ) external returns (uint256 amount_);
 
     /**
@@ -272,8 +270,7 @@ interface IReBakedDAO {
      */
     function getBonus(
         bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_
+        bytes32 packageId_
     ) external returns (uint256 amount_);
 
     /***************************************

@@ -18,7 +18,7 @@ library CollaboratorLibrary {
      * @param mgp_ minimum guaranteed payment
      */
     function _addCollaborator(Collaborator storage collaborator_, uint256 mgp_)
-        public
+        internal
     {
         require(
             collaborator_.timeMgpPaid == 0 || collaborator_.isMGPPaid == false,
@@ -28,13 +28,13 @@ library CollaboratorLibrary {
     }
 
     function _removeCollaboratorByInitiator(Collaborator storage collaborator_)
-        public
+        internal
     {
         collaborator_.isRemoved == true;
         collaborator_.bonusScore = 0;
     }
 
-    function _selfWithdraw(Collaborator storage collaborator_) public {
+    function _selfWithdraw(Collaborator storage collaborator_) internal {
         collaborator_.isRemoved == true;
         collaborator_.bonusScore = 0;
         collaborator_.timeMgpApproved = 0;
@@ -51,7 +51,7 @@ library CollaboratorLibrary {
     function _approveCollaborator(
         Collaborator storage collaborator_,
         bool approve_
-    ) public onlyExistingCollaborator(collaborator_) {
+    ) internal onlyExistingCollaborator(collaborator_) {
         require(
             collaborator_.timeMgpApproved == 0 ||
                 collaborator_.isMGPPaid == false,
@@ -71,7 +71,7 @@ library CollaboratorLibrary {
     function _setBonusScore(
         Collaborator storage collaborator_,
         uint256 bonusScore_
-    ) public onlyExistingCollaborator(collaborator_) {
+    ) internal onlyExistingCollaborator(collaborator_) {
         require(
             collaborator_.bonusScore == 0 || collaborator_.isMGPPaid == false,
             "collaborator bonus score already set"
@@ -80,17 +80,45 @@ library CollaboratorLibrary {
     }
 
     /**
+     * @dev Raise Dispute
+     * @param collaborator_ paid amount
+     */
+    function _raiseDispute(Collaborator storage collaborator_)
+        internal onlyExistingCollaborator(collaborator_)
+    {
+        collaborator_.isDisputeRaised = true;
+    }
+
+    /**
+     * @dev Resolve Dispute
+     * @param collaborator_ paid amount
+     */
+    function _resolveDispute(
+        Collaborator storage collaborator_,
+        bool approved
+    )
+        internal onlyExistingCollaborator(collaborator_)
+    {
+        collaborator_.isDisputeRaised = false;
+        if (!approved) {
+            collaborator_.mgp = 0;
+            collaborator_.bonusScore = 0;
+        }
+    }
+
+    /**
      * @dev Sets MGP time paid flag, checks if approved and already paid
      * @param collaborator_ reference to Collaborator struct
      */
     function _getMgp(Collaborator storage collaborator_)
-        public
+        internal
         onlyExistingCollaborator(collaborator_)
         returns (uint256)
     {
         require(collaborator_.timeMgpApproved != 0, "mgp is not approved");
         require(collaborator_.timeMgpPaid == 0, "mgp already paid");
         collaborator_.timeMgpPaid = block.timestamp;
+        collaborator_.isMGPPaid = true;
         return collaborator_.mgp;
     }
 
@@ -100,7 +128,7 @@ library CollaboratorLibrary {
      */
 
     function _getMgpForApproved(Collaborator storage collaborator_)
-        public
+        internal
         onlyExistingCollaborator(collaborator_)
         returns (uint256)
     {
@@ -109,7 +137,6 @@ library CollaboratorLibrary {
                 collaborator_.isMGPPaid == false,
             "mgp already approved"
         );
-        collaborator_.timeMgpPaid = block.timestamp;
         collaborator_.approvedMGPForDispute = true;
         return collaborator_.mgp;
     }
@@ -118,13 +145,14 @@ library CollaboratorLibrary {
      * @dev Sets Bonus time paid flag, checks is approved and already paid
      * @param collaborator_ reference to Collaborator struct
      */
-    function _paidBonus(Collaborator storage collaborator_)
+    function _claimBonus(Collaborator storage collaborator_)
         internal
         onlyExistingCollaborator(collaborator_)
     {
         require(collaborator_.bonusScore != 0, "bonus score is zero");
         require(collaborator_.timeBonusPaid == 0, "bonus already paid");
         collaborator_.timeBonusPaid = block.timestamp;
+        collaborator_.isBonusPaid = true;
     }
 
     /**
@@ -142,6 +170,5 @@ library CollaboratorLibrary {
             "bonus already approved"
         );
         collaborator_.approvedBonusForDispute = true;
-        collaborator_.timeBonusPaid = block.timestamp;
     }
 }

@@ -32,10 +32,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     mapping(bytes32 => mapping(bytes32 => Package)) private packageData;
 
     // address of approved collaborator with perticular package
-    mapping(bytes32 => mapping(address => bool)) private approvedUser;
-
-    // Boolean to know if there is a dispute against a paticular collaborator in a particular package
-    mapping(address => mapping(bytes32 => bool)) private isDispute;
+    mapping(bytes32 => mapping(bytes32 => mapping(address => bool))) private approvedUser;
 
     // projectId => packageId => address collaborator
     mapping(bytes32 => mapping(bytes32 => mapping(address => Collaborator)))
@@ -146,10 +143,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      */
     function _startProject(bytes32 projectId_) private {
         uint256 _paidAmount = projectData[projectId_].budget;
-        projectData[projectId_]._startProject(
-            treasury,
-            tokenFactory
-        );
+        projectData[projectId_]._startProject(tokenFactory);
         emit StartedProject(projectId_);
         emit PaidDao(projectId_, _paidAmount);
     }
@@ -174,7 +168,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
                 "caller is not project initiator/owner"
             );
         } else {
-            require(owner() == msg.sender, "caller is not the owner");
+            require(owner() == msg.sender, "caller is not owner");
         }
         // return super._approveCollaborator(projectId_, packageId_, collaborator_, approve_);
         uint256 mgp_ = collaboratorData[projectId_][packageId_][collaborator_]
@@ -188,7 +182,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
             approve_,
             mgp_
         );
-        if (approve_) approvedUser[packageId_][collaborator_] = true;
+        if (approve_) approvedUser[projectId_][packageId_][collaborator_] = true;
     }
 
     function _addObserver(
@@ -196,7 +190,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 packageId_,
         address observer_
     ) private {
-        require(observer_ != address(0), "observer address is zero");
+        require(observer_ != address(0), "observer's address is zero");
         Observer storage _observer = observerData[projectId_][packageId_][
             observer_
         ];
@@ -218,7 +212,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
             ._removeCollaboratorByInitiator();
     }
 
-    function _paidObserverFee(bytes32 projectId_, bytes32 packageId_)
+    function _claimObserverFee(bytes32 projectId_, bytes32 packageId_)
         private
         returns (uint256)
     {
@@ -312,14 +306,14 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     ) external {
         require(
             msg.sender == projectData[_projectId].initiator ||
-                approvedUser[_packageId][msg.sender] == true,
-            "Caller is not authorized"
+                approvedUser[_projectId][_packageId][msg.sender],
+            "Caller not authorized"
         );
-        require(!isDispute[_collaborator][_packageId], "Collaborator already in dispute");
-        collaboratorData[_projectId][_packageId][_collaborator]
-            .isDisputeRaised = true;
-        // _raiseDispute(_packageId, _collaborator);
-        isDispute[_collaborator][_packageId] = true;
+        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
+        require(!collaborator.isDisputeRaised, "Collaborator already in dispute");
+        require(!collaborator.isMGPPaid, "Already MGP Claimed!");
+        require(!collaborator.isBonusPaid, "Already Bonus Claimed!");
+        collaborator._raiseDispute();
     }
 
     /**
@@ -334,15 +328,11 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 _packageId,
         address _collaborator
     ) external onlyOwner {
-        //   _getMgpForApprovedPayment(_projectId, _packageId,_collaborator);
-        collaboratorData[_projectId][_packageId][_collaborator]
-            ._getMgpForApproved();
-        // _paidBonusForApprovedPayment(_projectId, _packageId,_collaborator);
-        collaboratorData[_projectId][_packageId][_collaborator]
-            ._paidBonusForApproved();
-        isDispute[_collaborator][_packageId] = false;
-        collaboratorData[_projectId][_packageId][_collaborator]
-            .isDisputeRaised = false;
+        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
+        require(collaborator.isDisputeRaised, "Dispute Required");
+        require(!collaborator.isMGPPaid, "Already Claimed MGP");
+        require(!collaborator.isBonusPaid, "Already Claimed Bonus");
+        collaborator._resolveDispute(true);
     }
 
     /**
@@ -358,11 +348,8 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 _packageId,
         address _collaborator
     ) external view onlyOwner returns (uint256, uint256) {
-        uint256 _mgp = collaboratorData[_projectId][_packageId][_collaborator]
-            .mgp;
-        uint256 _bonus = collaboratorData[_projectId][_packageId][_collaborator]
-            .bonusScore;
-        return (_mgp, _bonus);
+        Collaborator memory collaborator = collaboratorData[_projectId][_packageId][_collaborator];
+        return (collaborator.mgp, collaborator.bonusScore);
     }
 
     /**
@@ -377,33 +364,16 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 _packageId,
         address _collaborator
     ) external onlyOwner {
-        require(isDispute[_collaborator][_packageId], "Dispute Is Required...");
-        require(
-            !collaboratorData[_projectId][_packageId][_collaborator].isMGPPaid,
-            "Already MGP Claimed!"
-        );
-        require(
-            !collaboratorData[_projectId][_packageId][_collaborator]
-                .isBonusPaid,
-            "Already Bonus Claimed!"
-        );
-        uint256 _mgp = collaboratorData[_projectId][_packageId][_collaborator]
-            .mgp;
-        uint256 _bonus = collaboratorData[_projectId][_packageId][_collaborator]
-            .bonusScore;
-        address _initiator = projectData[_projectId].initiator;
+        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
+        require(collaborator.isDisputeRaised, "Dispute Required");
+        require(!collaborator.isMGPPaid, "Already Claimed MGP");
+        require(!collaborator.isBonusPaid, "Already Claimed Bonus");
+        collaborator._resolveDispute(false);
+        uint256 _mgp = collaborator.mgp;
+        uint256 _bonus = collaborator.bonusScore;
         uint256 _feesToBeRevert = _mgp + _bonus;
         address _token = projectData[_projectId].token;
-        collaboratorData[_projectId][_packageId][_collaborator].mgp = 0;
-        collaboratorData[_projectId][_packageId][_collaborator].bonusScore = 0;
-        collaboratorData[_projectId][_packageId][_collaborator]
-            .isDisputeRaised = true;
-        collaboratorData[_projectId][_packageId][_collaborator]
-            .isMGPPaid = false;
-        collaboratorData[_projectId][_packageId][_collaborator]
-            .isBonusPaid = false;
-        // _downDispute(_projectId,_collaborator);
-        isDispute[_collaborator][_packageId] = false;
+        address _initiator = projectData[_projectId].initiator;
         IERC20(_token).safeTransfer(_initiator, _feesToBeRevert);
     }
 
@@ -414,7 +384,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     /**
      * @dev Creates project proposal
      * @param token_ project token address, zero addres if project has not token yet
-     * (IOUT will be deployed on project approval)
+     * (IOUToken will be deployed on project approval)
      * @param budget_ total budget (has to be approved on token contract if project has its own token)
      * @return projectId_ Id of the project proposal created
      */
@@ -467,8 +437,14 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
             observerBudget_,
             bonus_
         );
+        address _token = projectData[projectId_].token;
         uint256 total = budget_ + bonus_ + observerBudget_;
         projectData[projectId_]._reservePackagesBudget(total, 1);
+        IERC20(_token).safeTransferFrom(
+            msg.sender,
+            treasury,
+            (total * 5) / 100
+        );
         emit CreatedPackage(
             projectId_,
             packageId_,
@@ -490,9 +466,10 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         for (uint256 i = 0; i < observer_.length; i++) {
             payObserverFee(projectId_, packageId_, observer_[i]);
         }
-        uint256 temp;
-        temp = packageData[projectId_][packageId_].budget - packageData[projectId_][packageId_].budgetPaid;
-        projectData[projectId_]._revertPackageBudget(temp);
+        uint256 budgetToBeReverted_;
+        budgetToBeReverted_ = packageData[projectId_][packageId_].budget
+            - packageData[projectId_][packageId_].budgetPaid;
+        projectData[projectId_]._revertPackageBudget(budgetToBeReverted_);
         packageData[projectId_][packageId_]._cancelPackage();
     }
 
@@ -501,16 +478,12 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 packageId_,
         address collaborator_
     ) public onlyInitiator(projectId_) {
-        require(!isDispute[collaborator_][packageId_], "Collaborator still in dispute");
-        require(
-            !collaboratorData[projectId_][packageId_][collaborator_].isMGPPaid,
-            "MGP Paid"
-        );
-        collaboratorData[projectId_][packageId_][collaborator_]
-            .isMGPPaid = true;
-        uint256 amount_ = collaboratorData[projectId_][packageId_][
-            collaborator_
-        ].mgp;
+        require(approvedUser[projectId_][packageId_][collaborator_], "No such collaborator");
+        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+        require(!collaborator.isDisputeRaised, "Collaborator still in dispute");
+        require(!collaborator.isMGPPaid, "MGP already paid");
+        collaborator.isMGPPaid = true;
+        uint256 amount_ = collaboratorData[projectId_][packageId_][collaborator_].mgp;
         projectData[projectId_].budgetPaid += amount_;
         packageData[projectId_][packageId_].budgetPaid += amount_;
         collaboratorData[projectId_][packageId_][collaborator_]
@@ -628,8 +601,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     function removeObserver(
         bytes32 projectId_,
         bytes32[] memory packageId_,
-        address observer_,
-        bool[] memory packageStatus
+        address observer_
     ) external onlyInitiator(projectId_) {
         for (uint256 i = 0; i < packageId_.length; i++) {
             if (packageData[projectId_][packageId_[i]].timeFinished != 0) {
@@ -653,7 +625,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     ) public onlyInitiator(projectId_) {
         require(
             packageData[projectId_][packageId_].timeFinished != 0,
-            "Package Is Runing"
+            "Package is running"
         );
         require(
             !observerData[projectId_][packageId_][observer_].isFeePaid,
@@ -700,7 +672,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         external
         onlyInitiator(projectId_)
     {
-        projectData[projectId_]._finishProject();
+        projectData[projectId_]._finishProject(treasury);
         emit FinishedProject(projectId_);
     }
 
@@ -714,30 +686,17 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      */
     function getMgp(
         bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_
+        bytes32 packageId_
     ) public nonReentrant returns (uint256 amount_) {
-        require(msg.sender == collaborator_, "Only Collaborator Can Call!");
-        require(!isDispute[collaborator_][packageId_], "Collaborator still in dispute");
-        require(
-            !collaboratorData[projectId_][packageId_][collaborator_].isMGPPaid,
-            "MGP Paid"
+        address collaborator_ = msg.sender;
+        require(approvedUser[projectId_][packageId_][collaborator_],
+            "Only Collaborator Can Call!"
         );
-        collaboratorData[projectId_][packageId_][collaborator_].isMGPPaid = true;
-        if (
-            collaboratorData[projectId_][packageId_][collaborator_]
-                .approvedMGPForDispute == true
-        ) {
-            // amount_ = _getMgpForApprovedPayment(projectId_,packageId_,collaborator_);
-            amount_ = collaboratorData[projectId_][packageId_][collaborator_]
-                ._getMgpForApproved();
-        } else {
-            // amount_ = _getMgp(projectId_, packageId_);
-            amount_ = collaboratorData[projectId_][packageId_][msg.sender]
-                ._getMgp();
-        }
+        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+        require(!collaborator.isDisputeRaised, "Collaborator still in dispute");
+        require(!collaborator.isMGPPaid, "MGP Paid");
+        amount_ = collaborator._getMgp();
         packageData[projectId_][packageId_]._getMgp(amount_);
-        // _pay(projectId_, amount_);
         projectData[projectId_]._pay(amount_);
         emit PaidMgp(projectId_, packageId_, msg.sender, amount_);
     }
@@ -749,31 +708,18 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      */
     function getBonus(
         bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_
+        bytes32 packageId_
     ) external nonReentrant returns (uint256 amount_) {
-        require(msg.sender == collaborator_, "Only Collaborator Can Call!");
-        require(!isDispute[collaborator_][packageId_], "Collaborator still in dispute");
-        require(
-            !collaboratorData[projectId_][packageId_][collaborator_].isBonusPaid,
-            "Bonus already paid"
+        address collaborator_ = msg.sender;
+        require(approvedUser[projectId_][packageId_][collaborator_],
+            "Only Collaborator Can Call!"
         );
-        amount_ = collaboratorData[projectId_][packageId_][msg.sender]
-            .bonusScore;
-        collaboratorData[projectId_][packageId_][msg.sender].isBonusPaid = true;
-        packageData[projectId_][packageId_]._paidBonus(amount_);
-        if (
-            collaboratorData[projectId_][packageId_][collaborator_]
-                .approvedBonusForDispute == true
-        ) {
-            // _paidBonusForDisputedCollaborator(projectId_, packageId_, amount_);
-            collaboratorData[projectId_][packageId_][collaborator_]
-                ._paidBonusForApproved();
-        } else {
-            // _paidBonus(projectId_, packageId_, amount_);
-            collaboratorData[projectId_][packageId_][msg.sender]._paidBonus();
-        }
-        // _pay(projectId_, amount_);
+        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+        require(!collaborator.isDisputeRaised, "Collaborator still in dispute");
+        require(!collaborator.isBonusPaid, "Bonus already paid");
+        amount_ = collaborator.bonusScore;
+        packageData[projectId_][packageId_]._claimBonus(amount_);
+        collaborator._claimBonus();
         projectData[projectId_]._pay(amount_);
         emit PaidBonus(projectId_, packageId_, msg.sender, amount_);
     }
@@ -793,10 +739,8 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         nonReentrant
         returns (uint256 amount_)
     {
-        _paidObserverFee(projectId_, packageId_);
-        // amount_ = _getObserverFee(projectId_, packageId_);
+        _claimObserverFee(projectId_, packageId_);
         amount_ = packageData[projectId_][packageId_]._getObserverFee();
-        // _pay(projectId_, amount_);
         projectData[projectId_]._pay(amount_);
         emit PaidObserverFee(projectId_, packageId_, msg.sender, amount_);
     }
