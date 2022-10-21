@@ -43,15 +43,11 @@ struct Collaborator {
     bool approvedMGPForDispute;
     bool approvedBonusForDispute;
     bool isDisputeRaised;
-    bool isMGPPaid;
-    bool isBonusPaid;
     bool isRemoved;
 }
 
 struct Observer {
     uint256 timeCreated;
     uint256 timePaid;
-    bool isFeePaid;
-    uint256 amountToBePaid;
     bool isRemoved;
 }

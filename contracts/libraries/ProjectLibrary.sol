@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
-import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ITokenFactory} from "../interfaces/ITokenFactory.sol";
-import {IIOUToken} from "../interfaces/IIOUToken.sol";
-import {Project} from "./Structs.sol";
+import { IERC20, SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { ITokenFactory } from "../interfaces/ITokenFactory.sol";
+import { IIOUToken } from "../interfaces/IIOUToken.sol";
+import { Project } from "./Structs.sol";
 
 library ProjectLibrary {
     using SafeERC20 for IERC20;
@@ -31,20 +31,14 @@ library ProjectLibrary {
         project_.token = token_;
         project_.budget = budget_;
         project_.timeCreated = block.timestamp;
-        if (token_ != address(0)) {
-            project_.isOwnToken = true;
-            _approveProject(project_);
-        }
+        project_.isOwnToken = token_ != address(0);
     }
 
     /**
      * @dev Approves project
      * @param project_ reference to Project struct
      */
-    function _approveProject(Project storage project_)
-        internal
-        onlyExistingProject(project_)
-    {
+    function _approveProject(Project storage project_) internal onlyExistingProject(project_) {
         require(project_.timeApproved == 0, "already approved project");
         project_.timeApproved = block.timestamp;
     }
@@ -54,22 +48,13 @@ library ProjectLibrary {
      * @param project_ reference to Project struct
      * @param tokenFactory_ address of token factory contract
      */
-    function _startProject(
-        Project storage project_,
-        address tokenFactory_
-    ) internal {
+    function _startProject(Project storage project_, address tokenFactory_) internal {
         require(project_.timeStarted == 0, "project already started");
         require(project_.timeApproved != 0, "project is not approved");
         if (project_.isOwnToken) {
-            IERC20(project_.token).safeTransferFrom(
-                msg.sender,
-                address(this),
-                project_.budget
-            );
+            IERC20(project_.token).safeTransferFrom(msg.sender, address(this), project_.budget);
         } else {
-            project_.token = ITokenFactory(tokenFactory_).deployToken(
-                project_.budget
-            );
+            project_.token = ITokenFactory(tokenFactory_).deployToken(project_.budget);
         }
         project_.budgetAllocated = 0;
         project_.budgetPaid = 0;
@@ -81,29 +66,18 @@ library ProjectLibrary {
      * unallocated budget returned to initiator or burned (in case of IOUToken)
      * @param project_ reference to Project struct
      */
-    function _finishProject(Project storage project_, address treasury_)
-        internal
-    {
+    function _finishProject(Project storage project_, address treasury_) internal {
         require(project_.timeStarted != 0, "project not started");
         require(project_.timeFinished == 0, "already finished project");
-        require(
-            project_.totalPackages == project_.totalFinishedPackages,
-            "unfinished packages left"
-        );
+        require(project_.totalPackages == project_.totalFinishedPackages, "unfinished packages left");
         project_.timeFinished = block.timestamp;
         uint256 budgetLeft_ = project_.budget - project_.budgetAllocated;
         if (budgetLeft_ != 0) {
             if (project_.isOwnToken) {
-                uint256 refundAmount_ = budgetLeft_ * 5 / 100;
+                uint256 refundAmount_ = (budgetLeft_ * 5) / 100;
                 budgetLeft_ -= refundAmount_;
-                IERC20(project_.token).safeTransfer(
-                    project_.initiator,
-                    refundAmount_
-                );
-                IERC20(project_.token).safeTransfer(
-                    treasury_,
-                    budgetLeft_
-                );
+                IERC20(project_.token).safeTransfer(project_.initiator, refundAmount_);
+                IERC20(project_.token).safeTransfer(treasury_, budgetLeft_);
             } else IIOUToken(address(project_.token)).burn(budgetLeft_);
         }
     }
@@ -123,18 +97,12 @@ library ProjectLibrary {
         require(project_.timeStarted != 0, "project is not started");
         require(project_.timeFinished == 0, "project is finished");
         uint256 _projectBudgetAvailable = project_.budget - project_.budgetAllocated;
-        require(
-            _projectBudgetAvailable >= totalBudget_,
-            "not enough project budget left"
-        );
+        require(_projectBudgetAvailable >= totalBudget_, "not enough project budget left");
         project_.budgetAllocated += totalBudget_;
         project_.totalPackages += count_;
     }
 
-    function _revertPackageBudget(
-        Project storage project_,
-        uint256 budgetToBeReverted_
-    ) internal {
+    function _revertPackageBudget(Project storage project_, uint256 budgetToBeReverted_) internal {
         require(project_.timeStarted != 0, "project is not started");
         require(project_.timeFinished == 0, "project is finished");
         project_.budgetAllocated -= budgetToBeReverted_;
@@ -147,9 +115,7 @@ library ProjectLibrary {
      * @param project_ reference to Project struct
      * @param budgetLeft_ amount of budget left
      */
-    function _finishPackage(Project storage project_, uint256 budgetLeft_)
-        internal
-    {
+    function _finishPackage(Project storage project_, uint256 budgetLeft_) internal {
         if (budgetLeft_ != 0) project_.budgetAllocated -= budgetLeft_;
         project_.totalFinishedPackages++;
     }
@@ -159,11 +125,8 @@ library ProjectLibrary {
      * @param project_ reference to Project struct
      * @param amount_ amount to pay
      */
-    function _pay(Project storage project_, uint256 amount_)
-        internal
-        onlyExistingProject(project_)
-    {
-        IERC20(project_.token).safeTransfer(msg.sender, amount_);
+    function _pay(Project storage project_, address receiver_, uint256 amount_) internal onlyExistingProject(project_) {
         project_.budgetPaid += amount_;
+        IERC20(project_.token).safeTransfer(receiver_, amount_);
     }
 }
