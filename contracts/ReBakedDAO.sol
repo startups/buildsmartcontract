@@ -126,27 +126,6 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         emit StartedProject(projectId_, _paidAmount);
     }
 
-    /**
-     * @dev Approves collaborator's MPG (or deletes collaborator should be called by admin)
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
-     * @param collaborator_ collaborator's address
-     * @param approve_ - bool whether to approve or not collaborator payment
-     */
-    function _approveCollaborator(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_,
-        bool approve_
-    ) private {
-        collaboratorData[projectId_][packageId_][collaborator_]._approveCollaborator(approve_);
-        if (!approve_) delete collaboratorData[projectId_][packageId_][collaborator_];
-
-        uint256 mgp_ = collaboratorData[projectId_][packageId_][collaborator_].mgp;
-        packageData[projectId_][packageId_]._approveCollaborator(approve_, mgp_);
-        if (approve_) approvedUser[projectId_][packageId_][collaborator_] = true;
-    }
-
     function _addObserver(
         bytes32 projectId_,
         bytes32 packageId_,
@@ -404,7 +383,17 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         address collaborator_,
         bool approve_
     ) external onlyInitiator(projectId_) {
-        _approveCollaborator(projectId_, packageId_, collaborator_, approve_);
+        uint256 mgp_ = collaboratorData[projectId_][packageId_][collaborator_].mgp;
+        require(mgp_ > 0, "no such collaborator");
+
+        approvedUser[projectId_][packageId_][collaborator_] = approve_;
+        packageData[projectId_][packageId_]._approveCollaborator(approve_, mgp_);
+
+        if (approve_) {
+            collaboratorData[projectId_][packageId_][collaborator_]._approveCollaborator();
+        } else {
+            delete collaboratorData[projectId_][packageId_][collaborator_];
+        }
         emit ApprovedCollaborator(projectId_, packageId_, collaborator_, approve_);
     }
 
