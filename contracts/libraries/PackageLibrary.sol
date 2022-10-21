@@ -7,12 +7,12 @@ library PackageLibrary {
 	@dev Throws if there is no package
 	 */
     modifier onlyExistingPackage(Package storage package_) {
-        require(package_.timeCreated != 0, "no such package");
+        require(package_.timeCreated > 0, "no such package");
         _;
     }
 
     modifier activePackage(Package storage package_) {
-        require(package_.isActive == true, "already canceled!");
+        require(package_.isActive, "already canceled!");
         _;
     }
 
@@ -50,7 +50,7 @@ library PackageLibrary {
     /**
      * @dev Adds observers to package
      * @param package_ reference to Package struct
-     * @param count_ number observer addresses
+     * @param count_ number observers
      */
     function _addObservers(Package storage package_, uint256 count_)
         internal
@@ -59,6 +59,21 @@ library PackageLibrary {
     {
         require(package_.timeFinished == 0, "already finished package");
         package_.totalObservers += count_;
+    }
+
+    /**
+     * @dev Removes observers from package
+     * @param package_ reference to Package struct
+     * @param count_ number observers
+     */
+    function _removeObservers(Package storage package_, uint256 count_)
+        internal
+        onlyExistingPackage(package_)
+        activePackage(package_)
+    {
+        require(package_.timeFinished == 0, "already finished package");
+        require(package_.totalObservers >= count_, "invalid observers count");
+        package_.totalObservers -= count_;
     }
 
     /**
@@ -102,6 +117,7 @@ library PackageLibrary {
         bool approve_,
         uint256 mgp_
     ) internal onlyExistingPackage(package_) activePackage(package_) {
+        require(package_.timeFinished == 0, "already finished package");
         if (!approve_) {
             package_.budgetAllocated -= mgp_;
             package_.totalCollaborators--;
@@ -142,8 +158,8 @@ library PackageLibrary {
         uint256 totalBonusScores_,
         uint256 maxBonusScores_
     ) internal onlyExistingPackage(package_) activePackage(package_) {
-        require(package_.bonus != 0, "bonus budget is zero");
-        require(package_.timeFinished != 0, "package is not finished");
+        require(package_.bonus > 0, "bonus budget is zero");
+        require(package_.timeFinished > 0, "package is not finished");
         require(
             package_.bonusAllocated + totalBonusScores_ <= maxBonusScores_,
             "no more bonus left"
@@ -152,7 +168,7 @@ library PackageLibrary {
     }
 
     /**
-     * @dev Sends observer fee after package is finished, increases package budget and observers' budget paid
+     * @dev Sends observer fee after package is finished, increases package's and observers' budget paid
      * @param package_ reference to Package struct
      * @return amount_ fee amount
      */
@@ -161,10 +177,10 @@ library PackageLibrary {
         onlyExistingPackage(package_)
         returns (uint256 amount_)
     {
-        require(package_.timeFinished != 0, "package is not finished");
+        require(package_.timeFinished > 0, "package is not finished");
         amount_ = package_.budgetObservers / package_.totalObservers;
         package_.budgetPaid += amount_;
-        package_.budgetObserversPaid += amount_;
+        package_.budgetObserversPaid += amount_; 
     }
 
     /**
@@ -176,7 +192,7 @@ library PackageLibrary {
         internal
         onlyExistingPackage(package_)
     {
-        require(package_.timeFinished != 0, "package not finished");
+        require(package_.timeFinished > 0, "package not finished");
         package_.budgetPaid += amount_;
     }
 
@@ -190,8 +206,8 @@ library PackageLibrary {
         onlyExistingPackage(package_)
         activePackage(package_)
     {
-        require(package_.timeFinished != 0, "package not finished");
-        require(package_.bonus != 0, "package has no bonus");
+        require(package_.timeFinished > 0, "package not finished");
+        require(package_.bonus > 0, "package has no bonus");
         package_.bonusPaid += amount_;
     }
 }
