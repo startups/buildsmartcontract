@@ -128,7 +128,8 @@ interface IReBakedDAO {
         bytes32 projectId_,
         uint256 budget_,
         uint256 bonus_,
-        uint256 observerBudget_
+        uint256 observerBudget_,
+        uint256 maxCollaborators_
     ) external returns (bytes32 packageId_);
 
     /**
@@ -182,7 +183,7 @@ interface IReBakedDAO {
         bytes32 projectId_,
         bytes32 packageId_,
         address collaborator_,
-        bool packageStatus
+        bool willPayMgp_
     ) external;
 
     function removeObserver(
@@ -214,7 +215,7 @@ interface IReBakedDAO {
      * @param packageId_ Id of the package
      * @return amount_ mgp amount paid
      */
-    function getMgp(
+    function claimMgp(
         bytes32 projectId_,
         bytes32 packageId_
     ) external returns (uint256 amount_);
@@ -225,7 +226,7 @@ interface IReBakedDAO {
      * @param packageId_ Id of the package
      * @return amount_ bonus amount paid
      */
-    function getBonus(
+    function claimBonus(
         bytes32 projectId_,
         bytes32 packageId_
     ) external returns (uint256 amount_);
@@ -240,7 +241,7 @@ interface IReBakedDAO {
      * @param packageId_ Id of the package
      * @return amount_ fee amount paid
      */
-    function getObserverFee(bytes32 projectId_, bytes32 packageId_)
+    function claimObserverFee(bytes32 projectId_, bytes32 packageId_)
         external
         returns (uint256 amount_);
 }

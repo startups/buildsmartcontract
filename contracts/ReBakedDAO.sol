@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 import { IReBakedDAO } from "./interfaces/IReBakedDAO.sol";
 import { ITokenFactory } from "./interfaces/ITokenFactory.sol";
+import { IIOUToken } from "./interfaces/IIOUToken.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { IERC20, SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -9,6 +10,7 @@ import { Project, ProjectLibrary } from "./libraries/ProjectLibrary.sol";
 import { Package, PackageLibrary } from "./libraries/PackageLibrary.sol";
 import { Collaborator, CollaboratorLibrary } from "./libraries/CollaboratorLibrary.sol";
 import { Observer, ObserverLibrary } from "./libraries/ObserverLibrary.sol";
+import { PackageStatus } from "./libraries/Structs.sol";
 
 contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -136,15 +138,6 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         _observer._addObserver();
     }
 
-    function _removeCollaboratorByInitiator(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_
-    ) private {
-        require(collaborator_ != address(0), "collaborator's address is zero");
-        collaboratorData[projectId_][packageId_][collaborator_]._removeCollaboratorByInitiator();
-    }
-
     /***************************************
 					ADMIN
 	****************************************/
@@ -190,17 +183,16 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         address[] memory collaborators_,
         uint256[] memory scores_
     ) external nonEmptyUintArray(scores_) onlyOwner {
+        Package storage package = packageData[projectId_][packageId_];
         require(collaborators_.length == scores_.length, "arrays length mismatch");
+        require(collaborators_.length <= package.totalCollaborators, "invalid collaborators list");
         uint256 _totalBonusScores;
         for (uint256 i = 0; i < collaborators_.length; i++) {
-            if (collaboratorData[projectId_][packageId_][collaborators_[i]].bonusScore == 0) {
-                // _setBonusScore(projectId_, packageId_, collaborators_[i], scores_[i]);
-                collaboratorData[projectId_][packageId_][collaborators_[i]]._setBonusScore(scores_[i]);
-                _totalBonusScores += scores_[i];
-            }
+            collaboratorData[projectId_][packageId_][collaborators_[i]]._setBonusScore(scores_[i]);
+            _totalBonusScores += scores_[i];
         }
-        // _setBonusScores(projectId_, packageId_, _totalBonusScores, PCT_PRECISION);
-        packageData[projectId_][packageId_]._setBonusScores(_totalBonusScores, PCT_PRECISION);
+        require(_totalBonusScores == PCT_PRECISION, "incorrect total bonus scores");
+        package._setBonusScores(scores_.length);
         emit SetBonusScores(projectId_, packageId_, collaborators_, scores_);
     }
 
@@ -216,11 +208,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 _packageId,
         address _collaborator
     ) external {
-        require(
-            msg.sender == projectData[_projectId].initiator ||
-            approvedUser[_projectId][_packageId][msg.sender],
-            "Caller not authorized"
-        );
+        require(msg.sender == projectData[_projectId].initiator || approvedUser[_projectId][_packageId][msg.sender], "Caller not authorized");
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
         collaborator._raiseDispute();
     }
@@ -273,9 +261,14 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
         uint256 _feesToBeRevert = collaborator.mgp + collaborator.bonusScore;
         collaborator._resolveDispute(false);
-        address _token = projectData[_projectId].token;
-        address _initiator = projectData[_projectId].initiator;
-        IERC20(_token).safeTransfer(_initiator, _feesToBeRevert);
+        Project storage project = projectData[_projectId];
+        address _token = project.token;
+        address _initiator = project.initiator;
+        if (project.isOwnToken) {
+            IERC20(_token).safeTransfer(_initiator, _feesToBeRevert);
+        } else {
+            IIOUToken(_token).burn(_feesToBeRevert);
+        }
     }
 
     /***************************************
@@ -312,13 +305,16 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      * @param projectId_ Id of the project
      * @param budget_ MGP budget
      * @param bonus_ Bonus budget
+     * @param observerBudget_ Observer budget
+     * @param maxCollaborators_ maximum collaborators
      * @return packageId_ Id of the package created
      */
     function createPackage(
         bytes32 projectId_,
         uint256 budget_,
         uint256 bonus_,
-        uint256 observerBudget_
+        uint256 observerBudget_,
+        uint256 maxCollaborators_
     ) external onlyInitiator(projectId_) nonZero(budget_) returns (bytes32 packageId_) {
         Project storage project = projectData[projectId_];
         address _token = project.token;
@@ -328,27 +324,30 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
             IERC20(_token).safeTransferFrom(msg.sender, treasury, (total * 5) / 100);
         }
         packageId_ = _generatePackageId(projectId_, 0);
-        packageData[projectId_][packageId_]._createPackage(budget_, observerBudget_, bonus_);
+        Package storage package = packageData[projectId_][packageId_];
+        package._createPackage(budget_, observerBudget_, bonus_, maxCollaborators_);
         emit CreatedPackage(projectId_, packageId_, budget_, bonus_);
     }
 
-    /// collab and observer withdraw
     function cancelPackage(
         bytes32 projectId_,
         bytes32 packageId_,
-        address[] memory collaborator_,
-        address[] memory observer_
+        address[] memory collaborators_,
+        address[] memory observers_
     ) external onlyInitiator(projectId_) {
-        for (uint256 i = 0; i < collaborator_.length; i++) {
-            payMgp(projectId_, packageId_, collaborator_[i]);
+        Package storage package = packageData[projectId_][packageId_];
+        package._cancelPackage();
+        require(collaborators_.length == package.totalCollaborators, "invalid collaborators length");
+        require(observers_.length == package.totalObservers, "invalid observers length");
+        for (uint256 i = 0; i < collaborators_.length; i++) {
+            payMgp(projectId_, packageId_, collaborators_[i]);
         }
-        for (uint256 i = 0; i < observer_.length; i++) {
-            payObserverFee(projectId_, packageId_, observer_[i]);
+        for (uint256 i = 0; i < observers_.length; i++) {
+            payObserverFee(projectId_, packageId_, observers_[i]);
         }
         uint256 budgetToBeReverted_;
-        budgetToBeReverted_ = packageData[projectId_][packageId_].budget - packageData[projectId_][packageId_].budgetPaid;
+        budgetToBeReverted_ = package.budget - package.budgetPaid;
         projectData[projectId_]._revertPackageBudget(budgetToBeReverted_);
-        packageData[projectId_][packageId_]._cancelPackage();
     }
 
     /**
@@ -401,22 +400,40 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 projectId_,
         bytes32 packageId_,
         address collaborator_,
-        bool packageStatus
+        bool willPayMgp_
     ) external onlyInitiator(projectId_) {
-        require(collaborator_ != address(0), "collaborator's address is zero");
-        require(collaboratorData[projectId_][packageId_][collaborator_].timeBonusPaid > 0, "Bonus Already Paid");
+        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+        require(collaborator.timeBonusPaid == 0, "Bonus Already Paid");
 
-        if (packageStatus == true) { //  inprogress/deliver/
+        Package storage package = packageData[projectId_][packageId_];
+        if (willPayMgp_) {
+            // in-progress, delivered, submitted, completed
             payMgp(projectId_, packageId_, collaborator_);
-            _removeCollaboratorByInitiator(projectId_, packageId_, collaborator_);
-        } else { // open
+            collaborator._removeCollaboratorByInitiator();
+        } else {
+            // open
             // _selfWithdraw(projectId_, packageId_, collaborator_);
-            packageData[projectId_][packageId_].budgetAllocated -= collaboratorData[projectId_][packageId_][collaborator_].mgp;
-            packageData[projectId_][packageId_].totalCollaborators -= 1;
-            packageData[projectId_][packageId_].approvedCollaborators -= 1;
-            collaboratorData[projectId_][packageId_][collaborator_]._selfWithdraw();
+            package.budgetAllocated -= collaborator.mgp;
+            package.totalCollaborators -= 1;
+            package.approvedCollaborators -= 1;
+            collaborator._selfWithdraw();
+            // collaborator.removalRequested = true;
+            // collaborator.disputeExpiresAt = block.timestamp + 3 days;
+            // emit RemovalRequested();
         }
-        packageData[projectId_][packageId_].budgetAllocated -= collaboratorData[projectId_][packageId_][collaborator_].bonusScore;
+        package.budgetAllocated -= collaborator.bonusScore;
+    }
+
+    function withdrawFromPackage(
+        bytes32 projectId_,
+        bytes32 packageId_
+    ) external {
+        address collaborator_ = msg.sender;
+        require(approvedUser[projectId_][packageId_][collaborator_], "Only Collaborator Can Call!");
+        Package storage package = packageData[projectId_][packageId_];
+        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+        package._collaboratorSelfWithdraw(collaborator.mgp);
+        collaborator._selfWithdraw();
     }
 
     /**
@@ -463,8 +480,8 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     ) public onlyInitiator(projectId_) {
         require(approvedUser[projectId_][packageId_][collaborator_], "No such collaborator");
         Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
-        uint256 amount_ = collaborator._getMgp();
-        packageData[projectId_][packageId_]._getMgp(amount_);
+        uint256 amount_ = collaborator._claimMgp();
+        packageData[projectId_][packageId_]._claimMgp(amount_);
         projectData[projectId_]._pay(collaborator_, amount_);
     }
 
@@ -476,7 +493,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         Observer storage observer = observerData[projectId_][packageId_][observer_];
         observer._claimObserverFee();
         Package storage package = packageData[projectId_][packageId_];
-        uint256 amount_ = package._getObserverFee();
+        uint256 amount_ = package._claimObserverFee();
         projectData[projectId_]._pay(observer_, amount_);
         emit PaidObserverFee(projectId_, packageId_, observer_, amount_);
     }
@@ -508,12 +525,12 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      * @param projectId_ Id of the project
      * @param packageId_ Id of the package
      */
-    function getMgp(bytes32 projectId_, bytes32 packageId_) public nonReentrant returns (uint256 amount_) {
+    function claimMgp(bytes32 projectId_, bytes32 packageId_) public nonReentrant returns (uint256 amount_) {
         address collaborator_ = msg.sender;
         require(approvedUser[projectId_][packageId_][collaborator_], "Only Collaborator Can Call!");
         Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
-        amount_ = collaborator._getMgp();
-        packageData[projectId_][packageId_]._getMgp(amount_);
+        amount_ = collaborator._claimMgp();
+        packageData[projectId_][packageId_]._claimMgp(amount_);
         projectData[projectId_]._pay(collaborator_, amount_);
         emit PaidMgp(projectId_, packageId_, msg.sender, amount_);
     }
@@ -523,15 +540,16 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      * @param projectId_ Id of the project
      * @param packageId_ Id of the package
      */
-    function getBonus(bytes32 projectId_, bytes32 packageId_) external nonReentrant returns (uint256 amount_) {
+    function claimBonus(bytes32 projectId_, bytes32 packageId_) external nonReentrant returns (uint256 amount_) {
         address collaborator_ = msg.sender;
         require(approvedUser[projectId_][packageId_][collaborator_], "Only Collaborator Can Call!");
         Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
-        amount_ = collaborator.bonusScore;
         collaborator._claimBonus();
-        packageData[projectId_][packageId_]._claimBonus(amount_);
+        Package storage package = packageData[projectId_][packageId_];
+        amount_ = getCollaboratorBonus(projectId_, packageId_, collaborator_);
+        package._claimBonus(amount_);
         projectData[projectId_]._pay(collaborator_, amount_);
-        emit PaidBonus(projectId_, packageId_, msg.sender, amount_);
+        emit PaidBonus(projectId_, packageId_, collaborator_, amount_);
     }
 
     /***************************************
@@ -544,13 +562,19 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      * @param packageId_ Id of the package
      * @return amount_ fee amount paid
      */
-    function getObserverFee(bytes32 projectId_, bytes32 packageId_) external nonReentrant returns (uint256 amount_) {
-        Observer storage observer = observerData[projectId_][packageId_][msg.sender];
+    function claimObserverFee(bytes32 projectId_, bytes32 packageId_) external nonReentrant returns (uint256 amount_) {
+        address observer_ = msg.sender;
+        Observer storage observer = observerData[projectId_][packageId_][observer_];
         observer._claimObserverFee();
-        amount_ = packageData[projectId_][packageId_]._getObserverFee();
-        projectData[projectId_]._pay(msg.sender, amount_);
-        emit PaidObserverFee(projectId_, packageId_, msg.sender, amount_);
+        Package storage package = packageData[projectId_][packageId_];
+        amount_ = package._claimObserverFee();
+        projectData[projectId_]._pay(observer_, amount_);
+        emit PaidObserverFee(projectId_, packageId_, observer_, amount_);
     }
+
+    /***************************************
+			GETTERS
+	****************************************/
 
     function getProjectData(bytes32 projectId_) external view returns (Project memory) {
         return projectData[projectId_];
@@ -568,11 +592,28 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         return collaboratorData[projectId_][packageId_][collaborator_];
     }
 
+    function getCollaboratorBonus(
+        bytes32 projectId_,
+        bytes32 packageId_,
+        address collaborator_
+    ) public view returns (uint256) {
+        require(approvedUser[projectId_][packageId_][collaborator_], "no such collaborator");
+        Package memory package = packageData[projectId_][packageId_];
+        Collaborator memory collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+        if (package.collaboratorsPaidBonus + 1 == package.collaboratorsGetBonus) return package.bonus - package.bonusPaid;
+        return (collaborator.bonusScore * package.bonus) / PCT_PRECISION;
+    }
+
     function getObserverData(
         bytes32 projectId_,
         bytes32 packageId_,
         address observer_
     ) external view returns (Observer memory) {
         return observerData[projectId_][packageId_][observer_];
+    }
+
+    function getObserverFee(bytes32 projectId_, bytes32 packageId_) public view returns (uint256) {
+        Package storage package = packageData[projectId_][packageId_];
+        return package._getObserverFee();
     }
 }

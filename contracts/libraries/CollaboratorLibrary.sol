@@ -7,7 +7,7 @@ library CollaboratorLibrary {
 	@dev Throws if there is no such collaborator
 	*/
     modifier onlyExistingCollaborator(Collaborator storage collaborator_) {
-        require(collaborator_.mgp != 0, "no such collaborator");
+        require(collaborator_.mgp > 0, "no such collaborator");
         _;
     }
 
@@ -22,18 +22,16 @@ library CollaboratorLibrary {
         collaborator_.mgp = mgp_;
     }
 
-    function _removeCollaboratorByInitiator(Collaborator storage collaborator_) internal {
+    function _removeCollaboratorByInitiator(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
         collaborator_.isRemoved == true;
         collaborator_.bonusScore = 0;
     }
 
-    function _selfWithdraw(Collaborator storage collaborator_) internal {
+    function _selfWithdraw(Collaborator storage collaborator_) onlyExistingCollaborator(collaborator_) internal {
         collaborator_.isRemoved == true;
+        collaborator_.mgp = 0;
         collaborator_.bonusScore = 0;
         collaborator_.timeMgpApproved = 0;
-        collaborator_.mgp = 0;
-        collaborator_.approvedMGPForDispute = false;
-        collaborator_.approvedBonusForDispute = false;
     }
 
     /**
@@ -84,7 +82,7 @@ library CollaboratorLibrary {
      * @dev Sets MGP time paid flag, checks if approved and already paid
      * @param collaborator_ reference to Collaborator struct
      */
-    function _getMgp(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) returns (uint256) {
+    function _claimMgp(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) returns (uint256) {
         require(!collaborator_.isDisputeRaised, "Collaborator still in dispute");
         require(collaborator_.timeMgpApproved > 0, "mgp is not approved");
         require(collaborator_.timeMgpPaid == 0, "mgp already paid");
@@ -97,7 +95,7 @@ library CollaboratorLibrary {
      * @param collaborator_ reference to Collaborator struct
      */
 
-    // function _getMgpForApproved(Collaborator storage collaborator_)
+    // function _claimMgpForApproved(Collaborator storage collaborator_)
     //     internal
     //     onlyExistingCollaborator(collaborator_)
     //     returns (uint256)

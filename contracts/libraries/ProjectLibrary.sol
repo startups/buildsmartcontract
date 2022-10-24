@@ -78,7 +78,7 @@ library ProjectLibrary {
                 budgetLeft_ -= refundAmount_;
                 IERC20(project_.token).safeTransfer(project_.initiator, refundAmount_);
                 IERC20(project_.token).safeTransfer(treasury_, budgetLeft_);
-            } else IIOUToken(address(project_.token)).burn(budgetLeft_);
+            } else IIOUToken(project_.token).burn(budgetLeft_);
         }
     }
 

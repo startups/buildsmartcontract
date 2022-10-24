@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 enum PackageStatus {
     OPEN,
-    CLOSED
+    STARTED
 }
 
 struct Project {
@@ -28,15 +28,18 @@ struct Package {
     uint256 budgetObservers;
     uint256 budgetObserversPaid;
     uint256 bonus;
-    uint256 bonusAllocated;
+    uint256 collaboratorsPaidBonus;
+    uint256 collaboratorsGetBonus;
     uint256 bonusPaid;
     uint256 timeCreated;
     uint256 timeFinished;
     uint256 totalObservers;
     uint256 totalCollaborators;
+    uint256 maxCollaborators;
     uint256 approvedCollaborators;
     bool isActive;
     uint256 timeCanceled;
+    PackageStatus status;
 }
 
 struct Collaborator {
@@ -45,8 +48,6 @@ struct Collaborator {
     uint256 timeMgpPaid;
     uint256 timeBonusPaid;
     uint256 bonusScore;
-    bool approvedMGPForDispute;
-    bool approvedBonusForDispute;
     bool isDisputeRaised;
     bool isRemoved;
 }
