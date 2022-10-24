@@ -320,8 +320,6 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         uint256 bonus_,
         uint256 observerBudget_
     ) external onlyInitiator(projectId_) nonZero(budget_) returns (bytes32 packageId_) {
-        packageId_ = _generatePackageId(projectId_, 0);
-        packageData[projectId_][packageId_]._createPackage(budget_, observerBudget_, bonus_);
         Project storage project = projectData[projectId_];
         address _token = project.token;
         uint256 total = budget_ + bonus_ + observerBudget_;
@@ -329,6 +327,8 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         if (project.isOwnToken) {
             IERC20(_token).safeTransferFrom(msg.sender, treasury, (total * 5) / 100);
         }
+        packageId_ = _generatePackageId(projectId_, 0);
+        packageData[projectId_][packageId_]._createPackage(budget_, observerBudget_, bonus_);
         emit CreatedPackage(projectId_, packageId_, budget_, bonus_);
     }
 

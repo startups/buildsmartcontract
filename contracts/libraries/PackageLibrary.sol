@@ -30,9 +30,9 @@ library PackageLibrary {
         uint256 bonus_
     ) internal {
         package_.budget = budget_;
-        package_.budgetAllocated = 0;
         package_.budgetObservers = feeObserversBudget_;
         package_.bonus = bonus_;
+        package_.budgetAllocated = 0;
         package_.timeCreated = block.timestamp;
         package_.isActive = true;
     }

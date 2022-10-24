@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
+enum PackageStatus {
+    OPEN,
+    CLOSED
+}
+
 struct Project {
     address initiator;
     address token;
