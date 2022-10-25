@@ -90,6 +90,12 @@ library CollaboratorLibrary {
         return collaborator_.mgp;
     }
 
+    function _payMgp(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) returns (uint256) {
+        require(collaborator_.timeMgpPaid == 0, "mgp already paid");
+        collaborator_.timeMgpPaid = block.timestamp;
+        return collaborator_.mgp;
+    }
+
     /**
      * @dev Sets MGP time paid flag for dispute resolved collaborator, Sets approved MGP for disputed collaborator, checks if approved after resolve dispute or already paid
      * @param collaborator_ reference to Collaborator struct

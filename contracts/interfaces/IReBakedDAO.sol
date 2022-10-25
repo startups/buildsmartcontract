@@ -183,7 +183,7 @@ interface IReBakedDAO {
         bytes32 projectId_,
         bytes32 packageId_,
         address collaborator_,
-        bool willPayMgp_
+        bool shouldPayMgp_
     ) external;
 
     function removeObserver(

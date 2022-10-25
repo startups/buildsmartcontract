@@ -1,11 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-enum PackageStatus {
-    OPEN,
-    STARTED
-}
-
 struct Project {
     address initiator;
     address token;
@@ -39,7 +34,6 @@ struct Package {
     uint256 approvedCollaborators;
     bool isActive;
     uint256 timeCanceled;
-    PackageStatus status;
 }
 
 struct Collaborator {

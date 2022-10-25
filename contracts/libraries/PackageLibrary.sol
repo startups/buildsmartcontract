@@ -111,7 +111,7 @@ library PackageLibrary {
         }
     }
 
-    function _collaboratorSelfWithdraw(
+    function _removeCollaborator(
         Package storage package_,
         uint256 mgp_
     ) internal onlyExistingPackage(package_) activePackage(package_) {
@@ -153,6 +153,7 @@ library PackageLibrary {
      */
     function _getObserverFee(Package storage package_) internal view onlyExistingPackage(package_) returns (uint256 amount_) {
         require(package_.totalObservers > 0, "no observers in package");
+        require(package_.budgetObservers > 0, "zero observer budget");
         uint256 remains = package_.budgetObservers - package_.budgetObserversPaid;
         uint256 portion = package_.budgetObservers / package_.totalObservers;
         amount_ = (remains < 2*portion) ? remains : portion;
@@ -164,7 +165,11 @@ library PackageLibrary {
      */
     function _claimObserverFee(Package storage package_) internal returns (uint256 amount_) {
         require(package_.timeFinished > 0, "package is not finished");
-        require(package_.budgetObservers > 0, "zero observer budget");
+        amount_ = _getObserverFee(package_);
+        package_.budgetObserversPaid += amount_;
+    }
+
+    function _payObserverFee(Package storage package_) internal returns (uint256 amount_) {
         amount_ = _getObserverFee(package_);
         package_.budgetObserversPaid += amount_;
     }
@@ -176,6 +181,10 @@ library PackageLibrary {
      */
     function _claimMgp(Package storage package_, uint256 amount_) internal onlyExistingPackage(package_) {
         require(package_.timeFinished > 0, "package not finished");
+        package_.budgetPaid += amount_;
+    }
+
+    function _payMgp(Package storage package_, uint256 amount_) internal onlyExistingPackage(package_) {
         package_.budgetPaid += amount_;
     }
 
