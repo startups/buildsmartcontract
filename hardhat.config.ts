@@ -57,7 +57,7 @@ const config: HardhatUserConfig = {
 		},
 		goerli: {
 			url: "https://eth-goerli.g.alchemy.com/v2/yiaZ5Hg5fTRH46ijJywVW1WF5ltv47xI",
-			accounts: ["6493c64e0c79722f1032d53696211daf05d6d25df266a1a0ec5c9e06dce08428", "1bfd3e152caf6a2df1d5a22b4441286bce14ddd354a653e2b3239ceb4118ac43"],
+			accounts: ["f0f8575c20eace873dfacb753a1ec0181097bef52fcd0b72a7ab33f7e1386434", "6493c64e0c79722f1032d53696211daf05d6d25df266a1a0ec5c9e06dce08428", "1bfd3e152caf6a2df1d5a22b4441286bce14ddd354a653e2b3239ceb4118ac43"],
 		},
 	},
 	etherscan: {

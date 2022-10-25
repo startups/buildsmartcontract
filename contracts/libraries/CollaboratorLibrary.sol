@@ -23,12 +23,12 @@ library CollaboratorLibrary {
     }
 
     function _removeCollaboratorByInitiator(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
-        collaborator_.isRemoved == true;
+        collaborator_.isRemoved = true;
         collaborator_.bonusScore = 0;
     }
 
     function _selfWithdraw(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
-        collaborator_.isRemoved == true;
+        collaborator_.isRemoved = true;
         collaborator_.mgp = 0;
         collaborator_.bonusScore = 0;
         collaborator_.timeMgpApproved = 0;
@@ -98,25 +98,6 @@ library CollaboratorLibrary {
     }
 
     /**
-     * @dev Sets MGP time paid flag for dispute resolved collaborator, Sets approved MGP for disputed collaborator, checks if approved after resolve dispute or already paid
-     * @param collaborator_ reference to Collaborator struct
-     */
-
-    // function _claimMgpForApproved(Collaborator storage collaborator_)
-    //     internal
-    //     onlyExistingCollaborator(collaborator_)
-    //     returns (uint256)
-    // {
-    //     require(
-    //         collaborator_.approvedMGPForDispute == false ||
-    //             collaborator_.isMGPPaid == false,
-    //         "mgp already approved"
-    //     );
-    //     collaborator_.approvedMGPForDispute = true;
-    //     return collaborator_.mgp;
-    // }
-
-    /**
      * @dev Sets Bonus time paid flag, checks is approved and already paid
      * @param collaborator_ reference to Collaborator struct
      */
@@ -127,20 +108,4 @@ library CollaboratorLibrary {
         collaborator_.timeBonusPaid = block.timestamp;
     }
 
-    /**
-     * @dev Sets Bonus time paid flag, sets approved bonus for disputed collaborator, checks is approved or not paid
-     * @param collaborator_ reference to Collaborator struct
-     */
-
-    // function _paidBonusForApproved(Collaborator storage collaborator_)
-    //     internal
-    //     onlyExistingCollaborator(collaborator_)
-    // {
-    //     require(
-    //         collaborator_.approvedBonusForDispute == false ||
-    //             collaborator_.isBonusPaid == false,
-    //         "bonus already approved"
-    //     );
-    //     collaborator_.approvedBonusForDispute = true;
-    // }
 }
