@@ -2,7 +2,6 @@
 pragma solidity ^0.8.10;
 
 interface IReBakedDAO {
-    event ChangedFees(uint256 feeDao, uint256 feeObservers);
     event CreatedProject(
         bytes32 indexed projectId,
         address initiator,
@@ -70,13 +69,6 @@ interface IReBakedDAO {
 	****************************************/
 
     /**
-     * @dev Sets new fees
-     * @param feeDao_ DAO fee in ppm
-     * @param feeObservers_ Observers fee in ppm
-     */
-    function changeFees(uint256 feeDao_, uint256 feeObservers_) external;
-
-    /**
      * @dev Approves project
      * @param projectId_ Id of the project
      */
@@ -128,7 +120,8 @@ interface IReBakedDAO {
         bytes32 projectId_,
         uint256 budget_,
         uint256 bonus_,
-        uint256 observerBudget_
+        uint256 observerBudget_,
+        uint256 maxCollaborators_
     ) external returns (bytes32 packageId_);
 
     /**
@@ -182,7 +175,7 @@ interface IReBakedDAO {
         bytes32 projectId_,
         bytes32 packageId_,
         address collaborator_,
-        bool packageStatus
+        bool shouldPayMgp_
     ) external;
 
     function removeObserver(
@@ -214,7 +207,7 @@ interface IReBakedDAO {
      * @param packageId_ Id of the package
      * @return amount_ mgp amount paid
      */
-    function getMgp(
+    function claimMgp(
         bytes32 projectId_,
         bytes32 packageId_
     ) external returns (uint256 amount_);
@@ -225,7 +218,7 @@ interface IReBakedDAO {
      * @param packageId_ Id of the package
      * @return amount_ bonus amount paid
      */
-    function getBonus(
+    function claimBonus(
         bytes32 projectId_,
         bytes32 packageId_
     ) external returns (uint256 amount_);
@@ -240,7 +233,7 @@ interface IReBakedDAO {
      * @param packageId_ Id of the package
      * @return amount_ fee amount paid
      */
-    function getObserverFee(bytes32 projectId_, bytes32 packageId_)
+    function claimObserverFee(bytes32 projectId_, bytes32 packageId_)
         external
         returns (uint256 amount_);
 }

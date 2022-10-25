@@ -12,7 +12,7 @@ library ProjectLibrary {
 	@dev Throws if there is no such project
 	 */
     modifier onlyExistingProject(Project storage project_) {
-        require(project_.timeCreated != 0, "no such project");
+        require(project_.timeCreated > 0, "no such project");
         _;
     }
 
@@ -49,8 +49,8 @@ library ProjectLibrary {
      * @param tokenFactory_ address of token factory contract
      */
     function _startProject(Project storage project_, address tokenFactory_) internal {
+        require(project_.timeApproved > 0, "project is not approved");
         require(project_.timeStarted == 0, "project already started");
-        require(project_.timeApproved != 0, "project is not approved");
         if (project_.isOwnToken) {
             IERC20(project_.token).safeTransferFrom(msg.sender, address(this), project_.budget);
         } else {
@@ -67,7 +67,7 @@ library ProjectLibrary {
      * @param project_ reference to Project struct
      */
     function _finishProject(Project storage project_, address treasury_) internal {
-        require(project_.timeStarted != 0, "project not started");
+        require(project_.timeStarted > 0, "project not started yet");
         require(project_.timeFinished == 0, "already finished project");
         require(project_.totalPackages == project_.totalFinishedPackages, "unfinished packages left");
         project_.timeFinished = block.timestamp;
@@ -78,7 +78,7 @@ library ProjectLibrary {
                 budgetLeft_ -= refundAmount_;
                 IERC20(project_.token).safeTransfer(project_.initiator, refundAmount_);
                 IERC20(project_.token).safeTransfer(treasury_, budgetLeft_);
-            } else IIOUToken(address(project_.token)).burn(budgetLeft_);
+            } else IIOUToken(project_.token).burn(budgetLeft_);
         }
     }
 
@@ -94,7 +94,7 @@ library ProjectLibrary {
         uint256 totalBudget_,
         uint256 count_
     ) internal {
-        require(project_.timeStarted != 0, "project is not started");
+        require(project_.timeStarted > 0, "project is not started");
         require(project_.timeFinished == 0, "project is finished");
         uint256 _projectBudgetAvailable = project_.budget - project_.budgetAllocated;
         require(_projectBudgetAvailable >= totalBudget_, "not enough project budget left");
@@ -103,7 +103,7 @@ library ProjectLibrary {
     }
 
     function _revertPackageBudget(Project storage project_, uint256 budgetToBeReverted_) internal {
-        require(project_.timeStarted != 0, "project is not started");
+        require(project_.timeStarted > 0, "project is not started");
         require(project_.timeFinished == 0, "project is finished");
         project_.budgetAllocated -= budgetToBeReverted_;
         project_.totalPackages -= 1;

@@ -7,7 +7,7 @@ library CollaboratorLibrary {
 	@dev Throws if there is no such collaborator
 	*/
     modifier onlyExistingCollaborator(Collaborator storage collaborator_) {
-        require(collaborator_.mgp != 0, "no such collaborator");
+        require(collaborator_.mgp > 0, "no such collaborator");
         _;
     }
 
@@ -17,41 +17,31 @@ library CollaboratorLibrary {
      * @param collaborator_ collaborator's address
      * @param mgp_ minimum guaranteed payment
      */
-    function _addCollaborator(Collaborator storage collaborator_, uint256 mgp_)
-        internal
-    {
+    function _addCollaborator(Collaborator storage collaborator_, uint256 mgp_) internal {
         require(collaborator_.mgp == 0, "collaborator already added");
         collaborator_.mgp = mgp_;
     }
 
-    function _removeCollaboratorByInitiator(Collaborator storage collaborator_) internal {
+    function _removeCollaboratorByInitiator(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
         collaborator_.isRemoved == true;
         collaborator_.bonusScore = 0;
     }
 
-    function _selfWithdraw(Collaborator storage collaborator_) internal {
+    function _selfWithdraw(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
         collaborator_.isRemoved == true;
+        collaborator_.mgp = 0;
         collaborator_.bonusScore = 0;
         collaborator_.timeMgpApproved = 0;
-        collaborator_.mgp = 0;
-        collaborator_.approvedMGPForDispute = false;
-        collaborator_.approvedBonusForDispute = false;
     }
 
     /**
      * @dev Approves collaborator's MGP or deletes collaborator
      * @param collaborator_ reference to Collaborator struct
-     * @param approve_ whether to approve or not collaborator payment
      */
-    function _approveCollaborator(
-        Collaborator storage collaborator_,
-        bool approve_
-    ) internal onlyExistingCollaborator(collaborator_) {
+    function _approveCollaborator(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
         require(collaborator_.timeMgpApproved == 0, "collaborator already approved");
-        if (approve_) {
-            collaborator_.timeMgpApproved = block.timestamp;
-            collaborator_.isRemoved = false;
-        }
+        collaborator_.timeMgpApproved = block.timestamp;
+        collaborator_.isRemoved = false;
     }
 
     /**
@@ -59,14 +49,8 @@ library CollaboratorLibrary {
      * @param collaborator_ reference to Collaborator struct
      * @param bonusScore_ collaborator's bonus score
      */
-    function _setBonusScore(
-        Collaborator storage collaborator_,
-        uint256 bonusScore_
-    ) internal onlyExistingCollaborator(collaborator_) {
-        require(
-            collaborator_.bonusScore == 0,
-            "collaborator bonus already set"
-        );
+    function _setBonusScore(Collaborator storage collaborator_, uint256 bonusScore_) internal onlyExistingCollaborator(collaborator_) {
+        require(collaborator_.bonusScore == 0, "collaborator bonus already set");
         collaborator_.bonusScore = bonusScore_;
     }
 
@@ -74,9 +58,7 @@ library CollaboratorLibrary {
      * @dev Raise Dispute
      * @param collaborator_ paid amount
      */
-    function _raiseDispute(Collaborator storage collaborator_)
-        internal onlyExistingCollaborator(collaborator_)
-    {
+    function _raiseDispute(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
         require(!collaborator_.isDisputeRaised, "Collaborator already in dispute");
         require(collaborator_.timeMgpPaid == 0, "Already Claimed MGP");
         require(collaborator_.timeBonusPaid == 0, "Already Claimed Bonus");
@@ -87,17 +69,13 @@ library CollaboratorLibrary {
      * @dev Resolve Dispute
      * @param collaborator_ paid amount
      */
-    function _resolveDispute(
-        Collaborator storage collaborator_,
-        bool approved
-    )
-        internal onlyExistingCollaborator(collaborator_)
-    {
+    function _resolveDispute(Collaborator storage collaborator_, bool approved) internal onlyExistingCollaborator(collaborator_) {
         require(collaborator_.isDisputeRaised, "Dispute Required");
         collaborator_.isDisputeRaised = false;
         if (!approved) {
             collaborator_.mgp = 0;
             collaborator_.bonusScore = 0;
+            collaborator_.timeMgpApproved = 0;
         }
     }
 
@@ -105,13 +83,15 @@ library CollaboratorLibrary {
      * @dev Sets MGP time paid flag, checks if approved and already paid
      * @param collaborator_ reference to Collaborator struct
      */
-    function _getMgp(Collaborator storage collaborator_)
-        internal
-        onlyExistingCollaborator(collaborator_)
-        returns (uint256)
-    {
+    function _claimMgp(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) returns (uint256) {
         require(!collaborator_.isDisputeRaised, "Collaborator still in dispute");
         require(collaborator_.timeMgpApproved > 0, "mgp is not approved");
+        require(collaborator_.timeMgpPaid == 0, "mgp already paid");
+        collaborator_.timeMgpPaid = block.timestamp;
+        return collaborator_.mgp;
+    }
+
+    function _payMgp(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) returns (uint256) {
         require(collaborator_.timeMgpPaid == 0, "mgp already paid");
         collaborator_.timeMgpPaid = block.timestamp;
         return collaborator_.mgp;
@@ -122,7 +102,7 @@ library CollaboratorLibrary {
      * @param collaborator_ reference to Collaborator struct
      */
 
-    // function _getMgpForApproved(Collaborator storage collaborator_)
+    // function _claimMgpForApproved(Collaborator storage collaborator_)
     //     internal
     //     onlyExistingCollaborator(collaborator_)
     //     returns (uint256)
@@ -140,10 +120,7 @@ library CollaboratorLibrary {
      * @dev Sets Bonus time paid flag, checks is approved and already paid
      * @param collaborator_ reference to Collaborator struct
      */
-    function _claimBonus(Collaborator storage collaborator_)
-        internal
-        onlyExistingCollaborator(collaborator_)
-    {
+    function _claimBonus(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
         require(!collaborator_.isDisputeRaised, "Collaborator still in dispute");
         require(collaborator_.bonusScore > 0, "bonus score is zero");
         require(collaborator_.timeBonusPaid == 0, "bonus already paid");
