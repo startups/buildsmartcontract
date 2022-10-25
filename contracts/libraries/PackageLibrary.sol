@@ -81,8 +81,8 @@ library PackageLibrary {
         uint256 amount_
     ) internal onlyExistingPackage(package_) activePackage(package_) {
         require(package_.timeFinished == 0, "already finished package");
-        require(package_.budget - package_.budgetAllocated >= amount_, "not enough package budget left");
-        require(package_.totalCollaborators + amount_ <= package_.maxCollaborators, "exceeds max collaborators");
+        require(package_.budget >= package_.budgetAllocated + amount_, "not enough package budget left");
+        require(package_.totalCollaborators + count_ <= package_.maxCollaborators, "exceeds max collaborators");
         package_.budgetAllocated += amount_;
         package_.totalCollaborators += count_;
     }
