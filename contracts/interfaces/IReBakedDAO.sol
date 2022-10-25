@@ -2,7 +2,6 @@
 pragma solidity ^0.8.10;
 
 interface IReBakedDAO {
-    event ChangedFees(uint256 feeDao, uint256 feeObservers);
     event CreatedProject(
         bytes32 indexed projectId,
         address initiator,
@@ -68,13 +67,6 @@ interface IReBakedDAO {
     /***************************************
 					ADMIN
 	****************************************/
-
-    /**
-     * @dev Sets new fees
-     * @param feeDao_ DAO fee in ppm
-     * @param feeObservers_ Observers fee in ppm
-     */
-    function changeFees(uint256 feeDao_, uint256 feeObservers_) external;
 
     /**
      * @dev Approves project

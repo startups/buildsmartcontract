@@ -9,30 +9,30 @@ async function main() {
   const CollaboratorLibrary = await ethers.getContractFactory("CollaboratorLibrary");
   const PackageLibrary = await ethers.getContractFactory("PackageLibrary");
   const ProjectLibrary = await ethers.getContractFactory("ProjectLibrary");
-  const TokenFactory = await ethers.getContractFactory("TokenFactory");
+  // const TokenFactory = await ethers.getContractFactory("TokenFactory");
 
   // const tokenFactory = await TokenFactory.deploy();
   // await tokenFactory.deployed();
   // console.log("TokenFactory         deployed to:", tokenFactory.address);
 
-  // const collaboratorLibrary = await CollaboratorLibrary.deploy();
-  // await collaboratorLibrary.deployed();
-  // console.log("Collaborators         deployed to:", collaboratorLibrary.address);
+  const collaboratorLibrary = await CollaboratorLibrary.deploy();
+  await collaboratorLibrary.deployed();
+  console.log("Collaborators         deployed to:", collaboratorLibrary.address);
 
-  // const packageLibrary = await PackageLibrary.deploy();
-  // await packageLibrary.deployed();
-  // console.log("Packages         deployed to:", packageLibrary.address);
+  const packageLibrary = await PackageLibrary.deploy();
+  await packageLibrary.deployed();
+  console.log("Packages         deployed to:", packageLibrary.address);
 
-  // const projectLibrary = await ProjectLibrary.deploy();
-  // await projectLibrary.deployed();
-  // console.log("Projects         deployed to:", projectLibrary.address);
+  const projectLibrary = await ProjectLibrary.deploy();
+  await projectLibrary.deployed();
+  console.log("Projects         deployed to:", projectLibrary.address);
 
 
   const ReBakedDAO = await ethers.getContractFactory("ReBakedDAO", {
     libraries: {
-      CollaboratorLibrary: "0x6c49B92b51d00D7580cc25F1168027964b3c17B3",
-      PackageLibrary: "0x96E1DD23a767bc77F54793c37bfc52f12493a55c",
-      ProjectLibrary: "0xfD18f237B0F4800477BBAF296eAcb94405d657F1"
+      CollaboratorLibrary: collaboratorLibrary.address,
+      PackageLibrary: packageLibrary.address,
+      ProjectLibrary: projectLibrary.address
     },
   });
   const reBakedDAO = await ReBakedDAO.deploy(

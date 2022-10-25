@@ -18,14 +18,11 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     using CollaboratorLibrary for Collaborator;
     using ObserverLibrary for Observer;
 
+    uint256 public constant PCT_PRECISION = 1e6;
+
     // Rebaked DAO wallet
     address public treasury;
     // Percent Precision PPM (parts per million)
-    uint256 public constant PCT_PRECISION = 1e6;
-    // Fee for DAO for new projects
-    uint256 public feeDao;
-    // Fee for Observers for new projects
-    uint256 public feeObservers;
     // Token Factory contract address
     address public tokenFactory;
 
@@ -33,7 +30,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
 
     mapping(bytes32 => mapping(bytes32 => Package)) private packageData;
 
-    // address of approved collaborator with perticular package
+    // projectId => packageId => address collaborator
     mapping(bytes32 => mapping(bytes32 => mapping(address => bool))) private approvedUser;
 
     // projectId => packageId => address collaborator
@@ -44,12 +41,9 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
 
     constructor(
         address treasury_,
-        uint256 feeDao_,
-        uint256 feeObservers_,
         address tokenFactory_
     ) {
         treasury = treasury_;
-        changeFees(feeDao_, feeObservers_);
         tokenFactory = tokenFactory_;
     }
 
@@ -143,17 +137,6 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
 
     function updateTreasury(address treasury_) public onlyOwner {
         treasury = treasury_;
-    }
-
-    /**
-     * @dev Sets new fees
-     * @param feeDao_ DAO fee in ppm
-     * @param feeObservers_ Observers fee in ppm
-     */
-    function changeFees(uint256 feeDao_, uint256 feeObservers_) public onlyOwner {
-        feeDao = feeDao_;
-        feeObservers = feeObservers_;
-        emit ChangedFees(feeDao_, feeObservers_);
     }
 
     function _approveProject(bytes32 projectId_) private {
