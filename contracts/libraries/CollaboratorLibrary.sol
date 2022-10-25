@@ -75,6 +75,7 @@ library CollaboratorLibrary {
         if (!approved) {
             collaborator_.mgp = 0;
             collaborator_.bonusScore = 0;
+            collaborator_.timeMgpApproved = 0;
         }
     }
 
