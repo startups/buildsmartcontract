@@ -23,9 +23,9 @@ struct Package {
     uint256 budgetObservers;
     uint256 budgetObserversPaid;
     uint256 bonus;
+    uint256 bonusPaid;
     uint256 collaboratorsPaidBonus;
     uint256 collaboratorsGetBonus;
-    uint256 bonusPaid;
     uint256 timeCreated;
     uint256 timeFinished;
     uint256 totalObservers;

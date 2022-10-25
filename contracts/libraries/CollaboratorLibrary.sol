@@ -27,7 +27,7 @@ library CollaboratorLibrary {
         collaborator_.bonusScore = 0;
     }
 
-    function _selfWithdraw(Collaborator storage collaborator_) onlyExistingCollaborator(collaborator_) internal {
+    function _selfWithdraw(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
         collaborator_.isRemoved == true;
         collaborator_.mgp = 0;
         collaborator_.bonusScore = 0;
@@ -75,6 +75,7 @@ library CollaboratorLibrary {
         if (!approved) {
             collaborator_.mgp = 0;
             collaborator_.bonusScore = 0;
+            collaborator_.timeMgpApproved = 0;
         }
     }
 
