@@ -75,10 +75,7 @@ library PackageLibrary {
      * checks if there is budget available and allocates it
      * @param amount_ amount to reserve
      */
-    function _reserveCollaboratorsBudget(
-        Package storage package_,
-        uint256 amount_
-    ) internal onlyExistingPackage(package_) activePackage(package_) {
+    function _reserveCollaboratorsBudget(Package storage package_, uint256 amount_) internal onlyExistingPackage(package_) activePackage(package_) {
         require(package_.timeFinished == 0, "already finished package");
         require(package_.budget >= package_.budgetAllocated + amount_, "not enough package budget left");
         require(package_.totalCollaborators < package_.maxCollaborators, "Max collaborators reached");
@@ -128,6 +125,7 @@ library PackageLibrary {
      */
     function _finishPackage(Package storage package_) internal onlyExistingPackage(package_) activePackage(package_) returns (uint256 budgetLeft_) {
         require(package_.timeFinished == 0, "already finished package");
+        require(package_.disputesCount == 0, "package has unresolved disputes");
         require(package_.totalCollaborators == package_.approvedCollaborators, "unapproved collaborators left");
         budgetLeft_ = package_.budget - package_.budgetAllocated;
         if (package_.totalObservers == 0) budgetLeft_ += package_.budgetObservers;
@@ -156,7 +154,7 @@ library PackageLibrary {
         require(package_.budgetObservers > 0, "zero observer budget");
         uint256 remains = package_.budgetObservers - package_.budgetObserversPaid;
         uint256 portion = package_.budgetObservers / package_.totalObservers;
-        amount_ = (remains < 2*portion) ? remains : portion;
+        amount_ = (remains < 2 * portion) ? remains : portion;
     }
 
     /**
