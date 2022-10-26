@@ -5,6 +5,7 @@ import { Package } from "./Structs.sol";
 library PackageLibrary {
     uint256 public constant MIN_COLLABORATORS = 3;
     uint256 public constant MAX_COLLABORATORS = 10;
+    uint256 public constant MAX_OBSERVERS = 10;
 
     /**
 	@dev Throws if there is no package
@@ -38,6 +39,7 @@ library PackageLibrary {
         package_.budgetObservers = feeObserversBudget_;
         package_.bonus = bonus_;
         package_.budgetAllocated = 0;
+        package_.maxCollaborators = maxCollaborators_;
         package_.timeCreated = block.timestamp;
         package_.isActive = true;
     }
@@ -51,40 +53,37 @@ library PackageLibrary {
     /**
      * @dev Adds observers to package
      * @param package_ reference to Package struct
-     * @param count_ number observers
      */
-    function _addObservers(Package storage package_, uint256 count_) internal onlyExistingPackage(package_) activePackage(package_) {
+    function _addObserver(Package storage package_) internal onlyExistingPackage(package_) activePackage(package_) {
         require(package_.timeFinished == 0, "already finished package");
-        package_.totalObservers += count_;
+        require(package_.totalObservers < MAX_OBSERVERS, "Max observers reached");
+        package_.totalObservers++;
     }
 
     /**
      * @dev Removes observers from package
      * @param package_ reference to Package struct
-     * @param count_ number observers
      */
-    function _removeObservers(Package storage package_, uint256 count_) internal onlyExistingPackage(package_) activePackage(package_) {
+    function _removeObserver(Package storage package_) internal onlyExistingPackage(package_) activePackage(package_) {
         require(package_.timeFinished == 0, "already finished package");
-        require(package_.totalObservers >= count_, "invalid observers count");
-        package_.totalObservers -= count_;
+        require(package_.totalObservers > 0, "no observers in package");
+        package_.totalObservers--;
     }
 
     /**
      * @dev Reserves collaborators MGP from package budget and increase total number of collaborators,
      * checks if there is budget available and allocates it
-     * @param count_ number of collaborators to add
      * @param amount_ amount to reserve
      */
     function _reserveCollaboratorsBudget(
         Package storage package_,
-        uint256 count_,
         uint256 amount_
     ) internal onlyExistingPackage(package_) activePackage(package_) {
         require(package_.timeFinished == 0, "already finished package");
-        require(package_.budget - package_.budgetAllocated >= amount_, "not enough package budget left");
-        require(package_.totalCollaborators + amount_ <= package_.maxCollaborators, "exceeds max collaborators");
+        require(package_.budget >= package_.budgetAllocated + amount_, "not enough package budget left");
+        require(package_.totalCollaborators < package_.maxCollaborators, "Max collaborators reached");
         package_.budgetAllocated += amount_;
-        package_.totalCollaborators += count_;
+        package_.totalCollaborators++;
     }
 
     function _revertBudget(Package storage package_) internal view onlyExistingPackage(package_) activePackage(package_) returns (uint256) {
@@ -113,12 +112,13 @@ library PackageLibrary {
 
     function _removeCollaborator(
         Package storage package_,
-        uint256 mgp_
+        uint256 mgp_,
+        bool approved_
     ) internal onlyExistingPackage(package_) activePackage(package_) {
         require(package_.timeFinished == 0, "already finished package");
         package_.budgetAllocated -= mgp_;
-        package_.totalCollaborators -= 1;
-        package_.approvedCollaborators -= 1;
+        package_.totalCollaborators--;
+        if (approved_) package_.approvedCollaborators--;
     }
 
     /**

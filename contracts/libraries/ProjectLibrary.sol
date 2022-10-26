@@ -56,8 +56,6 @@ library ProjectLibrary {
         } else {
             project_.token = ITokenFactory(tokenFactory_).deployToken(project_.budget);
         }
-        project_.budgetAllocated = 0;
-        project_.budgetPaid = 0;
         project_.timeStarted = block.timestamp;
     }
 
@@ -72,7 +70,7 @@ library ProjectLibrary {
         require(project_.totalPackages == project_.totalFinishedPackages, "unfinished packages left");
         project_.timeFinished = block.timestamp;
         uint256 budgetLeft_ = project_.budget - project_.budgetAllocated;
-        if (budgetLeft_ != 0) {
+        if (budgetLeft_ > 0) {
             if (project_.isOwnToken) {
                 uint256 refundAmount_ = (budgetLeft_ * 5) / 100;
                 budgetLeft_ -= refundAmount_;
@@ -116,7 +114,7 @@ library ProjectLibrary {
      * @param budgetLeft_ amount of budget left
      */
     function _finishPackage(Project storage project_, uint256 budgetLeft_) internal {
-        if (budgetLeft_ != 0) project_.budgetAllocated -= budgetLeft_;
+        if (budgetLeft_ > 0) project_.budgetAllocated -= budgetLeft_;
         project_.totalFinishedPackages++;
     }
 
