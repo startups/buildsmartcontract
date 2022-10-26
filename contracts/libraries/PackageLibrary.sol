@@ -142,24 +142,23 @@ library PackageLibrary {
     }
 
     /**
-     * @dev Gets observer's fee after package is finished
+     * @dev Get observer's claimable portion in package
      * @param package_ reference to Package struct
      */
-    function _getObserverFee(Package storage package_) internal view onlyExistingPackage(package_) returns (uint256 amount_) {
-        require(package_.totalObservers > 0, "no observers in package");
-        require(package_.budgetObservers > 0, "zero observer budget");
+    function _getObserverFee(Package storage package_) internal view onlyExistingPackage(package_) returns (uint256) {
+        if (package_.totalObservers == 0) return 0;
+        if (package_.budgetObservers == package_.budgetObserversPaid) return 0;
         uint256 remains = package_.budgetObservers - package_.budgetObserversPaid;
         uint256 portion = package_.budgetObservers / package_.totalObservers;
-        amount_ = (remains < 2 * portion) ? remains : portion;
+        return (remains < 2 * portion) ? remains : portion;
     }
 
     /**
      * @dev Increases package's observers budget paid
      * @param package_ reference to Package struct
      */
-    function _claimObserverFee(Package storage package_) internal returns (uint256 amount_) {
+    function _claimObserverFee(Package storage package_, uint256 amount_) internal {
         require(package_.timeFinished > 0 || package_.timeCanceled > 0, "package is not finished/canceled");
-        amount_ = _getObserverFee(package_);
         package_.budgetObserversPaid += amount_;
     }
 
