@@ -32,8 +32,9 @@ struct Package {
     uint256 totalCollaborators;
     uint256 maxCollaborators;
     uint256 approvedCollaborators;
-    bool isActive;
+    uint256 disputesCount;
     uint256 timeCanceled;
+    bool isActive;
 }
 
 struct Collaborator {
@@ -42,7 +43,7 @@ struct Collaborator {
     uint256 timeMgpPaid;
     uint256 timeBonusPaid;
     uint256 bonusScore;
-    bool isDisputeRaised;
+    bool isInDispute;
     bool isRemoved;
 }
 
