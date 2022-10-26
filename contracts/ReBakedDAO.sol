@@ -404,9 +404,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 packageId_,
         address collaborator_
     ) private {
-        require(approvedUser[projectId_][packageId_][collaborator_], "No such collaborator");
-        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
-        uint256 amount_ = collaborator._payMgp();
+        uint256 amount_ = collaboratorData[projectId_][packageId_][collaborator_]._payMgp();
         packageData[projectId_][packageId_]._payMgp(amount_);
         projectData[projectId_]._pay(collaborator_, amount_);
         emit PaidMgp(projectId_, packageId_, collaborator_, amount_);
