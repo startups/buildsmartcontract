@@ -2,7 +2,6 @@
 pragma solidity ^0.8.10;
 
 interface IReBakedDAO {
-    event ChangedFees(uint256 feeDao, uint256 feeObservers);
     event CreatedProject(
         bytes32 indexed projectId,
         address initiator,
@@ -10,31 +9,18 @@ interface IReBakedDAO {
         uint256 budget
     );
     event ApprovedProject(bytes32 indexed projectId);
-    event ApprovedProjects(bytes32[] projectIds);
-    event StartedProject(bytes32 indexed projectId);
+    event StartedProject(bytes32 indexed projectId, uint256 indexed paidAmount);
     event FinishedProject(bytes32 indexed projectId);
     event CreatedPackage(
         bytes32 indexed projectId,
         bytes32 indexed packageId,
         uint256 budget,
-        uint256 bonus,
-        uint256 budgetWithDeduction_
-    );
-    event CreatedPackages(
-        bytes32 indexed projectId,
-        bytes32[] packageIds,
-        uint256[] budgets,
-        uint256[] bonuses
+        uint256 bonus
     );
     event AddedObserver(
         bytes32 indexed projectId,
         bytes32[] indexed packageId,
         address observer
-    );
-    event AddedObservers(
-        bytes32 indexed projectId,
-        bytes32 indexed packageId,
-        address[] observers
     );
     event AddedCollaborator(
         bytes32 indexed projectId,
@@ -42,23 +28,11 @@ interface IReBakedDAO {
         address collaborator,
         uint256 mgp
     );
-    event AddedCollaborators(
-        bytes32 indexed projectId,
-        bytes32 indexed packageId,
-        address[] collaborators,
-        uint256[] mgps
-    );
     event ApprovedCollaborator(
         bytes32 indexed projectId,
         bytes32 indexed packageId,
         address collaborator,
         bool approve
-    );
-    event ApprovedCollaborators(
-        bytes32 indexed projectId,
-        bytes32 indexed packageId,
-        address[] collaborators,
-        bool[] approves
     );
     event FinishedPackage(
         bytes32 indexed projectId,
@@ -71,16 +45,9 @@ interface IReBakedDAO {
         address[] collaborators,
         uint256[] scores
     );
-    event PaidDao(bytes32 indexed projectId, uint256 amount);
     event PaidMgp(
         bytes32 indexed projectId,
         bytes32 indexed packageId,
-        address collaborator,
-        uint256 amount
-    );
-    event PaidMgps(
-        bytes32 indexed projectId,
-        bytes32[] packageIds,
         address collaborator,
         uint256 amount
     );
@@ -90,21 +57,9 @@ interface IReBakedDAO {
         address collaborator,
         uint256 amount
     );
-    event PaidBonuses(
-        bytes32 indexed projectId,
-        bytes32[] packageIds,
-        address collaborator,
-        uint256 amount
-    );
     event PaidObserverFee(
         bytes32 indexed projectId,
         bytes32 indexed packageId,
-        address observer,
-        uint256 amount
-    );
-    event PaidObserverFees(
-        bytes32 indexed projectId,
-        bytes32[] packageIds,
         address observer,
         uint256 amount
     );
@@ -112,13 +67,6 @@ interface IReBakedDAO {
     /***************************************
 					ADMIN
 	****************************************/
-
-    /**
-     * @dev Sets new fees
-     * @param feeDao_ DAO fee in ppm
-     * @param feeObservers_ Observers fee in ppm
-     */
-    function changeFees(uint256 feeDao_, uint256 feeObservers_) external;
 
     /**
      * @dev Approves project
@@ -149,11 +97,8 @@ interface IReBakedDAO {
      * @param token_ project token address, zero addres if project has not token yet
      * (IOUT will be deployed on project approval)
      * @param budget_ total budget (has to be approved on token contract if project has its own token)
-     * @return projectId_ Id of the project proposal created
      */
-    function createProject(address token_, uint256 budget_)
-        external
-        returns (bytes32 projectId_);
+    function createProject(address token_, uint256 budget_) external;
 
     /**
      * @dev Starts project
@@ -166,14 +111,14 @@ interface IReBakedDAO {
      * @param projectId_ Id of the project
      * @param budget_ MGP budget
      * @param bonus_ Bonus budget
-     * @return packageId_ Id of the package created
      */
     function createPackage(
         bytes32 projectId_,
         uint256 budget_,
         uint256 bonus_,
-        uint256 observerBudget_
-    ) external returns (bytes32 packageId_);
+        uint256 observerBudget_,
+        uint256 maxCollaborators_
+    ) external;
 
     /**
      * @dev Approves collaborator's MGP or deletes collaborator
@@ -226,23 +171,25 @@ interface IReBakedDAO {
         bytes32 projectId_,
         bytes32 packageId_,
         address collaborator_,
-        bool packageStatus
+        bool willPayMgp_
+    ) external;
+
+    function selfRemove(
+        bytes32 projectId_,
+        bytes32 packageId_
     ) external;
 
     function removeObserver(
         bytes32 projectId_,
         bytes32[] calldata packageId_,
-        address observer_,
-        bool[] calldata packageStatus
+        address observer_
     ) external;
 
     /**
      * @dev Finishes package in project
      * @param projectId_ Id of the project
      */
-    function finishPackage(bytes32 projectId_, bytes32 packageId_)
-        external
-        returns (uint256 budgetLeft_);
+    function finishPackage(bytes32 projectId_, bytes32 packageId_) external;
 
     /**
      * @dev Finishes project
@@ -257,25 +204,21 @@ interface IReBakedDAO {
      * @dev Sends approved MGP to collaborator, should be called from collaborator's address
      * @param projectId_ Id of the project
      * @param packageId_ Id of the package
-     * @return amount_ mgp amount paid
      */
-    function getMgp(
+    function claimMgp(
         bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_
-    ) external returns (uint256 amount_);
+        bytes32 packageId_
+    ) external;
 
     /**
      * @dev Sends approved Bonus to collaborator, should be called from collaborator's address
      * @param projectId_ Id of the project
      * @param packageId_ Id of the package
-     * @return amount_ bonus amount paid
      */
-    function getBonus(
+    function claimBonus(
         bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_
-    ) external returns (uint256 amount_);
+        bytes32 packageId_
+    ) external;
 
     /***************************************
 			OBSERVER ACTIONS
@@ -285,9 +228,6 @@ interface IReBakedDAO {
      * @dev Sends observer fee, should be called from observer's address
      * @param projectId_ Id of the project
      * @param packageId_ Id of the package
-     * @return amount_ fee amount paid
      */
-    function getObserverFee(bytes32 projectId_, bytes32 packageId_)
-        external
-        returns (uint256 amount_);
+    function claimObserverFee(bytes32 projectId_, bytes32 packageId_) external;
 }
