@@ -188,40 +188,17 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     //     collaborator._raiseDispute();
     // }
 
-    /**
-     * @dev Approve Payment of disputed collaborator, Set isInDispute flag
-     * @param _projectId Id of the project
-     * @param _packageId Id of the package
-     * @param _collaborator collaborator's address
-     */
-
-    function approvePayment(
+    function resolveDispute(
         bytes32 _projectId,
         bytes32 _packageId,
-        address _collaborator
+        address _collaborator,
+        bool _approved
     ) external onlyOwner {
-        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
-        collaborator._resolveDispute(true);
-        Package storage package = packageData[_projectId][_packageId];
-        package.disputesCount--;
-    }
-
-    /**
-     * @dev Reject payment of collaborator
-     * @param _projectId Id of the project
-     * @param _packageId Id of the package
-     * @param _collaborator collaborator's address
-     */
-
-    function rejectPayment(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address _collaborator
-    ) external onlyOwner {
-        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
-        collaborator._resolveDispute(false);
-        Package storage package = packageData[_projectId][_packageId];
-        package.disputesCount--;
+        collaboratorData[_projectId][_packageId][_collaborator]._resolveDispute(_approved);
+        packageData[_projectId][_packageId].disputesCount--;
+        if (_approved) {
+            _payMgp(_projectId, _packageId, _collaborator);
+        }
     }
 
     /***************************************
@@ -364,8 +341,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
             payMgp(projectId_, packageId_, collaborator_);
         } else {
             collaborator._raiseDispute();
-            Package storage package = packageData[projectId_][packageId_];
-            package.disputesCount++;
+            packageData[projectId_][packageId_].disputesCount++;
         }
     }
 
@@ -420,6 +396,14 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 packageId_,
         address collaborator_
     ) public onlyInitiator(projectId_) {
+        _payMgp(projectId_, packageId_, collaborator_);
+    }
+
+    function _payMgp(
+        bytes32 projectId_,
+        bytes32 packageId_,
+        address collaborator_
+    ) private {
         require(approvedUser[projectId_][packageId_][collaborator_], "No such collaborator");
         Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
         uint256 amount_ = collaborator._payMgp();
@@ -560,7 +544,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         return observerData[projectId_][packageId_][observer_];
     }
 
-    function getObserverFee(bytes32 projectId_, bytes32 packageId_) public view returns (uint256) {
+    function getObserverFee(bytes32 projectId_, bytes32 packageId_) external view returns (uint256) {
         Package storage package = packageData[projectId_][packageId_];
         return package._getObserverFee();
     }
