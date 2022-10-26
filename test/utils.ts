@@ -6,6 +6,9 @@ import { ethers } from "hardhat";
 export const { provider } = ethers;
 export const { AddressZero: ZERO_ADDRESS, MaxUint256: MAX_UINT256 } =
   ethers.constants;
+export const { solidityKeccak256 } = ethers.utils;
+export const { getBlock } = provider;
+
 export type BN = BigNumber;
 
 export function BN(value: string | number): BN {
@@ -14,18 +17,13 @@ export function BN(value: string | number): BN {
 
 //---------------------Chain Parameters----------------------------------
 
-export async function getBlock(): Promise<Block> {
-  const latestBlock = await provider.getBlock("latest");
-  return latestBlock;
-}
-
 export async function getTimestamp(): Promise<number> {
-  const latestBlock = await getBlock();
+  const latestBlock = await getBlock("latest");
   return latestBlock.timestamp;
 }
 
 export async function getBlockNumber(): Promise<number> {
-  const latestBlock = await getBlock();
+  const latestBlock = await getBlock("latest");
   return latestBlock.number;
 }
 

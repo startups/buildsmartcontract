@@ -3,9 +3,12 @@ import { ethers } from "hardhat";
 import { parseUnits, formatBytes32String } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ReBakedDAO, ReBakedDAO__factory, TokenFactory, TokenFactory__factory, IOUToken, IOUToken__factory } from "../typechain-types";
-import { ZERO_ADDRESS, MAX_UINT256, getTimestamp } from "./utils";
+import { CollaboratorStruct, PackageStruct } from "../typechain-types/contracts/ReBakedDAO";
+import { ZERO_ADDRESS, MAX_UINT256, getTimestamp, getBlock, solidityKeccak256 } from "./utils";
 import { Result } from "@ethersproject/abi";
 import { ContractReceipt, ContractTransaction } from "ethers";
+
+const PCT_PRECISION = parseUnits("1", 6);
 
 describe("ReBakedDAO", () => {
 	let deployer: SignerWithAddress;
@@ -38,12 +41,24 @@ describe("ReBakedDAO", () => {
 	});
 
 	describe("Validating initialized state of contracts", () => {
-		it("Validating initialized state of ReBakedDAO", async function () {
-			const owner = await reBakedDAO.owner();
-			expect(owner).to.equal(deployer.address);
+		let ReBakedDAO: ReBakedDAO__factory;
 
-			const projectTreasury = await reBakedDAO.treasury();
-			expect(projectTreasury).to.equal(treasury.address);
+		beforeEach(async () => {
+			ReBakedDAO = (await ethers.getContractFactory("ReBakedDAO")) as ReBakedDAO__factory;
+		});
+
+		it("[Fail]: Invalid treasury address", async () => {
+			await expect(ReBakedDAO.deploy(ZERO_ADDRESS, tokenFactory.address)).to.revertedWith("invalid treasury address");
+		});
+
+		it("[Fail]: Invalid tokenFactory address", async () => {
+			await expect(ReBakedDAO.deploy(treasury.address, ZERO_ADDRESS)).to.revertedWith("invalid tokenFactory address");
+		});
+
+		it("Validating initialized state of ReBakedDAO", async () => {
+			expect(await reBakedDAO.PCT_PRECISION()).to.equal(PCT_PRECISION);
+			expect(await reBakedDAO.owner()).to.equal(deployer.address);
+			expect(await reBakedDAO.treasury()).to.equal(treasury.address);
 
 			await iouToken.connect(accounts[0]).approve(reBakedDAO.address, "30000000000000000000");
 			expect(await tokenFactory.reBakedDao()).to.equal(reBakedDAO.address);
@@ -55,9 +70,15 @@ describe("ReBakedDAO", () => {
 			await expect(reBakedDAO.connect(accounts[0]).updateTreasury(accounts[1].address)).to.revertedWith("Ownable: caller is not the owner");
 		});
 
+		it("[Fail]: Invalid treasury address", async () => {
+			await expect(reBakedDAO.connect(deployer).updateTreasury(ZERO_ADDRESS)).to.revertedWith("invalid treasury address");
+		});
+
 		it("[OK]: Update treasury successfully", async () => {
 			await reBakedDAO.connect(deployer).updateTreasury(accounts[1].address);
 			expect(await reBakedDAO.treasury()).to.equal(accounts[1].address);
+			await reBakedDAO.connect(deployer).updateTreasury(accounts[2].address);
+			expect(await reBakedDAO.treasury()).to.equal(accounts[2].address);
 		});
 	});
 
@@ -84,6 +105,7 @@ describe("ReBakedDAO", () => {
 				const project = await reBakedDAO.getProjectData(projectId);
 				const timestamp: number = await getTimestamp();
 
+				expect(projectId).to.equal(solidityKeccak256(["address", "uint256", "uint256"], [accounts[0].address, (await getBlock(tx.blockHash!)).parentHash, 0]));
 				expect(project.initiator).to.equal(accounts[0].address);
 				expect(project.token).to.equal(iouToken.address);
 				expect(project.isOwnToken).to.be.true;
@@ -107,6 +129,7 @@ describe("ReBakedDAO", () => {
 			const project = await reBakedDAO.getProjectData(projectId);
 			const timestamp: number = await getTimestamp();
 
+			expect(projectId).to.equal(solidityKeccak256(["address", "uint256", "uint256"], [accounts[0].address, (await getBlock(tx.blockHash!)).parentHash, 0]));
 			expect(project.initiator).to.equal(accounts[0].address);
 			expect(project.token).to.equal(ZERO_ADDRESS);
 			expect(project.isOwnToken).to.be.false;
@@ -184,6 +207,7 @@ describe("ReBakedDAO", () => {
 			await reBakedDAO.connect(deployer).approveProject(projectId);
 			await expect(reBakedDAO.connect(initiator).startProject(projectId)).to.emit(reBakedDAO, "StartedProject").withArgs(projectId, parseUnits("100", 18));
 			const timestamp: number = await getTimestamp();
+
 			project = await reBakedDAO.getProjectData(projectId);
 			expect(project.token).not.equal(ZERO_ADDRESS);
 			expect(project.timeStarted).to.closeTo(timestamp, 10);
@@ -887,7 +911,7 @@ describe("ReBakedDAO", () => {
 		it("[OK]: Collaborator claims mgp successfully", async () => {
 			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
 			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
-			
+
 			let currentCollaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
 			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
 			await expect(reBakedDAO.connect(collaborator1).claimMgp(projectId, packageId)).to.emit(reBakedDAO, "PaidMgp").withArgs(projectId, packageId, collaborator1.address, currentCollaborator1.mgp);
@@ -914,4 +938,88 @@ describe("ReBakedDAO", () => {
 			expect(currentProject.budgetPaid).to.equal(currentCollaborator1.mgp.add(currentCollaborator2.mgp));
 		});
 	});
+
+	describe("Testing `raiseDispute` function", () => {
+		let tx: ContractTransaction;
+		let receipt: ContractReceipt;
+		let args: Result;
+		let projectId: string;
+		let packageId: string;
+		let initiator: SignerWithAddress;
+		let collaborator1: SignerWithAddress;
+		let collaborator2: SignerWithAddress;
+		beforeEach(async () => {
+			collaborator1 = accounts[10];
+			collaborator2 = accounts[11];
+			initiator = accounts[0];
+			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
+
+			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, parseUnits("1000", 18));
+			receipt = await tx.wait();
+			args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
+			projectId = args[0];
+
+			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 3);
+			const packageReceipt: ContractReceipt = await packageTx.wait();
+			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+		});
+
+		it("[Fail]: Project is not exist", async () => {
+			const fakeProjectId = solidityKeccak256(["address", "uint256", "uint256"], [accounts[0].address, (await getBlock("latest")).parentHash, 0]);
+			await expect(reBakedDAO.connect(accounts[2]).raiseDispute(fakeProjectId, packageId, collaborator1.address)).to.revertedWith("Caller not authorized");
+		});
+
+		it("[Fail]: Package is not exist", async () => {
+			const fakePackageId = solidityKeccak256(["address", "uint256", "uint256"], [accounts[0].address, (await getBlock("latest")).parentHash, 0]);
+			await expect(reBakedDAO.connect(accounts[2]).raiseDispute(projectId, fakePackageId, collaborator1.address)).to.revertedWith("Caller not authorized");
+		});
+
+		it("[Fail]: Caller is not authorized", async () => {
+			await expect(reBakedDAO.connect(accounts[2]).raiseDispute(projectId, packageId, collaborator2.address)).to.revertedWith("Caller not authorized");
+		});
+
+		it("[Fail]: Collaborator is not authorized", async () => {
+			await expect(reBakedDAO.connect(collaborator2).raiseDispute(projectId, packageId, collaborator2.address)).to.revertedWith("Caller not authorized");
+		});
+
+		it("[Fail]: Collaborator already in dispute", async () => {
+			await reBakedDAO.connect(collaborator1).raiseDispute(projectId, packageId, collaborator1.address);
+			await expect(reBakedDAO.connect(collaborator1).raiseDispute(projectId, packageId, collaborator1.address)).to.revertedWith("Collaborator already in dispute");
+		});
+
+		it("[Fail]: Already Claimed MGP", async () => {
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
+			await reBakedDAO.connect(collaborator1).claimMgp(projectId, packageId);
+			await expect(reBakedDAO.connect(collaborator1).raiseDispute(projectId, packageId, collaborator1.address)).to.revertedWith("Already Claimed MGP");
+		});
+
+		it("[Fail]: Already Claimed Bonus", async () => {
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
+			await reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address, collaborator2.address], [3 * 1e5, 7 * 1e5]);
+			await reBakedDAO.connect(collaborator1).claimBonus(projectId, packageId);
+
+			await expect(reBakedDAO.connect(collaborator1).raiseDispute(projectId, packageId, collaborator1.address)).to.revertedWith("Already Claimed Bonus");
+		});
+
+		it("[OK]: Raise dispute successfully by authorized collaborator", async () => {
+			await reBakedDAO.connect(collaborator1).raiseDispute(projectId, packageId, collaborator1.address);
+			const collaborator1Data: CollaboratorStruct = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
+
+			expect(collaborator1Data.isDisputeRaised).to.equal(true);
+		});
+
+		it("[OK]: Raise dispute successfully by initiator", async () => {
+			await reBakedDAO.connect(initiator).raiseDispute(projectId, packageId, collaborator1.address);
+			const collaborator1Data: CollaboratorStruct = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
+
+			expect(collaborator1Data.isDisputeRaised).to.equal(true);
+		});
+	});
 });
+
