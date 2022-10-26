@@ -8,7 +8,7 @@ library ObserverLibrary {
 	@dev Throws if there is no such observer
 	 */
     modifier onlyExistingObserver(Observer storage observer_) {
-        require(observer_.timeCreated > 0, "no such observer");
+        require(observer_.timeCreated > 0 && !observer_.isRemoved, "no such observer");
         _;
     }
 
@@ -19,7 +19,6 @@ library ObserverLibrary {
     }
 
     function _removeObserver(Observer storage _observer) internal onlyExistingObserver(_observer) {
-        _observer.timeCreated = 0;
         _observer.isRemoved = true;
     }
 
