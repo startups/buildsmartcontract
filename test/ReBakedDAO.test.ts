@@ -4,9 +4,10 @@ import { parseUnits, formatBytes32String } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ReBakedDAO, ReBakedDAO__factory, TokenFactory, TokenFactory__factory, IOUToken, IOUToken__factory } from "../typechain-types";
 import { CollaboratorStruct, PackageStruct } from "../typechain-types/contracts/ReBakedDAO";
-import { ZERO_ADDRESS, MAX_UINT256, getTimestamp, getBlock, solidityKeccak256 } from "./utils";
+import { BN, ZERO_ADDRESS, MAX_UINT256, getTimestamp, getBlock, solidityKeccak256 } from "./utils";
 import { Result } from "@ethersproject/abi";
 import { ContractReceipt, ContractTransaction } from "ethers";
+import { exec } from "child_process";
 
 const PCT_PRECISION = parseUnits("1", 6);
 
@@ -346,7 +347,7 @@ describe("ReBakedDAO", () => {
 			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator.address, parseUnits("10", 18));
 			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, accounts[15].address, parseUnits("10", 18));
 			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, accounts[16].address, parseUnits("10", 18));
-			await expect(reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, accounts[17].address, parseUnits("10", 18))).to.revertedWith("exceeds max collaborators");
+			await expect(reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, accounts[17].address, parseUnits("10", 18))).to.revertedWith("Max collaborators reached");
 		});
 
 		it("[OK]: Add collaborator successfully", async () => {
@@ -470,60 +471,656 @@ describe("ReBakedDAO", () => {
 			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
 
 			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator.address, parseUnits("10", 18));
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
 		});
 
-		it("[Fail]: Caller is not authorized", async () => {
-			await expect(reBakedDAO.connect(accounts[1]).removeCollaborator(projectId, packageId, collaborator.address, true)).to.revertedWith("Caller is not authorized");
-			await expect(reBakedDAO.connect(collaborator2).removeCollaborator(projectId, packageId, collaborator.address, true)).to.revertedWith("Caller is not authorized");
+		it("[Fail]: Caller is not project initiator", async () => {
+			await expect(reBakedDAO.connect(accounts[1]).removeCollaborator(projectId, packageId, collaborator.address, true)).to.revertedWith("caller is not project initiator");
+			await expect(reBakedDAO.connect(collaborator2).removeCollaborator(projectId, packageId, collaborator.address, true)).to.revertedWith("caller is not project initiator");
+		});
+
+		it("[Fail]: Remove collaborator but he/her has been approved", async () => {
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator.address, true);
+			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, true)).to.revertedWith("collaborator approved already!");
 		});
 
 		it("[Fail]: Collaborator is not existed", async () => {
-			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator2.address, true)).to.revertedWith("No such collaborator");
-			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator2.address, false)).to.revertedWith("no such collaborator");
+			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, accounts[15].address, true)).to.revertedWith("no such collaborator");
+			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, accounts[15].address, false)).to.revertedWith("no such collaborator");
 		});
 
-		it("[Fail]: Package is not existed", async () => {
-			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, formatBytes32String("test"), collaborator.address, false)).to.revertedWith("no such package");
+		it("[Fail]: Collaborator has been claim mgp", async () => {
+			await reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator.address);
+			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, true)).to.revertedWith("mgp already paid");
+			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, false)).to.revertedWith("Already Claimed MGP");
 		});
 
-		it("[Fail]: Package is not active", async () => {
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator.address, true);
-			await reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator.address], []);
-			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, false)).to.revertedWith("already canceled!");
-			await expect(reBakedDAO.connect(collaborator).removeCollaborator(projectId, packageId, collaborator.address, true)).to.revertedWith("already canceled!");
-			await expect(reBakedDAO.connect(collaborator).removeCollaborator(projectId, packageId, collaborator.address, false)).to.revertedWith("already canceled!");
-		});
-
-		it("[Fail]: Remove collaborator after package finish", async () => {
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator.address, true);
-			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
-			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, false)).to.revertedWith("already finished package");
-			await expect(reBakedDAO.connect(collaborator).removeCollaborator(projectId, packageId, collaborator.address, true)).to.revertedWith("already finished package");
-			await expect(reBakedDAO.connect(collaborator).removeCollaborator(projectId, packageId, collaborator.address, false)).to.revertedWith("already finished package");
+		it("[Fail]: Remove collaborator but he/her is being in dispute", async () => {
+			await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, false);
+			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, false)).to.revertedWith("Collaborator already in dispute");
 		});
 
 		it("[OK]: Initiator remove collaborator successfully", async () => {
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator.address, true);
 			await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, true);
 
 			const collaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator.address);
 			expect(collaborator1.isRemoved).to.be.true;
 			expect(collaborator1.bonusScore).to.equal(0);
+
+			let currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
+			expect(currentPackage.budgetPaid).to.equal(collaborator1.mgp);
+			let currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.budgetPaid).to.equal(collaborator1.mgp);
+
+			await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator2.address, false);
+			const currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator2.address);
+			expect(currentCollaborator2.isInDispute).to.be.true;
+
+			currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
+			expect(currentPackage.disputesCount).to.equal(1);
+		});
+	});
+
+	describe("Testing `finishPackage` function", async () => {
+		let tx: ContractTransaction;
+		let receipt: ContractReceipt;
+		let args: Result;
+		let projectId: string;
+		let packageId: string;
+		let initiator: SignerWithAddress;
+		let collaborator1: SignerWithAddress;
+		let collaborator2: SignerWithAddress;
+		beforeEach(async () => {
+			collaborator1 = accounts[10];
+			collaborator2 = accounts[11];
+			initiator = accounts[0];
+			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
+			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, parseUnits("1000", 18));
+			receipt = await tx.wait();
+			args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
+			projectId = args[0];
+
+			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 5);
+			const packageReceipt: ContractReceipt = await packageTx.wait();
+			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
 		});
 
-		it("[OK]: Collaborator remove himself/herself", async () => {
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator.address, true);
-			await reBakedDAO.connect(collaborator).removeCollaborator(projectId, packageId, collaborator.address, true);
+		it("[Fail]: Caller is not the initiator of project", async () => {
+			await expect(reBakedDAO.connect(accounts[1]).finishPackage(projectId, packageId)).to.revertedWith("caller is not project initiator");
+		});
 
-			const collaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator.address);
-			expect(collaborator1.isRemoved).to.be.true;
-			expect(collaborator1.mgp).to.equal(0);
-			expect(collaborator1.bonusScore).to.equal(0);
-			expect(collaborator1.timeMgpApproved).to.equal(0);
+		it("[Fail]: Finish package but package is not existed", async () => {
+			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, formatBytes32String("test"))).to.revertedWith("no such package");
+		});
+
+		it("[Fail]: Finish package but package is not active", async () => {
+			await reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator1.address], []);
+			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId)).to.revertedWith("already canceled!");
+		});
+
+		it("[Fail]: Finish package but package has been finished", async () => {
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
+			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId)).to.revertedWith("already finished package");
+		});
+
+		it("[Fail]: Finish package but package still has unresolved disputes", async () => {
+			await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator1.address, false);
+			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId)).to.revertedWith("package has unresolved disputes");
+		});
+
+		it("[Fail]: Finish package but package still has unapproved collaborators left", async () => {
+			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId)).to.revertedWith("unapproved collaborators left");
+		});
+
+		it("[OK]: Finish package successfully", async () => {
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+
+			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId)).to.emit(reBakedDAO, "FinishedPackage").withArgs(projectId, packageId, parseUnits("120", 18));
 
 			const currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
-			expect(currentPackage.budgetAllocated).to.equal(0);
-			expect(currentPackage.totalCollaborators).to.equal(0);
+			const timestamp = await getTimestamp();
+			expect(currentPackage.timeFinished).to.closeTo(timestamp, 10);
+
+			const currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.budgetAllocated).to.equal(parseUnits("30", 18));
+			expect(currentProject.totalFinishedPackages).to.equal(1);
+		});
+	});
+
+	describe("Testing `cancelPackage` function", async () => {
+		let tx: ContractTransaction;
+		let receipt: ContractReceipt;
+		let args: Result;
+		let projectId: string;
+		let packageId: string;
+		let initiator: SignerWithAddress;
+		let collaborator1: SignerWithAddress;
+		let collaborator2: SignerWithAddress;
+		let observer1: SignerWithAddress;
+		beforeEach(async () => {
+			collaborator1 = accounts[10];
+			collaborator2 = accounts[11];
+			observer1 = accounts[12];
+			initiator = accounts[0];
+			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
+			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, parseUnits("1000", 18));
+			receipt = await tx.wait();
+			args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
+			projectId = args[0];
+
+			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 5);
+			const packageReceipt: ContractReceipt = await packageTx.wait();
+			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
+		});
+
+		it("[Fail]: Caller is not the initiator of project", async () => {
+			await expect(reBakedDAO.connect(accounts[1]).cancelPackage(projectId, packageId, [], [])).to.revertedWith("caller is not project initiator");
+		});
+
+		it("[Fail]: Cancel package but package is not existed", async () => {
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, formatBytes32String("test"), [], [])).to.revertedWith("no such package");
+		});
+
+		it("[Fail]: Cancel package but package is not active", async () => {
+			await reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator1.address, collaborator2.address], []);
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator1.address, collaborator2.address], [])).to.revertedWith("already canceled!");
+		});
+
+		it("[Fail]: Cancel package but package has been finished", async () => {
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator1.address, collaborator2.address], [])).to.revertedWith("already finished package");
+		});
+
+		it("[Fail]: Cancel package but with invalid collaborators length", async () => {
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator2.address], [])).to.revertedWith("invalid collaborators length");
+		});
+
+		it("[Fail]: Cancel package but with invalid observers length", async () => {
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId], observer1.address);
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator1.address, collaborator2.address], [])).to.revertedWith("invalid observers length");
+		});
+
+		it("[Fail]: Cancel package but collaborator is not existed", async () => {
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [accounts[9].address, collaborator2.address], [])).to.revertedWith("no such collaborator");
+		});
+
+		it("[Fail]: Cancel package but collaborator has been claim mgp", async () => {
+			await reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator1.address);
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator1.address, collaborator2.address], [])).to.revertedWith("mgp already paid");
+		});
+
+		it("[Fail]: Cancel package but observer is not existed", async () => {
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId], observer1.address);
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator1.address, collaborator2.address], [accounts[9].address])).to.revertedWith("no such observer");
+		});
+
+		it("[Fail]: Cancel package but observer has been claim fee", async () => {
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId], observer1.address);
+			await reBakedDAO.connect(initiator).payObserverFee(projectId, packageId, observer1.address);
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator1.address, collaborator2.address], [observer1.address])).to.revertedWith("observer already paid");
+		});
+
+		it("[Fail]: Cancel package when package observer budget is zero", async () => {
+			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), 0, 5);
+			const packageReceipt: ContractReceipt = await packageTx.wait();
+			const packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId], observer1.address);
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [], [observer1.address])).to.revertedWith("zero observer budget");
+		});
+
+		it("[OK]: Cancel package successfully", async () => {
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId], observer1.address);
+			await reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator1.address, collaborator2.address], [observer1.address]);
+
+			const currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
+			const timestamp = await getTimestamp();
+			expect(currentPackage.timeCanceled).to.closeTo(timestamp, 10);
+			expect(currentPackage.isActive).to.be.false;
+
+			const currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.totalPackages).to.equal(0);
+			expect(currentProject.budgetAllocated).to.equal(BN(`${parseUnits("70", 18)}`));
+		});
+	});
+
+	describe("Testing `finishProject` function", () => {
+		let tx: ContractTransaction;
+		let receipt: ContractReceipt;
+		let args: Result;
+		let projectId: string;
+		let packageId: string;
+		let initiator: SignerWithAddress;
+		let collaborator1: SignerWithAddress;
+		let collaborator2: SignerWithAddress;
+		beforeEach(async () => {
+			collaborator1 = accounts[10];
+			collaborator2 = accounts[11];
+			initiator = accounts[0];
+			tx = await reBakedDAO.connect(initiator).createProject(ZERO_ADDRESS, parseUnits("1000", 18));
+			receipt = await tx.wait();
+			args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
+			projectId = args[0];
+		});
+
+		it("[Fail]: Caller is not the initiator of project", async () => {
+			await expect(reBakedDAO.connect(accounts[1]).finishProject(projectId)).to.revertedWith("caller is not project initiator");
+		});
+
+		it("[Fail]: Finish project but project has not been started", async () => {
+			await expect(reBakedDAO.connect(initiator).finishProject(projectId)).to.revertedWith("project not started yet");
+		});
+
+		it("[Fail]: Finish project but project has been finished before", async () => {
+			await reBakedDAO.connect(deployer).approveProject(projectId);
+			await reBakedDAO.connect(initiator).startProject(projectId);
+			await reBakedDAO.connect(initiator).finishProject(projectId);
+			await expect(reBakedDAO.connect(initiator).finishProject(projectId)).to.revertedWith("already finished project");
+		});
+
+		it("[Fail]: Finish project but project still has unfinished packages left", async () => {
+			await reBakedDAO.connect(deployer).approveProject(projectId);
+			await reBakedDAO.connect(initiator).startProject(projectId);
+
+			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 5);
+			const packageReceipt: ContractReceipt = await packageTx.wait();
+			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
+
+			await expect(reBakedDAO.connect(initiator).finishProject(projectId)).to.revertedWith("unfinished packages left");
+		});
+
+		it("[OK]: Finish project that does not have own token successfully", async () => {
+			await reBakedDAO.connect(deployer).approveProject(projectId);
+			await reBakedDAO.connect(initiator).startProject(projectId);
+
+			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 5);
+			const packageReceipt: ContractReceipt = await packageTx.wait();
+			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
+
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
+
+			await expect(reBakedDAO.connect(initiator).finishProject(projectId)).to.emit(reBakedDAO, "FinishedProject").withArgs(projectId);
+			const timestamp = await getTimestamp();
+			const currentProject = await reBakedDAO.getProjectData(projectId);
+
+			expect(currentProject.timeFinished).to.closeTo(timestamp, 10);
+		});
+
+		it("[OK]: Finish project that has own token successfully", async () => {
+			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
+			const tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, parseUnits("1000", 18));
+			const receipt = await tx.wait();
+			const args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
+			const projectId = args[0];
+
+			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 5);
+			const packageReceipt: ContractReceipt = await packageTx.wait();
+			const packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
+
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
+
+			const refundAmount = BN(`${parseUnits("970", 18)}`)
+				.mul(5)
+				.div(100);
+			const budgetLeft = BN(`${parseUnits("970", 18)}`)
+				.mul(95)
+				.div(100);
+			await expect(reBakedDAO.connect(initiator).finishProject(projectId)).to.emit(reBakedDAO, "FinishedProject").withArgs(projectId).to.changeTokenBalances(iouToken, [initiator, treasury], [refundAmount, budgetLeft]);
+
+			const currentProject = await reBakedDAO.getProjectData(projectId);
+			const timestamp = await getTimestamp();
+			expect(currentProject.timeFinished).to.closeTo(timestamp, 10);
+		});
+	});
+
+	describe("Testing `payMgp` function", () => {
+		let tx: ContractTransaction;
+		let receipt: ContractReceipt;
+		let args: Result;
+		let projectId: string;
+		let packageId: string;
+		let initiator: SignerWithAddress;
+		let collaborator1: SignerWithAddress;
+		let collaborator2: SignerWithAddress;
+		beforeEach(async () => {
+			collaborator1 = accounts[10];
+			collaborator2 = accounts[11];
+			initiator = accounts[0];
+			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
+			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, parseUnits("1000", 18));
+			receipt = await tx.wait();
+			args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
+			projectId = args[0];
+
+			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 5);
+			const packageReceipt: ContractReceipt = await packageTx.wait();
+			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
+		});
+
+		it("[Fail]: Caller is not the initiator of project", async () => {
+			await expect(reBakedDAO.connect(accounts[1]).payMgp(projectId, packageId, collaborator1.address)).to.revertedWith("caller is not project initiator");
+		});
+
+		it("[Fail]: Collaborator has been paid mgp", async () => {
+			await reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator1.address);
+			await expect(reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator1.address)).to.revertedWith("mgp already paid");
+		});
+
+		it("[OK]: PayMgp successfully", async () => {
+			let currentCollaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
+			await expect(reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator1.address)).to.emit(reBakedDAO, "PaidMgp").withArgs(projectId, packageId, collaborator1.address, currentCollaborator1.mgp);
+
+			currentCollaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
+			let timestamp = await getTimestamp();
+			expect(currentCollaborator1.timeMgpPaid).to.closeTo(timestamp, 10);
+
+			let currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
+			expect(currentPackage.budgetPaid).to.equal(currentCollaborator1.mgp);
+
+			let currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.budgetPaid).to.equal(currentCollaborator1.mgp);
+
+			let currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator2.address);
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+			await expect(reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator2.address)).to.emit(reBakedDAO, "PaidMgp").withArgs(projectId, packageId, collaborator2.address, currentCollaborator2.mgp);
+
+			currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator2.address);
+			timestamp = await getTimestamp();
+			expect(currentCollaborator2.timeMgpPaid).to.closeTo(timestamp, 10);
+
+			currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
+			expect(currentPackage.budgetPaid).to.equal(currentCollaborator1.mgp.add(currentCollaborator2.mgp));
+
+			currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.budgetPaid).to.equal(currentCollaborator1.mgp.add(currentCollaborator2.mgp));
+		});
+	});
+
+	describe("Testing `claimMgp` function", () => {
+		let tx: ContractTransaction;
+		let receipt: ContractReceipt;
+		let args: Result;
+		let projectId: string;
+		let packageId: string;
+		let initiator: SignerWithAddress;
+		let collaborator1: SignerWithAddress;
+		let collaborator2: SignerWithAddress;
+		beforeEach(async () => {
+			collaborator1 = accounts[10];
+			collaborator2 = accounts[11];
+			initiator = accounts[0];
+			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
+			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, parseUnits("1000", 18));
+			receipt = await tx.wait();
+			args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
+			projectId = args[0];
+
+			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 5);
+			const packageReceipt: ContractReceipt = await packageTx.wait();
+			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
+		});
+
+		it("[Fail]: Caller is not collaborator or has not been approved", async () => {
+			await expect(reBakedDAO.connect(initiator).claimMgp(projectId, packageId)).to.revertedWith("only collaborator can call");
+			await expect(reBakedDAO.connect(collaborator1).claimMgp(projectId, packageId)).to.revertedWith("only collaborator can call");
+		});
+
+		it("[Fail]: Collaborator is in dispute", async () => {
+			await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator1.address, false);
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+			await expect(reBakedDAO.connect(collaborator1).claimMgp(projectId, packageId)).to.revertedWith("Collaborator still in dispute");
+		});
+
+		it("[Fail]: Collaborator has been paid mgp", async () => {
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+			await reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator1.address);
+			await expect(reBakedDAO.connect(collaborator1).claimMgp(projectId, packageId)).to.revertedWith("mgp already paid");
+
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
+			await reBakedDAO.connect(collaborator2).claimMgp(projectId, packageId);
+			await expect(reBakedDAO.connect(collaborator2).claimMgp(projectId, packageId)).to.revertedWith("mgp already paid");
+		});
+
+		it("[Fail]: Claim mgp but package has not been finished", async () => {
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+			await expect(reBakedDAO.connect(collaborator1).claimMgp(projectId, packageId)).to.revertedWith("package not finished");
+		});
+
+		it("[OK]: Collaborator claims mgp successfully", async () => {
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+
+			let currentCollaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
+			await expect(reBakedDAO.connect(collaborator1).claimMgp(projectId, packageId)).to.emit(reBakedDAO, "PaidMgp").withArgs(projectId, packageId, collaborator1.address, currentCollaborator1.mgp);
+			currentCollaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
+			let timestamp = await getTimestamp();
+			expect(currentCollaborator1.timeMgpPaid).to.closeTo(timestamp, 10);
+
+			let currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
+			expect(currentPackage.budgetPaid).to.equal(currentCollaborator1.mgp);
+
+			let currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.budgetPaid).to.equal(currentCollaborator1.mgp);
+
+			let currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator2.address);
+			await expect(reBakedDAO.connect(collaborator2).claimMgp(projectId, packageId)).to.emit(reBakedDAO, "PaidMgp").withArgs(projectId, packageId, collaborator2.address, currentCollaborator2.mgp);
+			currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator2.address);
+			timestamp = await getTimestamp();
+			expect(currentCollaborator2.timeMgpPaid).to.closeTo(timestamp, 10);
+
+			currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
+			expect(currentPackage.budgetPaid).to.equal(currentCollaborator1.mgp.add(currentCollaborator2.mgp));
+
+			currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.budgetPaid).to.equal(currentCollaborator1.mgp.add(currentCollaborator2.mgp));
+		});
+	});
+
+	describe("Testing `setBonusScores` function", () => {
+		let tx: ContractTransaction;
+		let receipt: ContractReceipt;
+		let args: Result;
+		let projectId: string;
+		let packageId: string;
+		let initiator: SignerWithAddress;
+		let collaborator1: SignerWithAddress;
+		let collaborator2: SignerWithAddress;
+		beforeEach(async () => {
+			collaborator1 = accounts[10];
+			collaborator2 = accounts[11];
+			initiator = accounts[0];
+			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
+			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, parseUnits("1000", 18));
+			receipt = await tx.wait();
+			args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
+			projectId = args[0];
+
+			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 5);
+			const packageReceipt: ContractReceipt = await packageTx.wait();
+			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+		});
+
+		it("[Fail]: Array score is empty", async () => {
+			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [])).to.revertedWith("Empty array");
+		});
+
+		it("[Fail]: Caller is not the owner", async () => {
+			await expect(reBakedDAO.connect(initiator).setBonusScores(projectId, packageId, [collaborator1.address], [10])).to.revertedWith("Ownable: caller is not the owner");
+		});
+
+		it("[Fail]: Array length of collaboratos and scores are not match", async () => {
+			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [9, 10])).to.revertedWith("arrays length mismatch");
+		});
+
+		it("[Fail]: Invalid collaborator list", async () => {
+			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address, collaborator2.address, accounts[15].address], [9, 10, 11])).to.revertedWith("invalid collaborators list");
+		});
+
+		it("[Fail]: Set bonus scores for collaborator that is not added to package", async () => {
+			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [accounts[15].address], [1e6])).to.revertedWith("no such collaborator");
+		});
+
+		it("[Fail]: Collaborator has been setBonusScores", async () => {
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
+			await reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address, collaborator2.address], [2 * 1e5, 8 * 1e5]);
+			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [1e6])).to.revertedWith("collaborator bonus already set");
+		});
+
+		it("[Fail]: Total bonus score is not correct (not equal 1e6)", async () => {
+			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [10])).to.revertedWith("incorrect total bonus scores");
+		});
+
+		it("[Fail]: Set bonus scores for collaborator but package is not active", async () => {
+			await reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator1.address, collaborator2.address], []);
+			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [1e6])).to.revertedWith("already canceled!");
+		});
+
+		it("[Fail]: Bonus of package is zero", async () => {
+			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), 0, parseUnits("40", 18), 5);
+			const packageReceipt: ContractReceipt = await packageTx.wait();
+			const packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
+			reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+
+			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [1e6])).to.revertedWith("zero bonus budget");
+		});
+
+		it("[Fail]: Set bonus scores but package is not finished", async () => {
+			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [1e6])).to.revertedWith("package is not finished");
+		});
+
+		it("[OK]: Set bonus scores successfully", async () => {
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
+			await reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address, collaborator2.address], [3 * 1e5, 7 * 1e5]);
+
+			const currentCollaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
+			const currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator2.address);
+			const currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
+
+			expect(currentCollaborator1.bonusScore).to.equal(3 * 1e5);
+			expect(currentCollaborator2.bonusScore).to.equal(7 * 1e5);
+			expect(currentPackage.collaboratorsGetBonus).to.equal(2);
+		});
+	});
+
+	describe("Testing `claimBonus` function", async () => {
+		let tx: ContractTransaction;
+		let receipt: ContractReceipt;
+		let args: Result;
+		let projectId: string;
+		let packageId: string;
+		let initiator: SignerWithAddress;
+		let collaborator1: SignerWithAddress;
+		let collaborator2: SignerWithAddress;
+		beforeEach(async () => {
+			collaborator1 = accounts[10];
+			collaborator2 = accounts[11];
+			initiator = accounts[0];
+			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
+			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, parseUnits("1000", 18));
+			receipt = await tx.wait();
+			args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
+			projectId = args[0];
+
+			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 5);
+			const packageReceipt: ContractReceipt = await packageTx.wait();
+			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
+
+			// await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+			// await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+
+			// await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
+			// await reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address, collaborator2.address], [3 * 1e5, 7 * 1e5]);
+		});
+
+		it("[Fail]: Caller is not the collaborator of package", async () => {
+			await expect(reBakedDAO.connect(initiator).claimBonus(projectId, packageId)).to.revertedWith("only collaborator can call");
+			await expect(reBakedDAO.connect(collaborator1).claimBonus(projectId, packageId)).to.revertedWith("only collaborator can call");
+			await expect(reBakedDAO.connect(collaborator2).claimBonus(projectId, packageId)).to.revertedWith("only collaborator can call");
+		});
+
+		it("[Fail]: Claim bonus but bonus score is zero", async () => {
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+
+			await expect(reBakedDAO.connect(collaborator1).claimBonus(projectId, packageId)).to.revertedWith("bonus score is zero");
+		});
+
+		it("[Fail]: Claim bonus but collaborator has been claimed before", async () => {
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
+			await reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address, collaborator2.address], [3 * 1e5, 7 * 1e5]);
+			await reBakedDAO.connect(collaborator1).claimBonus(projectId, packageId);
+			await expect(reBakedDAO.connect(collaborator1).claimBonus(projectId, packageId)).to.revertedWith("bonus already paid");
+		});
+
+		it("[OK]: Claim bonus successfully", async () => {
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
+			await reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address, collaborator2.address], [3 * 1e5, 7 * 1e5]);
+			await expect(reBakedDAO.connect(collaborator1).claimBonus(projectId, packageId)).to.emit(reBakedDAO, "PaidBonus");
+
+			const currentCollaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
+			let timestamp = await getTimestamp();
+			expect(currentCollaborator1.timeBonusPaid).to.closeTo(timestamp, 10);
+
+			let currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
+			expect(currentPackage.bonusPaid).to.equal(BN(`${parseUnits("3", 18)}`));
+			expect(currentPackage.collaboratorsPaidBonus).to.equal(1);
+
+			await expect(reBakedDAO.connect(collaborator2).claimBonus(projectId, packageId)).to.emit(reBakedDAO, "PaidBonus");
+			const currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator2.address);
+			timestamp = await getTimestamp();
+			expect(currentCollaborator2.timeBonusPaid).to.closeTo(timestamp, 10);
+
+			currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
+			expect(currentPackage.bonusPaid).to.equal(BN(`${parseUnits("10", 18)}`));
+			expect(currentPackage.collaboratorsPaidBonus).to.equal(2);
 		});
 	});
 
@@ -686,18 +1283,21 @@ describe("ReBakedDAO", () => {
 		});
 	});
 
-	describe("Testing `setBonusScores` function", () => {
+	describe("Testing `payObserverFee`", async () => {
 		let tx: ContractTransaction;
 		let receipt: ContractReceipt;
 		let args: Result;
 		let projectId: string;
-		let packageId: string;
+		let packageId1: string;
+		let packageId2: string;
 		let initiator: SignerWithAddress;
-		let collaborator1: SignerWithAddress;
-		let collaborator2: SignerWithAddress;
+		let collaborator: SignerWithAddress;
+		let observer1: SignerWithAddress;
+		let observer2: SignerWithAddress;
 		beforeEach(async () => {
-			collaborator1 = accounts[10];
-			collaborator2 = accounts[11];
+			collaborator = accounts[10];
+			observer1 = accounts[12];
+			observer2 = accounts[13];
 			initiator = accounts[0];
 			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
 			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, parseUnits("1000", 18));
@@ -705,165 +1305,221 @@ describe("ReBakedDAO", () => {
 			args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
 			projectId = args[0];
 
-			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 5);
-			const packageReceipt: ContractReceipt = await packageTx.wait();
-			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+			let packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 5);
+			let packageReceipt: ContractReceipt = await packageTx.wait();
+			packageId1 = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
 
-			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
+			packageTx = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("30", 18), 5);
+			packageReceipt = await packageTx.wait();
+			packageId2 = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
 
-			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
-		});
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId1, collaborator.address, parseUnits("10", 18));
 
-		it("[Fail]: Array score is empty", async () => {
-			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [])).to.revertedWith("Empty array");
-		});
-
-		it("[Fail]: Caller is not the owner", async () => {
-			await expect(reBakedDAO.connect(initiator).setBonusScores(projectId, packageId, [collaborator1.address], [10])).to.revertedWith("Ownable: caller is not the owner");
-		});
-
-		it("[Fail]: Array length of collaboratos and scores are not match", async () => {
-			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [9, 10])).to.revertedWith("arrays length mismatch");
-		});
-
-		it("[Fail]: Invalid collaborator list", async () => {
-			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address, collaborator2.address, accounts[15].address], [9, 10, 11])).to.revertedWith("invalid collaborators list");
-		});
-
-		it("[Fail]: Set bonus scores for collaborator that is not added to package", async () => {
-			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [accounts[15].address], [1e6])).to.revertedWith("no such collaborator");
-		});
-
-		it("[Fail]: Collaborator has been setBonusScores", async () => {
-			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
-			await reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address, collaborator2.address], [2 * 1e5, 8 * 1e5]);
-			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [1e6])).to.revertedWith("collaborator bonus already set");
-		});
-
-		it("[Fail]: Total bonus score is not correct (not equal 1e6)", async () => {
-			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [10])).to.revertedWith("incorrect total bonus scores");
-		});
-
-		it("[Fail]: Set bonus scores for collaborator but package is not active", async () => {
-			await reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator1.address, collaborator2.address], []);
-			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [1e6])).to.revertedWith("already canceled!");
-		});
-
-		it("[Fail]: Bonus of package is zero", async () => {
-			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), 0, parseUnits("40", 18), 5);
-			const packageReceipt: ContractReceipt = await packageTx.wait();
-			const packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
-			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
-			reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
-
-			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [1e6])).to.revertedWith("zero bonus budget");
-		});
-
-		it("[Fail]: Set bonus scores but package is not finished", async () => {
-			await expect(reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address], [1e6])).to.revertedWith("package is not finished");
-		});
-
-		it("[OK]: Set bonus scores successfully", async () => {
-			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
-			await reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address, collaborator2.address], [3 * 1e5, 7 * 1e5]);
-
-			const currentCollaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
-			const currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator2.address);
-			const currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
-
-			expect(currentCollaborator1.bonusScore).to.equal(3 * 1e5);
-			expect(currentCollaborator2.bonusScore).to.equal(7 * 1e5);
-			expect(currentPackage.collaboratorsGetBonus).to.equal(2);
-		});
-	});
-
-	describe("Testing `payMgp` function", () => {
-		let tx: ContractTransaction;
-		let receipt: ContractReceipt;
-		let args: Result;
-		let projectId: string;
-		let packageId: string;
-		let initiator: SignerWithAddress;
-		let collaborator1: SignerWithAddress;
-		let collaborator2: SignerWithAddress;
-		beforeEach(async () => {
-			collaborator1 = accounts[10];
-			collaborator2 = accounts[11];
-			initiator = accounts[0];
-			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
-			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, parseUnits("1000", 18));
-			receipt = await tx.wait();
-			args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
-			projectId = args[0];
-
-			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 5);
-			const packageReceipt: ContractReceipt = await packageTx.wait();
-			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
-
-			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
-
-			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
+			reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator.address, true);
 		});
 
 		it("[Fail]: Caller is not the initiator of project", async () => {
-			await expect(reBakedDAO.connect(accounts[1]).payMgp(projectId, packageId, collaborator1.address)).to.revertedWith("caller is not project initiator");
+			await expect(reBakedDAO.connect(accounts[1]).payObserverFee(projectId, packageId1, observer1.address)).to.revertedWith("caller is not project initiator");
 		});
 
-		it("[Fail]: Collaborator has not been approved to add to package", async () => {
-			await expect(reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator1.address)).to.revertedWith("No such collaborator");
-			await expect(reBakedDAO.connect(initiator).payMgp(projectId, packageId, accounts[1].address)).to.revertedWith("No such collaborator");
+		it("[Fail]: Observer is not existed", async () => {
+			await expect(reBakedDAO.connect(initiator).payObserverFee(projectId, packageId1, accounts[9].address)).to.revertedWith("no such observer");
 		});
 
-		it("[Fail]: Collaborator has been paid mgp", async () => {
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
-			await reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator1.address);
-			await expect(reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator1.address)).to.revertedWith("mgp already paid");
+		it("[Fail]: Observer has been paid fee before", async () => {
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId1, packageId2], observer1.address);
+			await reBakedDAO.connect(initiator).payObserverFee(projectId, packageId1, observer1.address);
+			await expect(reBakedDAO.connect(initiator).payObserverFee(projectId, packageId1, observer1.address)).to.revertedWith("observer already paid");
 		});
 
-		it("[OK]: PayMgp successfully", async () => {
-			let currentCollaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
-			await expect(reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator1.address)).to.emit(reBakedDAO, "PaidMgp").withArgs(projectId, packageId, collaborator1.address, currentCollaborator1.mgp);
+		it("[Fail]: Pay observer fee but package's observer budger is zero", async () => {
+			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), 0, 5);
+			const packageReceipt: ContractReceipt = await packageTx.wait();
+			const packageId1 = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
 
-			currentCollaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId1], observer1.address);
+			await expect(reBakedDAO.connect(initiator).payObserverFee(projectId, packageId1, observer1.address)).to.revertedWith("zero observer budget");
+		});
+
+		it("[OK]: Pay observer fee successfully", async () => {
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId1, packageId2], observer1.address);
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId1], observer2.address);
+
+			// Observer 1 - Package 1
+			await expect(reBakedDAO.connect(initiator).payObserverFee(projectId, packageId1, observer1.address))
+				.to.emit(reBakedDAO, "PaidObserverFee")
+				.withArgs(projectId, packageId1, observer1.address, BN(`${parseUnits("20", 18)}`))
+				.to.changeTokenBalances(iouToken, [observer1.address], [BN(`${parseUnits("20", 18)}`)]);
+
 			let timestamp = await getTimestamp();
-			expect(currentCollaborator1.timeMgpPaid).to.closeTo(timestamp, 10);
+			const currentObserver11 = await reBakedDAO.getObserverData(projectId, packageId1, observer1.address);
+			expect(currentObserver11.timePaid).to.closeTo(timestamp, 10);
 
-			let currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
-			expect(currentPackage.budgetPaid).to.equal(currentCollaborator1.mgp);
+			let currentPackage1 = await reBakedDAO.getPackageData(projectId, packageId1);
+			expect(currentPackage1.budgetObserversPaid).to.equal(BN(`${parseUnits("20", 18)}`));
 
 			let currentProject = await reBakedDAO.getProjectData(projectId);
-			expect(currentProject.budgetPaid).to.equal(currentCollaborator1.mgp);
+			expect(currentProject.budgetPaid).to.equal(BN(`${parseUnits("20", 18)}`));
 
-			let currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator2.address);
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
-			await expect(reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator2.address)).to.emit(reBakedDAO, "PaidMgp").withArgs(projectId, packageId, collaborator2.address, currentCollaborator2.mgp);
+			// Observer 1 - Package 2
+			await expect(reBakedDAO.connect(initiator).payObserverFee(projectId, packageId2, observer1.address))
+				.to.emit(reBakedDAO, "PaidObserverFee")
+				.withArgs(projectId, packageId2, observer1.address, BN(`${parseUnits("30", 18)}`))
+				.to.changeTokenBalances(iouToken, [observer1.address], [BN(`${parseUnits("30", 18)}`)]);
 
-			currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator2.address);
 			timestamp = await getTimestamp();
-			expect(currentCollaborator2.timeMgpPaid).to.closeTo(timestamp, 10);
+			const currentObserver12 = await reBakedDAO.getObserverData(projectId, packageId2, observer1.address);
+			expect(currentObserver12.timePaid).to.closeTo(timestamp, 10);
 
-			currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
-			expect(currentPackage.budgetPaid).to.equal(currentCollaborator1.mgp.add(currentCollaborator2.mgp));
+			const currentPackage2 = await reBakedDAO.getPackageData(projectId, packageId2);
+			expect(currentPackage2.budgetObserversPaid).to.equal(BN(`${parseUnits("30", 18)}`));
 
 			currentProject = await reBakedDAO.getProjectData(projectId);
-			expect(currentProject.budgetPaid).to.equal(currentCollaborator1.mgp.add(currentCollaborator2.mgp));
+			expect(currentProject.budgetPaid).to.equal(BN(`${parseUnits("50", 18)}`));
+
+			// Observer 2 - Package 1
+			await expect(reBakedDAO.connect(initiator).payObserverFee(projectId, packageId1, observer2.address))
+				.to.emit(reBakedDAO, "PaidObserverFee")
+				.withArgs(projectId, packageId1, observer2.address, BN(`${parseUnits("20", 18)}`))
+				.to.changeTokenBalances(iouToken, [observer2.address], [BN(`${parseUnits("20", 18)}`)]);
+
+			timestamp = await getTimestamp();
+			const currentObserver21 = await reBakedDAO.getObserverData(projectId, packageId1, observer2.address);
+			expect(currentObserver21.timePaid).to.closeTo(timestamp, 10);
+
+			currentPackage1 = await reBakedDAO.getPackageData(projectId, packageId1);
+			expect(currentPackage1.budgetObserversPaid).to.equal(BN(`${parseUnits("40", 18)}`));
+
+			currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.budgetPaid).to.equal(BN(`${parseUnits("70", 18)}`));
 		});
 	});
 
-	describe("Testing `claimMgp` function", () => {
+	describe("Testing `claimObserverFee` function", () => {
+		let tx: ContractTransaction;
+		let receipt: ContractReceipt;
+		let args: Result;
+		let projectId: string;
+		let packageId1: string;
+		let packageId2: string;
+		let initiator: SignerWithAddress;
+		let collaborator: SignerWithAddress;
+		let observer1: SignerWithAddress;
+		let observer2: SignerWithAddress;
+		beforeEach(async () => {
+			collaborator = accounts[10];
+			observer1 = accounts[12];
+			observer2 = accounts[13];
+			initiator = accounts[0];
+			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
+			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, parseUnits("1000", 18));
+			receipt = await tx.wait();
+			args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
+			projectId = args[0];
+
+			let packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 5);
+			let packageReceipt: ContractReceipt = await packageTx.wait();
+			packageId1 = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+
+			packageTx = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("30", 18), 5);
+			packageReceipt = await packageTx.wait();
+			packageId2 = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId1, collaborator.address, parseUnits("10", 18));
+
+			reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator.address, true);
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId1, packageId2], observer1.address);
+		});
+
+		it("[Fail]: Caller is not the observer of package", async () => {
+			await expect(reBakedDAO.connect(accounts[1]).claimObserverFee(projectId, packageId1)).to.revertedWith("no such observer");
+		});
+
+		it("[Fail]: Observer has been claimed fee before", async () => {
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId1);
+			await reBakedDAO.connect(observer1).claimObserverFee(projectId, packageId1);
+			await expect(reBakedDAO.connect(observer1).claimObserverFee(projectId, packageId1)).to.revertedWith("observer already paid");
+		});
+
+		it("[Fail]: Observer claims fee but package has not been finished", async () => {
+			await expect(reBakedDAO.connect(observer1).claimObserverFee(projectId, packageId1)).to.revertedWith("package is not finished");
+		});
+
+		it("[Fail]: Observer claims fee but package has no observer budget", async () => {
+			const packageTx = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), 0, 5);
+			const packageReceipt = await packageTx.wait();
+			const packageId2 = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId2], observer2.address);
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId2);
+			await expect(reBakedDAO.connect(observer2).claimObserverFee(projectId, packageId2)).to.revertedWith("zero observer budget");
+		});
+
+		it("[OK]: Observer claims successfully", async () => {
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId1], observer2.address);
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId1);
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId2);
+
+			// Observer 1 - Package 1
+			await expect(reBakedDAO.connect(observer1).claimObserverFee(projectId, packageId1))
+				.to.emit(reBakedDAO, "PaidObserverFee")
+				.withArgs(projectId, packageId1, observer1.address, BN(`${parseUnits("20", 18)}`))
+				.to.changeTokenBalances(iouToken, [observer1.address], [BN(`${parseUnits("20", 18)}`)]);
+
+			let timestamp = await getTimestamp();
+			const currentObserver11 = await reBakedDAO.getObserverData(projectId, packageId1, observer1.address);
+			expect(currentObserver11.timePaid).to.closeTo(timestamp, 10);
+
+			let currentPackage1 = await reBakedDAO.getPackageData(projectId, packageId1);
+			expect(currentPackage1.budgetObserversPaid).to.equal(BN(`${parseUnits("20", 18)}`));
+
+			let currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.budgetPaid).to.equal(BN(`${parseUnits("20", 18)}`));
+
+			// Observer 1 - Package 2
+			await expect(reBakedDAO.connect(observer1).claimObserverFee(projectId, packageId2))
+				.to.emit(reBakedDAO, "PaidObserverFee")
+				.withArgs(projectId, packageId2, observer1.address, BN(`${parseUnits("30", 18)}`))
+				.to.changeTokenBalances(iouToken, [observer1.address], [BN(`${parseUnits("30", 18)}`)]);
+
+			timestamp = await getTimestamp();
+			const currentObserver12 = await reBakedDAO.getObserverData(projectId, packageId2, observer1.address);
+			expect(currentObserver12.timePaid).to.closeTo(timestamp, 10);
+
+			const currentPackage2 = await reBakedDAO.getPackageData(projectId, packageId2);
+			expect(currentPackage2.budgetObserversPaid).to.equal(BN(`${parseUnits("30", 18)}`));
+
+			currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.budgetPaid).to.equal(BN(`${parseUnits("50", 18)}`));
+
+			// Observer 2 - Package 1
+			await expect(reBakedDAO.connect(observer2).claimObserverFee(projectId, packageId1))
+				.to.emit(reBakedDAO, "PaidObserverFee")
+				.withArgs(projectId, packageId1, observer2.address, BN(`${parseUnits("20", 18)}`))
+				.to.changeTokenBalances(iouToken, [observer2.address], [BN(`${parseUnits("20", 18)}`)]);
+
+			timestamp = await getTimestamp();
+			const currentObserver21 = await reBakedDAO.getObserverData(projectId, packageId1, observer2.address);
+			expect(currentObserver21.timePaid).to.closeTo(timestamp, 10);
+
+			currentPackage1 = await reBakedDAO.getPackageData(projectId, packageId1);
+			expect(currentPackage1.budgetObserversPaid).to.equal(BN(`${parseUnits("40", 18)}`));
+
+			currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.budgetPaid).to.equal(BN(`${parseUnits("70", 18)}`));
+		});
+	});
+
+	describe("Testing `resolveDispute` function", async () => {
 		let tx: ContractTransaction;
 		let receipt: ContractReceipt;
 		let args: Result;
 		let projectId: string;
 		let packageId: string;
 		let initiator: SignerWithAddress;
-		let collaborator1: SignerWithAddress;
+		let collaborator: SignerWithAddress;
 		let collaborator2: SignerWithAddress;
 		beforeEach(async () => {
-			collaborator1 = accounts[10];
+			collaborator = accounts[10];
 			collaborator2 = accounts[11];
 			initiator = accounts[0];
 			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
@@ -876,150 +1532,54 @@ describe("ReBakedDAO", () => {
 			const packageReceipt: ContractReceipt = await packageTx.wait();
 			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
 
-			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
-
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator.address, parseUnits("10", 18));
 			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
+
+			// await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, false);
+			// await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator2.address, false)
 		});
 
-		it("[Fail]: Caller is not collaborator or has not been approved", async () => {
-			await expect(reBakedDAO.connect(initiator).claimMgp(projectId, packageId)).to.revertedWith("only collaborator can call");
-			await expect(reBakedDAO.connect(collaborator1).claimMgp(projectId, packageId)).to.revertedWith("only collaborator can call");
+		it("[Fail]: Caller is not the owner", async () => {
+			await expect(reBakedDAO.connect(initiator).resolveDispute(projectId, packageId, collaborator.address, true)).to.revertedWith("Ownable: caller is not the owner");
 		});
 
-		it("[Fail]: Collaborator is in dispute", async () => {
-			await reBakedDAO.connect(initiator).raiseDispute(projectId, packageId, collaborator1.address);
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
-			await expect(reBakedDAO.connect(collaborator1).claimMgp(projectId, packageId)).to.revertedWith("Collaborator still in dispute");
+		it("[Fail]: Collaborator is not existed", async () => {
+			await expect(reBakedDAO.connect(deployer).resolveDispute(projectId, packageId, accounts[9].address, true)).to.revertedWith("no such collaborator");
 		});
 
-		it("[Fail]: Collaborator has been paid mgp", async () => {
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
-			await reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator1.address);
-			await expect(reBakedDAO.connect(collaborator1).claimMgp(projectId, packageId)).to.revertedWith("mgp already paid");
-
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
-			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
-			await reBakedDAO.connect(collaborator2).claimMgp(projectId, packageId);
-			await expect(reBakedDAO.connect(collaborator2).claimMgp(projectId, packageId)).to.revertedWith("mgp already paid");
+		it("[Fail]: Resolve dispute but collaborator is not in dispute", async () => {
+			it("[Fail]: Collaborator is not existed", async () => {
+				await expect(reBakedDAO.connect(deployer).resolveDispute(projectId, packageId, collaborator.address, true)).to.revertedWith("Dispute Required");
+			});
 		});
 
-		it("[Fail]: Claim mgp but package has not been finished", async () => {
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
-			await expect(reBakedDAO.connect(collaborator1).claimMgp(projectId, packageId)).to.revertedWith("package not finished");
+		it("[Fail]: Resolve dispute with approve is true but collaborator has been claimed/paid mgp", async () => {
+			await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, false);
+			await reBakedDAO.connect(initiator).payMgp(projectId, packageId, collaborator.address);
+			it("[Fail]: Collaborator is not existed", async () => {
+				await expect(reBakedDAO.connect(deployer).resolveDispute(projectId, packageId, collaborator.address, true)).to.revertedWith("mgp already paid");
+			});
 		});
 
-		it("[OK]: Collaborator claims mgp successfully", async () => {
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
+		it("[OK]: Resolve dispute successfully", async () => {
+			await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, false);
+			await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator2.address, false);
 
-			let currentCollaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
-			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
-			await expect(reBakedDAO.connect(collaborator1).claimMgp(projectId, packageId)).to.emit(reBakedDAO, "PaidMgp").withArgs(projectId, packageId, collaborator1.address, currentCollaborator1.mgp);
-			currentCollaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
-			let timestamp = await getTimestamp();
-			expect(currentCollaborator1.timeMgpPaid).to.closeTo(timestamp, 10);
+			await expect(reBakedDAO.connect(deployer).resolveDispute(projectId, packageId, collaborator.address, true)).to.changeTokenBalance(iouToken, collaborator.address, BN(`${parseUnits("10", 18)}`));
 
+			const currentCollaborator1 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator.address);
+			expect(currentCollaborator1.isInDispute).to.be.false;
 			let currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
-			expect(currentPackage.budgetPaid).to.equal(currentCollaborator1.mgp);
+			expect(currentPackage.disputesCount).to.equal(1);
 
-			let currentProject = await reBakedDAO.getProjectData(projectId);
-			expect(currentProject.budgetPaid).to.equal(currentCollaborator1.mgp);
-
-			let currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator2.address);
-			await expect(reBakedDAO.connect(collaborator2).claimMgp(projectId, packageId)).to.emit(reBakedDAO, "PaidMgp").withArgs(projectId, packageId, collaborator2.address, currentCollaborator2.mgp);
-			currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator2.address);
-			timestamp = await getTimestamp();
-			expect(currentCollaborator2.timeMgpPaid).to.closeTo(timestamp, 10);
+			await reBakedDAO.connect(deployer).resolveDispute(projectId, packageId, collaborator2.address, false);
+			const currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator2.address);
+			expect(currentCollaborator2.isInDispute).to.be.false;
+			expect(currentCollaborator2.mgp).to.equal(0);
+			expect(currentCollaborator2.bonusScore).to.equal(0);
 
 			currentPackage = await reBakedDAO.getPackageData(projectId, packageId);
-			expect(currentPackage.budgetPaid).to.equal(currentCollaborator1.mgp.add(currentCollaborator2.mgp));
-
-			currentProject = await reBakedDAO.getProjectData(projectId);
-			expect(currentProject.budgetPaid).to.equal(currentCollaborator1.mgp.add(currentCollaborator2.mgp));
-		});
-	});
-
-	describe("Testing `raiseDispute` function", () => {
-		let tx: ContractTransaction;
-		let receipt: ContractReceipt;
-		let args: Result;
-		let projectId: string;
-		let packageId: string;
-		let initiator: SignerWithAddress;
-		let collaborator1: SignerWithAddress;
-		let collaborator2: SignerWithAddress;
-		beforeEach(async () => {
-			collaborator1 = accounts[10];
-			collaborator2 = accounts[11];
-			initiator = accounts[0];
-			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
-
-			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, parseUnits("1000", 18));
-			receipt = await tx.wait();
-			args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
-			projectId = args[0];
-
-			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("100", 18), parseUnits("10", 18), parseUnits("40", 18), 3);
-			const packageReceipt: ContractReceipt = await packageTx.wait();
-			packageId = packageReceipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
-
-			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator1.address, parseUnits("10", 18));
-			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId, collaborator2.address, parseUnits("10", 18));
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator1.address, true);
-		});
-
-		it("[Fail]: Project is not exist", async () => {
-			const fakeProjectId = solidityKeccak256(["address", "uint256", "uint256"], [accounts[0].address, (await getBlock("latest")).parentHash, 0]);
-			await expect(reBakedDAO.connect(accounts[2]).raiseDispute(fakeProjectId, packageId, collaborator1.address)).to.revertedWith("Caller not authorized");
-		});
-
-		it("[Fail]: Package is not exist", async () => {
-			const fakePackageId = solidityKeccak256(["address", "uint256", "uint256"], [accounts[0].address, (await getBlock("latest")).parentHash, 0]);
-			await expect(reBakedDAO.connect(accounts[2]).raiseDispute(projectId, fakePackageId, collaborator1.address)).to.revertedWith("Caller not authorized");
-		});
-
-		it("[Fail]: Caller is not authorized", async () => {
-			await expect(reBakedDAO.connect(accounts[2]).raiseDispute(projectId, packageId, collaborator2.address)).to.revertedWith("Caller not authorized");
-		});
-
-		it("[Fail]: Collaborator is not authorized", async () => {
-			await expect(reBakedDAO.connect(collaborator2).raiseDispute(projectId, packageId, collaborator2.address)).to.revertedWith("Caller not authorized");
-		});
-
-		it("[Fail]: Collaborator already in dispute", async () => {
-			await reBakedDAO.connect(collaborator1).raiseDispute(projectId, packageId, collaborator1.address);
-			await expect(reBakedDAO.connect(collaborator1).raiseDispute(projectId, packageId, collaborator1.address)).to.revertedWith("Collaborator already in dispute");
-		});
-
-		it("[Fail]: Already Claimed MGP", async () => {
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
-			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
-			await reBakedDAO.connect(collaborator1).claimMgp(projectId, packageId);
-			await expect(reBakedDAO.connect(collaborator1).raiseDispute(projectId, packageId, collaborator1.address)).to.revertedWith("Already Claimed MGP");
-		});
-
-		it("[Fail]: Already Claimed Bonus", async () => {
-			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId, collaborator2.address, true);
-			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId);
-			await reBakedDAO.connect(deployer).setBonusScores(projectId, packageId, [collaborator1.address, collaborator2.address], [3 * 1e5, 7 * 1e5]);
-			await reBakedDAO.connect(collaborator1).claimBonus(projectId, packageId);
-
-			await expect(reBakedDAO.connect(collaborator1).raiseDispute(projectId, packageId, collaborator1.address)).to.revertedWith("Already Claimed Bonus");
-		});
-
-		it("[OK]: Raise dispute successfully by authorized collaborator", async () => {
-			await reBakedDAO.connect(collaborator1).raiseDispute(projectId, packageId, collaborator1.address);
-			const collaborator1Data: CollaboratorStruct = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
-
-			expect(collaborator1Data.isDisputeRaised).to.equal(true);
-		});
-
-		it("[OK]: Raise dispute successfully by initiator", async () => {
-			await reBakedDAO.connect(initiator).raiseDispute(projectId, packageId, collaborator1.address);
-			const collaborator1Data: CollaboratorStruct = await reBakedDAO.getCollaboratorData(projectId, packageId, collaborator1.address);
-
-			expect(collaborator1Data.isDisputeRaised).to.equal(true);
+			expect(currentPackage.disputesCount).to.equal(0);
 		});
 	});
 });
-
