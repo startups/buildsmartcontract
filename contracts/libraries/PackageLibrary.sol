@@ -83,10 +83,6 @@ library PackageLibrary {
         package_.totalCollaborators++;
     }
 
-    function _revertBudget(Package storage package_) internal view onlyExistingPackage(package_) activePackage(package_) returns (uint256) {
-        return (package_.budget - package_.budgetAllocated);
-    }
-
     /**
      * @dev Refund package budget and decreace total collaborators if not approved
      * @param package_ reference to Package struct
@@ -162,12 +158,7 @@ library PackageLibrary {
      * @param package_ reference to Package struct
      */
     function _claimObserverFee(Package storage package_) internal returns (uint256 amount_) {
-        require(package_.timeFinished > 0, "package is not finished");
-        amount_ = _getObserverFee(package_);
-        package_.budgetObserversPaid += amount_;
-    }
-
-    function _payObserverFee(Package storage package_) internal returns (uint256 amount_) {
+        require(package_.timeFinished > 0 || package_.timeCanceled > 0, "package is not finished/canceled");
         amount_ = _getObserverFee(package_);
         package_.budgetObserversPaid += amount_;
     }
@@ -178,11 +169,7 @@ library PackageLibrary {
      * @param amount_ MGP amount
      */
     function _claimMgp(Package storage package_, uint256 amount_) internal onlyExistingPackage(package_) {
-        require(package_.timeFinished > 0, "package not finished");
-        package_.budgetPaid += amount_;
-    }
-
-    function _payMgp(Package storage package_, uint256 amount_) internal onlyExistingPackage(package_) {
+        require(package_.timeFinished > 0 || package_.timeCanceled > 0, "package not finished/canceled");
         package_.budgetPaid += amount_;
     }
 

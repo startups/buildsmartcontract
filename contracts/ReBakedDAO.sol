@@ -405,7 +405,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         address collaborator_
     ) private {
         uint256 amount_ = collaboratorData[projectId_][packageId_][collaborator_]._payMgp();
-        packageData[projectId_][packageId_]._payMgp(amount_);
+        packageData[projectId_][packageId_]._claimMgp(amount_);
         projectData[projectId_]._pay(collaborator_, amount_);
         emit PaidMgp(projectId_, packageId_, collaborator_, amount_);
     }
@@ -415,10 +415,9 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 packageId_,
         address observer_
     ) public onlyInitiator(projectId_) {
-        Observer storage observer = observerData[projectId_][packageId_][observer_];
-        observer._claimObserverFee();
+        observerData[projectId_][packageId_][observer_]._claimObserverFee();
         Package storage package = packageData[projectId_][packageId_];
-        uint256 amount_ = package._payObserverFee();
+        uint256 amount_ = package._claimObserverFee();
         projectData[projectId_]._pay(observer_, amount_);
         emit PaidObserverFee(projectId_, packageId_, observer_, amount_);
     }
