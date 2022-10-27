@@ -168,7 +168,11 @@ library PackageLibrary {
      * @param amount_ MGP amount
      */
     function _claimMgp(Package storage package_, uint256 amount_) internal onlyExistingPackage(package_) {
-        require(package_.timeFinished > 0 || package_.timeCanceled > 0, "package not finished/canceled");
+        require(package_.timeFinished > 0, "package not finished/canceled");
+        package_.budgetPaid += amount_;
+    }
+
+    function _payMgp(Package storage package_, uint256 amount_) internal onlyExistingPackage(package_) {
         package_.budgetPaid += amount_;
     }
 

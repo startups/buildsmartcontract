@@ -39,6 +39,7 @@ struct Package {
 
 struct Collaborator {
     uint256 mgp;
+    uint256 timeCreated;
     uint256 timeMgpApproved;
     uint256 timeMgpPaid;
     uint256 timeBonusPaid;

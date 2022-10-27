@@ -312,16 +312,15 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     ) external onlyInitiator(projectId_) {
         Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
         uint256 mgp_ = collaborator.mgp;
-        require(mgp_ > 0, "no such collaborator");
-
-        approvedUser[projectId_][packageId_][collaborator_] = approve_;
-        packageData[projectId_][packageId_]._approveCollaborator(approve_, mgp_);
-
         if (approve_) {
             collaborator._approveCollaborator();
         } else {
             collaborator._selfWithdraw();
         }
+
+        approvedUser[projectId_][packageId_][collaborator_] = approve_;
+        packageData[projectId_][packageId_]._approveCollaborator(approve_, mgp_);
+
         emit ApprovedCollaborator(projectId_, packageId_, collaborator_, approve_);
     }
 
@@ -403,7 +402,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         address collaborator_
     ) private {
         uint256 amount_ = collaboratorData[projectId_][packageId_][collaborator_]._payMgp();
-        packageData[projectId_][packageId_]._claimMgp(amount_);
+        packageData[projectId_][packageId_]._payMgp(amount_);
         projectData[projectId_]._pay(collaborator_, amount_);
         emit PaidMgp(projectId_, packageId_, collaborator_, amount_);
     }
@@ -522,9 +521,9 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 packageId_,
         address collaborator_
     ) public view returns (uint256, uint256) {
-        Collaborator memory collaborator = collaboratorData[projectId_][packageId_][collaborator_];
-        require(collaborator.mgp > 0, "no such collaborator");
         Package memory package = packageData[projectId_][packageId_];
+        if (package.timeCreated == 0) return (0, 0);
+        Collaborator memory collaborator = collaboratorData[projectId_][packageId_][collaborator_];
         uint256 bonus = (package.collaboratorsPaidBonus + 1 == package.collaboratorsGetBonus)
             ? package.bonus - package.bonusPaid
             : (collaborator.bonusScore * package.bonus) / PCT_PRECISION;
