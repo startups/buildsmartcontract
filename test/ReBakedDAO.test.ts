@@ -484,18 +484,18 @@ describe("ReBakedDAO", () => {
 			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, true)).to.revertedWith("collaborator approved already!");
 		});
 
-		it("[Fail]: Collaborator is not existed", async () => {
+		it("[Fail]: Remove collaborator but collaborator is not existed", async () => {
 			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, accounts[15].address, true)).to.revertedWith("no such collaborator");
 			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, accounts[15].address, false)).to.revertedWith("no such collaborator");
 		});
 
-		it("[Fail]: Collaborator has been claim mgp", async () => {
+		it("[Fail]: Remove collaborator but collaborator has been claim mgp", async () => {
 			await reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator.address, collaborator2.address], []);
 			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, true)).to.revertedWith("mgp already paid");
 			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, false)).to.revertedWith("Already Claimed MGP");
 		});
 
-		it.skip("[Fail]: Collaborator has been claim bonus", async () => {
+		it.skip("[Fail]: Remove collaborator but collaborator has been claim bonus", async () => {
 			await reBakedDAO.connect(initiator).cancelPackage(projectId, packageId, [collaborator.address, collaborator2.address], []);
 			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, true)).to.revertedWith("mgp already paid");
 			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId, collaborator.address, false)).to.revertedWith("Already Claimed MGP");
