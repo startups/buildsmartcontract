@@ -21,6 +21,7 @@ library CollaboratorLibrary {
         require(collaborator_.timeCreated == 0, "collaborator already added");
         collaborator_.mgp = mgp_;
         collaborator_.timeCreated = block.timestamp;
+        collaborator_.isRemoved = false;
     }
 
     function _removeCollaboratorByInitiator(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
@@ -42,7 +43,6 @@ library CollaboratorLibrary {
     function _approveCollaborator(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
         require(collaborator_.timeMgpApproved == 0, "collaborator already approved");
         collaborator_.timeMgpApproved = block.timestamp;
-        collaborator_.isRemoved = false;
     }
 
     /**
