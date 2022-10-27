@@ -85,6 +85,8 @@ library CollaboratorLibrary {
             collaborator_.isRemoved = true;
             collaborator_.mgp = 0;
         }
+        collaborator_.disputeExpiresAt = 0;
+        collaborator_.appealedAt = 0;
     }
 
     /**
