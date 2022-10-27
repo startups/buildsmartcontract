@@ -24,25 +24,24 @@ library CollaboratorLibrary {
         collaborator_.isRemoved = false;
     }
 
-    function _removeCollaboratorByInitiator(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
+    function _removeAndPayMgp(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
         collaborator_.isRemoved = true;
-        collaborator_.bonusScore = 0;
-    }
-
-    function _selfWithdraw(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
-        collaborator_.isRemoved = true;
-        collaborator_.mgp = 0;
-        collaborator_.bonusScore = 0;
-        collaborator_.timeMgpApproved = 0;
     }
 
     /**
      * @dev Approves collaborator's MGP or deletes collaborator
      * @param collaborator_ reference to Collaborator struct
      */
-    function _approveCollaborator(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
-        require(collaborator_.timeMgpApproved == 0, "collaborator already approved");
-        collaborator_.timeMgpApproved = block.timestamp;
+    function _approveCollaborator(Collaborator storage collaborator_, bool approved_) internal onlyExistingCollaborator(collaborator_) {
+        if (approved_) {
+            require(collaborator_.timeMgpApproved == 0, "collaborator already approved");
+            collaborator_.timeMgpApproved = block.timestamp;
+        } else {
+            collaborator_.isRemoved = true;
+            collaborator_.mgp = 0;
+            collaborator_.bonusScore = 0;
+            collaborator_.timeMgpApproved = 0;
+        }
     }
 
     /**
@@ -59,23 +58,32 @@ library CollaboratorLibrary {
      * @dev Raise Dispute
      * @param collaborator_ paid amount
      */
-    function _raiseDispute(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
+    function _requestRemoval(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
         require(!collaborator_.isInDispute, "Collaborator already in dispute");
         require(collaborator_.timeMgpPaid == 0, "Already Claimed MGP");
         require(collaborator_.timeBonusPaid == 0, "Already Claimed Bonus");
         collaborator_.isInDispute = true;
+        collaborator_.disputeExpiresAt = block.timestamp + 3 days;
+    }
+
+    function _defendRemoval(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
+        require(
+            block.timestamp <= collaborator_.disputeExpiresAt,
+            "dispute period already expired"
+        );
+        collaborator_.appealedAt = block.timestamp;
     }
 
     /**
      * @dev Resolve Dispute
-     * @param collaborator_ paid amount
+     * @param collaborator_ collaborator in dispute
      */
     function _resolveDispute(Collaborator storage collaborator_, bool approved) internal onlyExistingCollaborator(collaborator_) {
         require(collaborator_.isInDispute, "Dispute Required");
         collaborator_.isInDispute = false;
         if (!approved) {
+            collaborator_.isRemoved = true;
             collaborator_.mgp = 0;
-            collaborator_.bonusScore = 0;
         }
     }
 
