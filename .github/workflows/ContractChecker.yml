@@ -1,7 +1,5 @@
 name: Contract Checker
-on:
-  pull_request:
-    branches: [develop]
+on: pull_request
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
