@@ -197,7 +197,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         Observer storage observer = observerData[_projectId][_packageId][_msgSender()];
         require(_msgSender() == owner() || (observer.timeCreated > 0 && !observer.isRemoved), "Caller is not authorized");
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
-        require(block.timestamp <= collaborator.appealedAt + 5 days, "");
+        require(block.timestamp <= collaborator.appealedAt + 5 days, "resolve period already expired");
         collaborator._resolveDispute(_approved);
         packageData[_projectId][_packageId].disputesCount--;
         if (_approved) {

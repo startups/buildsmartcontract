@@ -81,12 +81,12 @@ library CollaboratorLibrary {
     function _resolveDispute(Collaborator storage collaborator_, bool approved) internal onlyExistingCollaborator(collaborator_) {
         require(collaborator_.isInDispute, "Dispute Required");
         collaborator_.isInDispute = false;
+        collaborator_.disputeExpiresAt = 0;
+        collaborator_.appealedAt = 0;
         if (!approved) {
             collaborator_.isRemoved = true;
             collaborator_.mgp = 0;
         }
-        collaborator_.disputeExpiresAt = 0;
-        collaborator_.appealedAt = 0;
     }
 
     /**
