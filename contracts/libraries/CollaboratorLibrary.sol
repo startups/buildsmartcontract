@@ -7,7 +7,7 @@ library CollaboratorLibrary {
 	@dev Throws if there is no such collaborator
 	*/
     modifier onlyExistingCollaborator(Collaborator storage collaborator_) {
-        require(collaborator_.mgp > 0, "no such collaborator");
+        require(collaborator_.timeCreated > 0 && !collaborator_.isRemoved, "no such collaborator");
         _;
     }
 
@@ -18,8 +18,9 @@ library CollaboratorLibrary {
      * @param mgp_ minimum guaranteed payment
      */
     function _addCollaborator(Collaborator storage collaborator_, uint256 mgp_) internal {
-        require(collaborator_.mgp == 0, "collaborator already added");
+        require(collaborator_.timeCreated == 0, "collaborator already added");
         collaborator_.mgp = mgp_;
+        collaborator_.timeCreated = block.timestamp;
     }
 
     function _removeCollaboratorByInitiator(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
