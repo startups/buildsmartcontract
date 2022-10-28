@@ -164,8 +164,10 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     ) external {
         Observer storage observer = observerData[_projectId][_packageId][_msgSender()];
         require(_msgSender() == owner() || (observer.timeCreated > 0 && !observer.isRemoved), "Caller is not authorized");
+
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
-        require(block.timestamp <= collaborator.appealedAt + RESOLVE_DISPUTE_DURATION, "resolve period already expired");
+        require(block.timestamp <= collaborator.resolveExpiresAt, "resolve period already expired");
+
         collaborator._resolveDispute(_approved);
         packageData[_projectId][_packageId].disputesCount--;
         if (_approved) {
@@ -283,13 +285,12 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bool approve_
     ) external onlyInitiator(projectId_) {
         Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
-        uint256 mgp_ = collaborator.mgp;
-        collaborator._approveCollaborator(approve_);
+        collaborator._approveCollaborator();
 
-        approvedUser[projectId_][packageId_][collaborator_] = approve_;
-        packageData[projectId_][packageId_]._approveCollaborator(approve_, mgp_);
+        approvedUser[projectId_][packageId_][collaborator_] = true;
+        packageData[projectId_][packageId_]._approveCollaborator(true, collaborator.mgp);
 
-        emit ApprovedCollaborator(projectId_, packageId_, collaborator_, approve_);
+        emit ApprovedCollaborator(projectId_, packageId_, collaborator_);
     }
 
     function removeCollaborator(
@@ -303,7 +304,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
         if (willPayMgp_) {
             _payMgp(projectId_, packageId_, collaborator_);
-            collaborator._removeByInitiator();
+            collaborator._removeCollaborator();
         } else {
             collaboratorData[projectId_][packageId_][collaborator_]._requestRemoval(DEFEND_REMOVAL_DURATION);
             packageData[projectId_][packageId_].disputesCount++;
@@ -317,14 +318,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bool approved_
     ) external onlyInitiator(projectId_) {
         Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
-        require(collaborator.timeCreated > 0 && !collaborator.isRemoved, "no such collaborator");
-
-        bool expiredWithoutAppeal = 0 < collaborator.disputeExpiresAt
-                && collaborator.disputeExpiresAt < block.timestamp
-                && collaborator.appealedAt == 0;
-        bool expiredWithoutJudgment = 0 < collaborator.appealedAt
-                && collaborator.appealedAt + RESOLVE_DISPUTE_DURATION < block.timestamp;
-        require(expiredWithoutAppeal || expiredWithoutJudgment, "not elligible to remove yet");
+        require(collaborator._canSettleExpiredDispute(), "not elligible to remove yet");
 
         collaborator._resolveDispute(approved_);
         packageData[projectId_][packageId_].disputesCount--;
@@ -438,7 +432,6 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      */
     function claimMgp(bytes32 projectId_, bytes32 packageId_) public nonReentrant {
         address collaborator_ = _msgSender();
-        require(approvedUser[projectId_][packageId_][collaborator_], "only collaborator can call");
         Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
         uint256 amount_ = collaborator._claimMgp();
         packageData[projectId_][packageId_]._claimMgp(amount_);
@@ -453,7 +446,6 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      */
     function claimBonus(bytes32 projectId_, bytes32 packageId_) external nonReentrant {
         address collaborator_ = _msgSender();
-        require(approvedUser[projectId_][packageId_][collaborator_], "only collaborator can call");
         Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
         collaborator._claimBonus();
         Package storage package = packageData[projectId_][packageId_];
@@ -465,7 +457,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
 
     function defendRemoval(bytes32 _projectId, bytes32 _packageId) external {
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_msgSender()];
-        collaborator._defendRemoval();
+        collaborator._defendRemoval(RESOLVE_DISPUTE_DURATION);
     }
 
     /***************************************
@@ -514,13 +506,18 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 packageId_,
         address collaborator_
     ) public view returns (uint256, uint256) {
-        Package memory package = packageData[projectId_][packageId_];
-        Collaborator memory collaborator = collaboratorData[projectId_][packageId_][collaborator_];
-        if (collaborator.timeCreated == 0) return (0, 0);
-        uint256 bonus = (package.collaboratorsPaidBonus + 1 == package.collaboratorsGetBonus)
-            ? package.bonus - package.bonusPaid
-            : (collaborator.bonusScore * package.bonus) / PCT_PRECISION;
-        return (collaborator.mgp, bonus);
+        Package storage package = packageData[projectId_][packageId_];
+        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+
+        uint256 mgpClaimable = (collaborator.timeMgpPaid == 0) ? collaborator.mgp : 0;
+        uint256 bonusClaimable;
+        if (collaborator.bonusScore > 0 && collaborator.timeBonusPaid == 0) {
+            bonusClaimable = (package.collaboratorsPaidBonus + 1 == package.collaboratorsGetBonus)
+                ? (package.bonus - package.bonusPaid)
+                : (collaborator.bonusScore * package.bonus) / PCT_PRECISION;
+        }
+
+        return (mgpClaimable, bonusClaimable);
     }
 
     function getObserverData(
@@ -536,7 +533,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 packageId_,
         address observer_
     ) public view returns (uint256) {
-        Observer memory observer = observerData[projectId_][packageId_][observer_];
+        Observer storage observer = observerData[projectId_][packageId_][observer_];
         if (observer.timePaid > 0 || observer.timeCreated == 0 || observer.isRemoved) {
             return 0;
         }
