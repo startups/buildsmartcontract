@@ -24,7 +24,7 @@ library CollaboratorLibrary {
         collaborator_.isRemoved = false;
     }
 
-    function _removeAndPayMgp(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
+    function _removeByInitiator(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
         collaborator_.isRemoved = true;
     }
 
