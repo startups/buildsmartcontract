@@ -13,7 +13,7 @@ contract IOUToken is ERC20 {
 	function burn(uint256 amount_)
 		external
 	{
-		_burn(msg.sender, amount_);
+		_burn(_msgSender(), amount_);
 	}
 
 }

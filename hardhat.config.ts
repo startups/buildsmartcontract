@@ -31,7 +31,7 @@ const config: HardhatUserConfig = {
 		// },
 		rinkeby: {
 			url: "https://rinkeby.infura.io/v3/4e1930aa5d3746908f69149b0731416b",
-			accounts: ["0a2eaf2431b468cad59d5931aa82bb115271990fdd1c09a3ad449238db52e4d8"],
+			accounts: [process.env.RINKEBY_DEPLOY_ACCOUNT as string],
 			// provider: function () {
 			//   return new HDWalletProvider(
 			//     `session spare pride peasant feel father decade remove zone stock paper rhythm`,
@@ -44,7 +44,7 @@ const config: HardhatUserConfig = {
 		},
 		kovan: {
 			url: "https://kovan.infura.io/v3/4e1930aa5d3746908f69149b0731416b",
-			accounts: ["0a2eaf2431b468cad59d5931aa82bb115271990fdd1c09a3ad449238db52e4d8"],
+			accounts: [process.env.KOVAN_DEPLOY_ACCOUNT as string],
 			// provider: function () {
 			//   return new HDWalletProvider(
 			//     `session spare pride peasant feel father decade remove zone stock paper rhythm`,
@@ -58,11 +58,11 @@ const config: HardhatUserConfig = {
 		goerli: {
 			url: "https://eth-goerli.g.alchemy.com/v2/yiaZ5Hg5fTRH46ijJywVW1WF5ltv47xI",
 			gasPrice: 8000000000,
-			accounts: ["6493c64e0c79722f1032d53696211daf05d6d25df266a1a0ec5c9e06dce08428", "f0f8575c20eace873dfacb753a1ec0181097bef52fcd0b72a7ab33f7e1386434", "1bfd3e152caf6a2df1d5a22b4441286bce14ddd354a653e2b3239ceb4118ac43"],
+			accounts: [process.env.GOERLI_DEPLOY_ACCOUNT as string],
 		},
 	},
 	etherscan: {
-		apiKey: "P2DDGKCV7KEVRJH8DHQYGG45GZNNBY4SV9",
+		apiKey: process.env.SCAN_API_KEY,
 	},
 	solidity: {
 		compilers: [
