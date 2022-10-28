@@ -20,6 +20,11 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
 
     // Percent Precision PPM (parts per million)
     uint256 public constant PCT_PRECISION = 1e6;
+
+    uint256 public constant DEFEND_REMOVAL_DURATION = 2 days;
+
+    uint256 public constant RESOLVE_DISPUTE_DURATION = 3 days;
+
     // Rebaked DAO wallet
     address public treasury;
     // Token Factory contract address
@@ -50,22 +55,6 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      */
     modifier nonZero(uint256 amount_) {
         require(amount_ > 0, "Zero amount");
-        _;
-    }
-
-    /**
-     * @dev Throws if amount provided bytes32 array length is zero
-     */
-    modifier nonEmptyBytesArray(bytes32[] memory array_) {
-        require(array_.length > 0, "Empty array");
-        _;
-    }
-
-    /**
-     * @dev Throws if amount provided uint256 array length is zero
-     */
-    modifier nonEmptyUintArray(uint256[] memory array_) {
-        require(array_.length > 0, "Empty array");
         _;
     }
 
@@ -153,10 +142,10 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 packageId_,
         address[] memory collaborators_,
         uint256[] memory scores_
-    ) external nonEmptyUintArray(scores_) onlyOwner {
+    ) external onlyOwner {
         Package storage package = packageData[projectId_][packageId_];
+        require(0 < collaborators_.length && collaborators_.length <= package.totalCollaborators, "invalid collaborators list");
         require(collaborators_.length == scores_.length, "arrays length mismatch");
-        require(collaborators_.length <= package.totalCollaborators, "invalid collaborators list");
         uint256 _totalBonusScores;
         for (uint256 i = 0; i < collaborators_.length; i++) {
             collaboratorData[projectId_][packageId_][collaborators_[i]]._setBonusScore(scores_[i]);
@@ -167,27 +156,6 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         emit SetBonusScores(projectId_, packageId_, collaborators_, scores_);
     }
 
-    // /**
-    //  * @dev Raise dispute on collaborator, Set isInDispute flag, Check that user is authorized
-    //  * @param _projectId Id of the project
-    //  * @param _packageId Id of the package
-    //  * @param _collaborator collaborator's address
-    //  */
-
-    // function raiseDispute(
-    //     bytes32 _projectId,
-    //     bytes32 _packageId,
-    //     address _collaborator
-    // ) external {
-    //     require(
-    //         _msgSender() == projectData[_projectId].initiator ||
-    //         approvedUser[_projectId][_packageId][_msgSender()],
-    //         "Caller not authorized"
-    //     );
-    //     Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
-    //     collaborator._raiseDispute();
-    // }
-
     function resolveDispute(
         bytes32 _projectId,
         bytes32 _packageId,
@@ -197,7 +165,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         Observer storage observer = observerData[_projectId][_packageId][_msgSender()];
         require(_msgSender() == owner() || (observer.timeCreated > 0 && !observer.isRemoved), "Caller is not authorized");
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
-        require(block.timestamp <= collaborator.appealedAt + 5 days, "resolve period already expired");
+        require(block.timestamp <= collaborator.appealedAt + RESOLVE_DISPUTE_DURATION, "resolve period already expired");
         collaborator._resolveDispute(_approved);
         packageData[_projectId][_packageId].disputesCount--;
         if (_approved) {
@@ -337,7 +305,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
             _payMgp(projectId_, packageId_, collaborator_);
             collaborator._removeByInitiator();
         } else {
-            collaboratorData[projectId_][packageId_][collaborator_]._requestRemoval();
+            collaboratorData[projectId_][packageId_][collaborator_]._requestRemoval(DEFEND_REMOVAL_DURATION);
             packageData[projectId_][packageId_].disputesCount++;
         }
     }
@@ -355,7 +323,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
                 && collaborator.disputeExpiresAt < block.timestamp
                 && collaborator.appealedAt == 0;
         bool expiredWithoutJudgment = 0 < collaborator.appealedAt
-                && collaborator.appealedAt + 5 days < block.timestamp;
+                && collaborator.appealedAt + RESOLVE_DISPUTE_DURATION < block.timestamp;
         require(expiredWithoutAppeal || expiredWithoutJudgment, "not elligible to remove yet");
 
         collaborator._resolveDispute(approved_);
@@ -547,8 +515,8 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         address collaborator_
     ) public view returns (uint256, uint256) {
         Package memory package = packageData[projectId_][packageId_];
-        if (package.timeCreated == 0) return (0, 0);
         Collaborator memory collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+        if (collaborator.timeCreated == 0) return (0, 0);
         uint256 bonus = (package.collaboratorsPaidBonus + 1 == package.collaboratorsGetBonus)
             ? package.bonus - package.bonusPaid
             : (collaborator.bonusScore * package.bonus) / PCT_PRECISION;

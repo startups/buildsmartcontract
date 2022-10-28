@@ -51,6 +51,7 @@ library CollaboratorLibrary {
      */
     function _setBonusScore(Collaborator storage collaborator_, uint256 bonusScore_) internal onlyExistingCollaborator(collaborator_) {
         require(collaborator_.bonusScore == 0, "collaborator bonus already set");
+        require(bonusScore_ > 0, "new bonus score is zero");
         collaborator_.bonusScore = bonusScore_;
     }
 
@@ -58,12 +59,12 @@ library CollaboratorLibrary {
      * @dev Raise Dispute
      * @param collaborator_ paid amount
      */
-    function _requestRemoval(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
+    function _requestRemoval(Collaborator storage collaborator_, uint256 defendRemovalDuration_) internal onlyExistingCollaborator(collaborator_) {
         require(!collaborator_.isInDispute, "Collaborator already in dispute");
         require(collaborator_.timeMgpPaid == 0, "Already Claimed MGP");
         require(collaborator_.timeBonusPaid == 0, "Already Claimed Bonus");
         collaborator_.isInDispute = true;
-        collaborator_.disputeExpiresAt = block.timestamp + 3 days;
+        collaborator_.disputeExpiresAt = block.timestamp + defendRemovalDuration_;
     }
 
     function _defendRemoval(Collaborator storage collaborator_) internal onlyExistingCollaborator(collaborator_) {
