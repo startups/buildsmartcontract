@@ -334,8 +334,8 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
 
         Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
         if (willPayMgp_) {
-            collaborator._removeAndPayMgp();
             _payMgp(projectId_, packageId_, collaborator_);
+            collaborator._removeByInitiator();
         } else {
             collaboratorData[projectId_][packageId_][collaborator_]._requestRemoval();
             packageData[projectId_][packageId_].disputesCount++;

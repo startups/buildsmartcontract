@@ -452,7 +452,7 @@ describe("ReBakedDAO", () => {
 			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId1, collaborator1.address, false)).to.revertedWith("Collaborator already in dispute");
 		});
 
-		it.skip("[OK]: Initiator remove collaborator successfully", async () => {
+		it("[OK]: Initiator remove collaborator successfully", async () => {
 			await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId1, collaborator1.address, true);
 
 			const collaboratorData = await reBakedDAO.getCollaboratorData(projectId, packageId1, collaborator1.address);
@@ -1025,11 +1025,6 @@ describe("ReBakedDAO", () => {
 			await expect(reBakedDAO.connect(collaborator1).claimBonus(projectId, packageId1)).to.revertedWith("bonus score is zero");
 		});
 
-		it.skip("[Fail]: Claim bonus but collaborator has been in dispute", async () => {
-			await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId1, collaborator1.address, false);
-			await expect(reBakedDAO.connect(collaborator1).claimBonus(projectId, packageId1)).to.revertedWith("Collaborator still in dispute");
-		});
-
 		it("[Fail]: Claim bonus but collaborator has been claimed before", async () => {
 			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator1.address, true);
 			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator2.address, true);
@@ -1394,7 +1389,7 @@ describe("ReBakedDAO", () => {
 		});
 	});
 
-	describe("Testing `resolveDispute` function", async () => {
+	describe.only("Testing `resolveDispute` function", async () => {
 		beforeEach(async () => {
 			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
 			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, ETHER_1000);
@@ -1408,28 +1403,40 @@ describe("ReBakedDAO", () => {
 
 			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId1, collaborator1.address, ETHER_10);
 			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId1, collaborator2.address, ETHER_10);
+
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId1], observer1.address);
 		});
 
-		it("[Fail]: Caller is not the owner", async () => {
-			await expect(reBakedDAO.connect(initiator).resolveDispute(projectId, packageId1, collaborator1.address, true)).to.revertedWith("Ownable: caller is not the owner");
+		it("[Fail]: Caller is not authorized", async () => {
+			await expect(reBakedDAO.connect(initiator).resolveDispute(projectId, packageId1, collaborator1.address, true)).to.revertedWith("Caller is not authorized");
+
+			await expect(reBakedDAO.connect(observer2).resolveDispute(projectId, packageId1, collaborator1.address, true)).to.revertedWith("Caller is not authorized");
+			
+			await reBakedDAO.connect(initiator).removeObserver(projectId, [packageId1], observer1.address);
+			await expect(reBakedDAO.connect(observer1).resolveDispute(projectId, packageId1, collaborator1.address, true)).to.revertedWith("Caller is not authorized");
 		});
 
-		it("[Fail]: Collaborator is not existed", async () => {
+		it("[Fail]: Resolve dispute but resolve period already expired", async () => {
+			await expect(reBakedDAO.connect(deployer).resolveDispute(projectId, packageId1, collaborator1.address, true)).to.revertedWith("resolve period already expired");
+			await expect(reBakedDAO.connect(observer1).resolveDispute(projectId, packageId1, collaborator1.address, true)).to.revertedWith("resolve period already expired");
+		})
+
+		it.skip("[Fail]: Collaborator is not existed", async () => {
 			await expect(reBakedDAO.connect(deployer).resolveDispute(projectId, packageId1, accounts[9].address, true)).to.revertedWith("no such collaborator");
 		});
 
-		it("[Fail]: Resolve dispute but collaborator is not in dispute", async () => {
+		it.skip("[Fail]: Resolve dispute but collaborator is not in dispute", async () => {
 			await expect(reBakedDAO.connect(deployer).resolveDispute(projectId, packageId1, collaborator1.address, true)).to.revertedWith("Dispute Required");
 		});
 
-		it("[Fail]: Resolve dispute with approve is true but collaborator has been claimed/paid mgp", async () => {
+		it.skip("[Fail]: Resolve dispute with approve is true but collaborator has been claimed/paid mgp", async () => {
 			await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId1, collaborator1.address, false);
 			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator2.address, true);
 			await reBakedDAO.connect(initiator).cancelPackage(projectId, packageId1, [collaborator1.address, collaborator2.address], []);
 			await expect(reBakedDAO.connect(deployer).resolveDispute(projectId, packageId1, collaborator1.address, true)).to.revertedWith("mgp already paid");
 		});
 
-		it("[OK]: Resolve dispute successfully", async () => {
+		it.skip("[OK]: Resolve dispute successfully", async () => {
 			await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId1, collaborator1.address, false);
 			await reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId1, collaborator2.address, false);
 
