@@ -22,8 +22,14 @@ jobs:
         with:
           node-version: 14.18.2
 
-      - name: Run test and solhint
+      - name: Install packages
         run: |
+          cp .env.dev .env
           npm install
-          npm run test
+
+      - name: Run solhint
+        run: npm run solhint
+
+      - name: Run test coverage
+        run: npm run coverage
 
