@@ -22,7 +22,6 @@ const TOKEN_30 = parseUnits("30", 18);
 const TOKEN_40 = parseUnits("40", 18);
 const TOKEN_50 = parseUnits("50", 18);
 const TOKEN_100 = parseUnits("100", 18);
-const TOKEN_950 = parseUnits("950", 18);
 const TOKEN_1000 = parseUnits("1000", 18);
 const ONE_DAY = 1 * 24 * 60 * 60;
 const TWO_DAYS = 2 * 24 * 60 * 60;
@@ -987,7 +986,6 @@ describe("ReBakedDAO", () => {
 			await reBakedDAO.connect(initiator).finishProject(projectId);
 
 			const currentProject = await reBakedDAO.getProjectData(projectId);
-			console.log('test', currentProject.budget, currentProject.budgetAllocated);
 			const timestamp = await getTimestamp();
 			expect(currentProject.timeFinished).to.closeTo(timestamp, 10);
 		})
