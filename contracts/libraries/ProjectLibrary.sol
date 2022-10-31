@@ -11,7 +11,7 @@ library ProjectLibrary {
     /**
 	@dev Throws if there is no such project
 	 */
-    modifier onlyExistingProject(Project storage project_) {
+    modifier onlyActiveProject(Project storage project_) {
         require(project_.timeCreated > 0, "no such project");
         _;
     }
@@ -38,7 +38,7 @@ library ProjectLibrary {
      * @dev Approves project
      * @param project_ reference to Project struct
      */
-    function _approveProject(Project storage project_) internal onlyExistingProject(project_) {
+    function _approveProject(Project storage project_) internal onlyActiveProject(project_) {
         require(project_.timeApproved == 0, "already approved project");
         project_.timeApproved = block.timestamp;
     }
@@ -101,10 +101,8 @@ library ProjectLibrary {
     }
 
     function _revertPackageBudget(Project storage project_, uint256 budgetToBeReverted_) internal {
-        require(project_.timeStarted > 0, "project is not started");
-        require(project_.timeFinished == 0, "project is finished");
         project_.budgetAllocated -= budgetToBeReverted_;
-        project_.totalPackages -= 1;
+        project_.totalPackages--;
     }
 
     /**
@@ -123,7 +121,7 @@ library ProjectLibrary {
      * @param project_ reference to Project struct
      * @param amount_ amount to pay
      */
-    function _pay(Project storage project_, address receiver_, uint256 amount_) internal onlyExistingProject(project_) {
+    function _pay(Project storage project_, address receiver_, uint256 amount_) internal onlyActiveProject(project_) {
         project_.budgetPaid += amount_;
         IERC20(project_.token).safeTransfer(receiver_, amount_);
     }

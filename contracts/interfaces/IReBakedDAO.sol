@@ -10,7 +10,8 @@ interface IReBakedDAO {
     event AddedObserver(bytes32 indexed projectId, bytes32[] indexed packageId, address observer);
     event AddedCollaborator(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 mgp);
     event ApprovedCollaborator(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator);
-    event FinishedPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 indexed budgetLeft_);
+    event FinishedPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 indexed budgetLeft);
+    event CanceledPackage(bytes32 indexed projectId, bytes32 indexed packageId);
     event SetBonusScores(bytes32 indexed projectId, bytes32 indexed packageId, address[] collaborators, uint256[] scores);
     event PaidMgp(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 amount);
     event PaidBonus(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 amount);
@@ -77,13 +78,11 @@ interface IReBakedDAO {
      * @param projectId_ Id of the project
      * @param packageId_ Id of the package
      * @param collaborator_ collaborator's address
-     * @param approve_ - bool whether to approve or not collaborator payment
      */
     function approveCollaborator(
         bytes32 projectId_,
         bytes32 packageId_,
-        address collaborator_,
-        bool approve_
+        address collaborator_
     ) external;
 
     function cancelPackage(

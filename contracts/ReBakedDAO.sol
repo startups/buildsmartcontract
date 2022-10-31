@@ -21,12 +21,9 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     // Percent Precision PPM (parts per million)
     uint256 public constant PCT_PRECISION = 1e6;
 
-    uint256 public constant DEFEND_REMOVAL_DURATION = 2 days;
-
-    uint256 public constant RESOLVE_DISPUTE_DURATION = 3 days;
-
     // Rebaked DAO wallet
     address public treasury;
+
     // Token Factory contract address
     address public tokenFactory;
 
@@ -168,11 +165,11 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
         require(block.timestamp <= collaborator.resolveExpiresAt, "resolve period already expired");
 
-        collaborator._resolveDispute(_approved);
-        packageData[_projectId][_packageId].disputesCount--;
+        packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp, true);
         if (_approved) {
             _payMgp(_projectId, _packageId, _collaborator);
         }
+        collaborator._removeCollaborator();
     }
 
     /***************************************
@@ -238,18 +235,23 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         address[] memory observers_
     ) external onlyInitiator(projectId_) {
         Package storage package = packageData[projectId_][packageId_];
-        package._cancelPackage();
         require(collaborators_.length == package.totalCollaborators, "invalid collaborators length");
         require(observers_.length == package.totalObservers, "invalid observers length");
+
+        package._cancelPackage();
+
         for (uint256 i = 0; i < collaborators_.length; i++) {
             payMgp(projectId_, packageId_, collaborators_[i]);
         }
+
         for (uint256 i = 0; i < observers_.length; i++) {
             payObserverFee(projectId_, packageId_, observers_[i]);
         }
-        uint256 budgetToBeReverted_;
-        budgetToBeReverted_ = package.budget - package.budgetPaid;
+
+        uint256 budgetToBeReverted_ = package.budget - package.budgetPaid;
         projectData[projectId_]._revertPackageBudget(budgetToBeReverted_);
+
+        emit CanceledPackage(projectId_, packageId_);
     }
 
     /**
@@ -267,7 +269,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     ) external onlyInitiator(projectId_) nonZero(mgp_) {
         require(collaborator_ != address(0), "collaborator's address is zero");
         collaboratorData[projectId_][packageId_][collaborator_]._addCollaborator(mgp_);
-        packageData[projectId_][packageId_]._reserveCollaboratorsBudget(mgp_);
+        packageData[projectId_][packageId_]._allocateBudget(mgp_);
         emit AddedCollaborator(projectId_, packageId_, collaborator_, mgp_);
     }
 
@@ -276,19 +278,16 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
      * @param projectId_ Id of the project
      * @param packageId_ Id of the package
      * @param collaborator_ collaborator's address
-     * @param approve_ - bool whether to approve or not collaborator payment
      */
     function approveCollaborator(
         bytes32 projectId_,
         bytes32 packageId_,
-        address collaborator_,
-        bool approve_
+        address collaborator_
     ) external onlyInitiator(projectId_) {
-        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
-        collaborator._approveCollaborator();
-
         approvedUser[projectId_][packageId_][collaborator_] = true;
-        packageData[projectId_][packageId_]._approveCollaborator(true, collaborator.mgp);
+
+        collaboratorData[projectId_][packageId_][collaborator_]._approveCollaborator();
+        packageData[projectId_][packageId_]._approveCollaborator();
 
         emit ApprovedCollaborator(projectId_, packageId_, collaborator_);
     }
@@ -303,10 +302,11 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
 
         Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
         if (willPayMgp_) {
+            // TODO: Initiator can force-remove collaborator without paying bonus
             _payMgp(projectId_, packageId_, collaborator_);
             collaborator._removeCollaborator();
         } else {
-            collaboratorData[projectId_][packageId_][collaborator_]._requestRemoval(DEFEND_REMOVAL_DURATION);
+            collaboratorData[projectId_][packageId_][collaborator_]._requestRemoval();
             packageData[projectId_][packageId_].disputesCount++;
         }
     }
@@ -314,22 +314,13 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     function settleExpiredDispute(
         bytes32 projectId_,
         bytes32 packageId_,
-        address collaborator_,
-        bool approved_
+        address collaborator_
     ) external onlyInitiator(projectId_) {
         Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
         require(collaborator._canSettleExpiredDispute(), "not elligible to remove yet");
 
-        collaborator._resolveDispute(approved_);
-        packageData[projectId_][packageId_].disputesCount--;
-    }
-
-    function selfRemove(bytes32 projectId_, bytes32 packageId_) external {
-        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][_msgSender()];
-        uint256 mgp_ = collaborator.mgp;
-        collaborator._approveCollaborator(false);
-        packageData[projectId_][packageId_]._removeCollaborator(mgp_, approvedUser[projectId_][packageId_][_msgSender()]);
-        approvedUser[projectId_][packageId_][_msgSender()] = false;
+        collaborator._removeCollaborator();
+        packageData[projectId_][packageId_]._removeCollaborator(collaborator.mgp, true);
     }
 
     /**
@@ -363,10 +354,8 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         address observer_
     ) external onlyInitiator(projectId_) {
         for (uint256 i = 0; i < packageIds_.length; i++) {
-            Observer storage observer = observerData[projectId_][packageIds_[i]][observer_];
-            observer._removeObserver();
-            Package storage package = packageData[projectId_][packageIds_[i]];
-            package._removeObserver();
+            observerData[projectId_][packageIds_[i]][observer_]._removeObserver();
+            packageData[projectId_][packageIds_[i]]._removeObserver();
         }
     }
 
@@ -383,10 +372,12 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 packageId_,
         address collaborator_
     ) private {
-        uint256 amount_ = collaboratorData[projectId_][packageId_][collaborator_]._payMgp();
-        packageData[projectId_][packageId_]._payMgp(amount_);
-        projectData[projectId_]._pay(collaborator_, amount_);
-        emit PaidMgp(projectId_, packageId_, collaborator_, amount_);
+        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+
+        collaborator._payMgp();
+        packageData[projectId_][packageId_]._payMgp(collaborator.mgp);
+        projectData[projectId_]._pay(collaborator_, collaborator.mgp);
+        emit PaidMgp(projectId_, packageId_, collaborator_, collaborator.mgp);
     }
 
     function payObserverFee(
@@ -457,7 +448,16 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
 
     function defendRemoval(bytes32 _projectId, bytes32 _packageId) external {
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_msgSender()];
-        collaborator._defendRemoval(RESOLVE_DISPUTE_DURATION);
+        collaborator._defendRemoval();
+    }
+
+    function selfRemove(bytes32 projectId_, bytes32 packageId_) external {
+        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][_msgSender()];
+        require(!approvedUser[projectId_][packageId_][_msgSender()], "collaborator approved already!");
+
+        collaborator._removeCollaborator();
+        packageData[projectId_][packageId_]._removeCollaborator(collaborator.mgp, collaborator.disputeExpiresAt > 0);
+        approvedUser[projectId_][packageId_][_msgSender()] = false;
     }
 
     /***************************************
