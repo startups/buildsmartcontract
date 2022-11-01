@@ -28,10 +28,17 @@ describe("Testing TokenFactory contract", () => {
 		reBakedDAO = await ReBakedDAO.deploy(treasury.address, tokenFactory.address);
 	});
 
-	it("Set reBakedDAO successfully", async () => {
-		await tokenFactory.connect(deployer).setReBakedDao(reBakedDAO.address);
-		expect(await tokenFactory.reBakedDao()).to.equal(reBakedDAO.address);
-	});
+	describe("Testing `setReBakedDAO` function", () => {
+		it("[Fail]: Caller is not the owner", async () => {
+			await expect(tokenFactory.connect(treasury).setReBakedDao(reBakedDAO.address))
+				.to.revertedWith("Ownable: caller is not the owner")
+		})
+		it("[OK]: Set reBakedDAO successfully", async () => {
+			await tokenFactory.connect(deployer).setReBakedDao(reBakedDAO.address);
+			expect(await tokenFactory.reBakedDao()).to.equal(reBakedDAO.address);
+		});
+		
+	})
 
 	describe("Testing `deployToken` function", () => {
 		it("[Fail]: Rebaked DAO is not set", async () => {
