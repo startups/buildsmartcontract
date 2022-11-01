@@ -54,7 +54,6 @@ describe("Testing TokenFactory contract", () => {
 			await reBakedDAO.connect(initiator).startProject(projectId)
             const project = await reBakedDAO.getProjectData(projectId);
 			expect(project.token).not.equal(ZERO_ADDRESS);
-            
 		});
 	});
 });

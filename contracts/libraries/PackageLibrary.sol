@@ -94,7 +94,6 @@ library PackageLibrary {
         uint256 mgp_,
         bool inDispute_
     ) internal onlyActivePackage(package_) activePackage(package_) {
-        require(package_.timeFinished == 0, "already finished package");
         package_.budgetAllocated -= mgp_;
         package_.totalCollaborators--;
 
@@ -133,8 +132,6 @@ library PackageLibrary {
      * @param package_ reference to Package struct
      */
     function _getObserverFee(Package storage package_) internal view onlyActivePackage(package_) returns (uint256) {
-        if (package_.totalObservers == 0) return 0;
-        if (package_.budgetObservers == package_.budgetObserversPaid) return 0;
         uint256 remains = package_.budgetObservers - package_.budgetObserversPaid;
         uint256 portion = package_.budgetObservers / package_.totalObservers;
         return (remains < 2 * portion) ? remains : portion;
@@ -169,8 +166,6 @@ library PackageLibrary {
      * @param amount_ Bonus amount
      */
     function _claimBonus(Package storage package_, uint256 amount_) internal onlyActivePackage(package_) activePackage(package_) {
-        require(package_.timeFinished > 0, "package not finished");
-        require(package_.bonus > 0, "package has no bonus");
         package_.bonusPaid += amount_;
         package_.collaboratorsPaidBonus++;
     }
