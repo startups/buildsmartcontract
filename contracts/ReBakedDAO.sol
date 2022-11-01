@@ -485,9 +485,9 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     function claimBonus(bytes32 _projectId, bytes32 _packageId) external nonReentrant {
         address _collaborator = _msgSender();
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
+        (, uint256 amount_) = getCollaboratorRewards(_projectId, _packageId, _collaborator);
         collaborator._claimBonus();
         Package storage package = packageData[_projectId][_packageId];
-        (, uint256 amount_) = getCollaboratorRewards(_projectId, _packageId, _collaborator);
         package._claimBonus(amount_);
         projectData[_projectId]._pay(_collaborator, amount_);
         emit PaidBonus(_projectId, _packageId, _collaborator, amount_);
@@ -565,7 +565,6 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
                 ? (package.bonus - package.bonusPaid)
                 : (collaborator.bonusScore * package.bonus) / PCT_PRECISION;
         }
-
         return (mgpClaimable, bonusClaimable);
     }
 
