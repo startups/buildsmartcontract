@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { parseUnits, parseEther } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ReBakedDAO, ReBakedDAO__factory, TokenFactory, TokenFactory__factory, IOUToken, IOUToken__factory } from "../typechain-types";
@@ -25,7 +25,8 @@ describe("Testing TokenFactory contract", () => {
 
 		tokenFactory = await TokenFactory.deploy();
 		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000");
-		reBakedDAO = await ReBakedDAO.deploy(treasury.address, tokenFactory.address);
+		reBakedDAO = (await upgrades.deployProxy(ReBakedDAO, [treasury.address, tokenFactory.address])) as ReBakedDAO;
+		await reBakedDAO.deployed();
 	});
 
 	describe("Testing `setReBakedDAO` function", () => {

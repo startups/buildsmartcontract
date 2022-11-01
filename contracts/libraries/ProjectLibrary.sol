@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
-import { IERC20, SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { IERC20Upgradeable, SafeERC20Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import { ITokenFactory } from "../interfaces/ITokenFactory.sol";
 import { IIOUToken } from "../interfaces/IIOUToken.sol";
 import { Project } from "./Structs.sol";
 
 library ProjectLibrary {
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /**
 	@notice Throws if there is no such project
@@ -52,7 +52,7 @@ library ProjectLibrary {
         require(project_.timeApproved > 0, "project is not approved");
         require(project_.timeStarted == 0, "project already started");
         if (project_.isOwnToken) {
-            IERC20(project_.token).safeTransferFrom(msg.sender, address(this), project_.budget);
+            IERC20Upgradeable(project_.token).safeTransferFrom(msg.sender, address(this), project_.budget);
         } else {
             project_.token = ITokenFactory(tokenFactory_).deployToken(project_.budget);
         }
@@ -74,8 +74,8 @@ library ProjectLibrary {
             if (project_.isOwnToken) {
                 uint256 refundAmount_ = (budgetLeft_ * 5) / 100;
                 budgetLeft_ -= refundAmount_;
-                IERC20(project_.token).safeTransfer(project_.initiator, refundAmount_);
-                IERC20(project_.token).safeTransfer(treasury_, budgetLeft_);
+                IERC20Upgradeable(project_.token).safeTransfer(project_.initiator, refundAmount_);
+                IERC20Upgradeable(project_.token).safeTransfer(treasury_, budgetLeft_);
             } else IIOUToken(project_.token).burn(budgetLeft_);
         }
     }
@@ -127,6 +127,6 @@ library ProjectLibrary {
         uint256 amount_
     ) internal {
         project_.budgetPaid += amount_;
-        IERC20(project_.token).safeTransfer(receiver_, amount_);
+        IERC20Upgradeable(project_.token).safeTransfer(receiver_, amount_);
     }
 }

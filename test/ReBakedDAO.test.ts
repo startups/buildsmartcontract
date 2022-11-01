@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { parseUnits, formatBytes32String, parseEther } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ReBakedDAO, ReBakedDAO__factory, TokenFactory, TokenFactory__factory, IOUToken, IOUToken__factory } from "../typechain-types";
@@ -49,7 +49,8 @@ describe("ReBakedDAO", () => {
 
 		tokenFactory = await TokenFactory.deploy();
 		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000");
-		reBakedDAO = await ReBakedDAO.deploy(treasury.address, tokenFactory.address);
+		reBakedDAO = (await upgrades.deployProxy(ReBakedDAO, [treasury.address, tokenFactory.address])) as ReBakedDAO;
+		await reBakedDAO.deployed();
 
 		// Early transactions
 		await tokenFactory.setReBakedDao(reBakedDAO.address);
@@ -63,11 +64,11 @@ describe("ReBakedDAO", () => {
 		});
 
 		it("[Fail]: Invalid treasury address", async () => {
-			await expect(ReBakedDAO.deploy(ZERO_ADDRESS, tokenFactory.address)).to.revertedWith("invalid treasury address");
+			await expect(upgrades.deployProxy(ReBakedDAO, [ZERO_ADDRESS, tokenFactory.address])).to.revertedWith("invalid treasury address");
 		});
 
 		it("[Fail]: Invalid tokenFactory address", async () => {
-			await expect(ReBakedDAO.deploy(treasury.address, ZERO_ADDRESS)).to.revertedWith("invalid tokenFactory address");
+			await expect(upgrades.deployProxy(ReBakedDAO, [treasury.address, ZERO_ADDRESS])).to.revertedWith("invalid tokenFactory address");
 		});
 
 		it("Validating initialized state of ReBakedDAO", async () => {
