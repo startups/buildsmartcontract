@@ -58,8 +58,8 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     /**
      * @notice Throws if called by any account other than the project initiator
      */
-    modifier onlyInitiator(bytes32 projectId_) {
-        require(projectData[projectId_].initiator == _msgSender(), "caller is not project initiator");
+    modifier onlyInitiator(bytes32 _projectId) {
+        require(projectData[_projectId].initiator == _msgSender(), "caller is not project initiator");
         _;
     }
 
@@ -87,268 +87,266 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice Creates project proposal
-     * @param token_ project token address
-     * @param budget_ total budget (has to be approved on token contract if project has its own token)
-     * 
+     * @dev Creates project proposal
+     * @param token_ project token address, zero addres if project has not token yet
+     * (IOUToken will be deployed on project approval)
+     * @param _budget total budget (has to be approved on token contract if project has its own token)
+     *
      * @dev (`token_` == ZERO_ADDRESS) ? project has no token yet : `IOUToken` will be deployed on project approval
      * Emit {CreatedProject}
      */
-    function createProject(address token_, uint256 budget_) external nonZero(budget_) {
-        bytes32 projectId_ = _generateProjectId();
-        projectData[projectId_]._createProject(token_, budget_);
-        emit CreatedProject(projectId_, _msgSender(), token_, budget_);
+    function createProject(address token_, uint256 _budget) external nonZero(_budget) {
+        bytes32 _projectId = _generateProjectId();
+        projectData[_projectId]._createProject(token_, _budget);
+        emit CreatedProject(_projectId, _msgSender(), token_, _budget);
         if (token_ != address(0)) {
-            _approveProject(projectId_);
-            _startProject(projectId_);
+            _approveProject(_projectId);
+            _startProject(_projectId);
         }
     }
 
     /**
      * @notice Starts project
-     * @param projectId_ Id of the project
+     * @param _projectId Id of the project
      * Emit {StartedProject}
      */
-    function startProject(bytes32 projectId_) external onlyInitiator(projectId_) {
-        _startProject(projectId_);
+    function startProject(bytes32 _projectId) external onlyInitiator(_projectId) {
+        _startProject(_projectId);
     }
 
     /**
      * @notice Approves project
-     * @param projectId_ Id of the project
+     * @param _projectId Id of the project
      * Emit {ApprovedProject}
      */
-    function approveProject(bytes32 projectId_) external onlyOwner {
-        _approveProject(projectId_);
-        emit ApprovedProject(projectId_)
+    function approveProject(bytes32 _projectId) external onlyOwner {
+        _approveProject(_projectId);
+        emit ApprovedProject(_projectId);
     }
 
     /**
      * @notice Finishes project
-     * @param projectId_ Id of the project
+     * @param _projectId Id of the project
      * Emit {FinishedProject}
      */
-    function finishProject(bytes32 projectId_) external onlyInitiator(projectId_) {
-        projectData[projectId_]._finishProject(treasury);
-        emit FinishedProject(projectId_);
+    function finishProject(bytes32 _projectId) external onlyInitiator(_projectId) {
+        projectData[_projectId]._finishProject(treasury);
+        emit FinishedProject(_projectId);
     }
 
     /**
      * @notice Sets scores for collaborator bonuses
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
-     * @param collaborators_ array of collaborators' addresses
-     * @param scores_ array of collaboratos' scores in PPM
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * @param _collaborators array of collaborators' addresses
+     * @param _scores array of collaboratos' scores in PPM
      * Emit {SetBonusScores}
      */
     function setBonusScores(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address[] memory collaborators_,
-        uint256[] memory scores_
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address[] memory _collaborators,
+        uint256[] memory _scores
     ) external onlyOwner {
-        Package storage package = packageData[projectId_][packageId_];
-        require(0 < collaborators_.length && collaborators_.length <= package.totalCollaborators, "invalid collaborators list");
-        require(collaborators_.length == scores_.length, "arrays length mismatch");
-        
+        Package storage package = packageData[_projectId][_packageId];
+        require(0 < _collaborators.length && _collaborators.length <= package.totalCollaborators, "invalid collaborators list");
+        require(_collaborators.length == _scores.length, "arrays length mismatch");
+
         uint256 _totalBonusScores;
-        for (uint256 i = 0; i < collaborators_.length; i++) {
-            collaboratorData[projectId_][packageId_][collaborators_[i]]._setBonusScore(scores_[i]);
-            _totalBonusScores += scores_[i];
+        for (uint256 i = 0; i < _collaborators.length; i++) {
+            collaboratorData[_projectId][_packageId][_collaborators[i]]._setBonusScore(_scores[i]);
+            _totalBonusScores += _scores[i];
         }
-        
+
         require(_totalBonusScores == PCT_PRECISION, "incorrect total bonus scores");
-        package._setBonusScores(scores_.length);
-        
-        emit SetBonusScores(projectId_, packageId_, collaborators_, scores_);
+        package._setBonusScores(_scores.length);
+
+        emit SetBonusScores(_projectId, _packageId, _collaborators, _scores);
     }
 
     /**
      * @notice Creates package in project
-     * @param projectId_ Id of the project
-     * @param budget_ MGP budget
-     * @param bonus_ Bonus budget
-     * @param observerBudget_ Observer budget
-     * @param maxCollaborators_ maximum collaborators
+     * @param _projectId Id of the project
+     * @param _budget MGP budget
+     * @param _bonus Bonus budget
+     * @param _observerBudget Observer budget
+     * @param _maxCollaborators maximum collaborators
      * Emit {CreatedPackage}
      */
     function createPackage(
-        bytes32 projectId_,
-        uint256 budget_,
-        uint256 bonus_,
-        uint256 observerBudget_,
-        uint256 maxCollaborators_
-    ) external onlyInitiator(projectId_) nonZero(budget_) {
-        Project storage project = projectData[projectId_];
+        bytes32 _projectId,
+        uint256 _budget,
+        uint256 _bonus,
+        uint256 _observerBudget,
+        uint256 _maxCollaborators
+    ) external onlyInitiator(_projectId) nonZero(_budget) {
+        Project storage project = projectData[_projectId];
         address _token = project.token;
-        uint256 total = budget_ + bonus_ + observerBudget_;
+        uint256 total = _budget + _bonus + _observerBudget;
         project._reservePackagesBudget(total, 1);
-        bytes32 packageId_ = _generatePackageId(projectId_, 0);
-        Package storage package = packageData[projectId_][packageId_];
-        package._createPackage(budget_, observerBudget_, bonus_, maxCollaborators_);
-        if (project.isOwnToken) 
-            IERC20(_token).safeTransferFrom(_msgSender(), treasury, (total * 5) / 100);
-        
-        emit CreatedPackage(projectId_, packageId_, budget_, bonus_);
+        bytes32 _packageId = _generatePackageId(_projectId, 0);
+        Package storage package = packageData[_projectId][_packageId];
+        package._createPackage(_budget, _observerBudget, _bonus, _maxCollaborators);
+        if (project.isOwnToken) IERC20(_token).safeTransferFrom(_msgSender(), treasury, (total * 5) / 100);
+
+        emit CreatedPackage(_projectId, _packageId, _budget, _bonus);
     }
 
     /**
      * @notice Finishes package in project
-     * @param projectId_ Id of the project
+     * @param _projectId Id of the project
      * Emit {FinishedPackage}
      */
-    function finishPackage(bytes32 projectId_, bytes32 packageId_) external onlyInitiator(projectId_) {
-        uint256 budgetLeft_ = packageData[projectId_][packageId_]._finishPackage();
-        projectData[projectId_]._finishPackage(budgetLeft_);
-        emit FinishedPackage(projectId_, packageId_, budgetLeft_);
+    function finishPackage(bytes32 _projectId, bytes32 _packageId) external onlyInitiator(_projectId) {
+        uint256 budgetLeft_ = packageData[_projectId][_packageId]._finishPackage();
+        projectData[_projectId]._finishPackage(budgetLeft_);
+        emit FinishedPackage(_projectId, _packageId, budgetLeft_);
     }
 
     /**
      * @notice Cancel package in project and release project budget
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the project
-     * @param collaborators_ address of the collaborators
-     * @param observers_ address of the observers
+     * @param _projectId Id of the project
+     * @param _packageId Id of the project
+     * @param _collaborators address of the collaborators
+     * @param _observers address of the observers
      * Emit {CanceledPackage}
      */
     function cancelPackage(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address[] memory collaborators_,
-        address[] memory observers_
-    ) external onlyInitiator(projectId_) {
-        Package storage package = packageData[projectId_][packageId_];
-        require(collaborators_.length == package.totalCollaborators, "invalid collaborators length");
-        require(observers_.length == package.totalObservers, "invalid observers length");
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address[] memory _collaborators,
+        address[] memory _observers
+    ) external onlyInitiator(_projectId) {
+        Package storage package = packageData[_projectId][_packageId];
+        require(_collaborators.length == package.totalCollaborators, "invalid collaborators length");
+        require(_observers.length == package.totalObservers, "invalid observers length");
 
         package._cancelPackage();
 
-        for (uint256 i = 0; i < collaborators_.length; i++) 
-            payMgp(projectId_, packageId_, collaborators_[i]);
-        
+        for (uint256 i = 0; i < _collaborators.length; i++) payMgp(_projectId, _packageId, _collaborators[i]);
 
-        for (uint256 i = 0; i < observers_.length; i++) 
-            payObserverFee(projectId_, packageId_, observers_[i]);
-        
+        for (uint256 i = 0; i < _observers.length; i++) payObserverFee(_projectId, _packageId, _observers[i]);
 
         uint256 budgetToBeReverted_ = package.budget - package.budgetPaid;
-        projectData[projectId_]._revertPackageBudget(budgetToBeReverted_);
+        projectData[_projectId]._revertPackageBudget(budgetToBeReverted_);
 
-        emit CanceledPackage(projectId_, packageId_);
+        emit CanceledPackage(_projectId, _packageId, budgetToBeReverted_);
     }
 
     /**
      * @notice Adds collaborator to package
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
-     * @param collaborator_ collaborators' addresses
-     * @param mgp_ MGP amount
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * @param _collaborator collaborators' addresses
+     * @param _mgp MGP amount
      * Emit {AddedCollaborator}
      */
     function addCollaborator(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_,
-        uint256 mgp_
-    ) external onlyInitiator(projectId_) nonZero(mgp_) {
-        require(collaborator_ != address(0), "collaborator's address is zero");
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address _collaborator,
+        uint256 _mgp
+    ) external onlyInitiator(_projectId) nonZero(_mgp) {
+        require(_collaborator != address(0), "collaborator's address is zero");
 
-        collaboratorData[projectId_][packageId_][collaborator_]._addCollaborator(mgp_);
-        packageData[projectId_][packageId_]._allocateBudget(mgp_);
+        collaboratorData[_projectId][_packageId][_collaborator]._addCollaborator(_mgp);
+        packageData[_projectId][_packageId]._allocateBudget(_mgp);
 
-        emit AddedCollaborator(projectId_, packageId_, collaborator_, mgp_);
+        emit AddedCollaborator(_projectId, _packageId, _collaborator, _mgp);
     }
 
     /**
      * @notice Approves collaborator's MGP or deletes collaborator (should be called by admin)
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
-     * @param collaborator_ collaborator's address
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * @param _collaborator collaborator's address
      * Emit {ApprovedCollaborator}
      */
     function approveCollaborator(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_
-    ) external onlyInitiator(projectId_) {
-        approvedUser[projectId_][packageId_][collaborator_] = true;
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address _collaborator
+    ) external onlyInitiator(_projectId) {
+        approvedUser[_projectId][_packageId][_collaborator] = true;
 
-        collaboratorData[projectId_][packageId_][collaborator_]._approveCollaborator();
-        packageData[projectId_][packageId_]._approveCollaborator();
+        collaboratorData[_projectId][_packageId][_collaborator]._approveCollaborator();
+        packageData[_projectId][_packageId]._approveCollaborator();
 
-        emit ApprovedCollaborator(projectId_, packageId_, collaborator_);
+        emit ApprovedCollaborator(_projectId, _packageId, _collaborator);
     }
 
     /**
      * @notice Approves collaborator's MGP or deletes collaborator (should be called by admin)
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
-     * @param collaborator_ collaborator's address
-     * @param shouldPayMgp_ Should pay MGP for the collaborator
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * @param _collaborator collaborator's address
+     * @param _shouldPayMgp Should pay MGP for the collaborator
      * Emit {RemovedCollaborator}
      */
     function removeCollaborator(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_,
-        bool shouldPayMgp_
-    ) external onlyInitiator(projectId_) {
-        require(!approvedUser[projectId_][packageId_][collaborator_], "collaborator approved already!");
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address _collaborator,
+        bool _shouldPayMgp
+    ) external onlyInitiator(_projectId) {
+        require(!approvedUser[_projectId][_packageId][_collaborator], "collaborator approved already!");
 
-        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
-        if (shouldPayMgp_) {
+        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
+        if (_shouldPayMgp) {
             // TODO: Initiator can force-remove collaborator without paying bonus
-            _payMgp(projectId_, packageId_, collaborator_);
+            _payMgp(_projectId, _packageId, _collaborator);
             collaborator._removeCollaborator();
+            emit RemovedCollaborator(_projectId, _packageId, _collaborator);
         } else {
-            collaboratorData[projectId_][packageId_][collaborator_]._requestRemoval();
-            packageData[projectId_][packageId_].disputesCount++;
+            collaboratorData[_projectId][_packageId][_collaborator]._requestRemoval();
+            packageData[_projectId][_packageId].disputesCount++;
+            emit RequestedRemoval(_projectId, _packageId, _collaborator);
         }
 
-        emit RemovedCollaborator(projectId_, packageId_, collaborator_, shouldPayMgp_);
+        emit RemovedCollaborator(_projectId, _packageId, _collaborator);
     }
 
     /**
      * @notice Self remove collaborator
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
-     * Emit {SelfRemovedCollaborator}
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * Emit {RemovedCollaborator}
      */
-    function selfRemove(bytes32 projectId_, bytes32 packageId_) external {
-        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][_msgSender()];
-        require(!approvedUser[projectId_][packageId_][_msgSender()], "collaborator approved already!");
+    function selfRemove(bytes32 _projectId, bytes32 _packageId) external {
+        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_msgSender()];
+        require(!approvedUser[_projectId][_packageId][_msgSender()], "collaborator approved already!");
 
         collaborator._removeCollaborator();
-        packageData[projectId_][packageId_]._removeCollaborator(collaborator.mgp, collaborator.disputeExpiresAt > 0);
-        approvedUser[projectId_][packageId_][_msgSender()] = false;
+        packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp, collaborator.disputeExpiresAt > 0);
+        approvedUser[_projectId][_packageId][_msgSender()] = false;
 
-        emit SelfRemovedCollaborator(projectId_, packageId_, _msgSender())
+        emit RemovedCollaborator(_projectId, _packageId, _msgSender());
     }
 
     /**
      * @notice Defend when collaborator was removed
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
      * Emit {DefendedRemoval}
      */
     function defendRemoval(bytes32 _projectId, bytes32 _packageId) external {
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_msgSender()];
         collaborator._defendRemoval();
 
-        emit DefendedRemoval(projectId_, packageId_, _msgSender())
+        emit DefendedRemoval(_projectId, _packageId, _msgSender());
     }
 
     /**
      * @notice Resolve dispute for the collaborator
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
-     * Emit {ResolvedDispute}
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * Emit {RemovedCollaborator}
      */
     function resolveDispute(
         bytes32 _projectId,
         bytes32 _packageId,
         address _collaborator,
-        bool _isApproved
+        bool _approved
     ) external {
         Observer storage observer = observerData[_projectId][_packageId][_msgSender()];
         require(_msgSender() == owner() || (observer.timeCreated > 0 && !observer.isRemoved), "Caller is not authorized");
@@ -357,209 +355,208 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         require(block.timestamp <= collaborator.resolveExpiresAt, "resolve period already expired");
 
         packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp, true);
-        if (_isApproved) {
+        if (_approved) {
             _payMgp(_projectId, _packageId, _collaborator);
         }
-
         collaborator._removeCollaborator();
 
-        emit ResolvedDispute(projectId_, packageId_, _collaborator, _isApproved)
+        emit RemovedCollaborator(_projectId, _packageId, _collaborator);
     }
 
-    /** TODO come back later
+    /**
      * @notice Decide the result of the dispute when it is expired
      * @dev Only initialtor can call this function
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
-     * Emit {ResolvedDispute}
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * Emit {RemovedCollaborator}
      */
     function settleExpiredDispute(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_
-    ) external onlyInitiator(projectId_) {
-        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address _collaborator
+    ) external onlyInitiator(_projectId) {
+        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
         require(collaborator._canSettleExpiredDispute(), "not elligible to remove yet");
 
         collaborator._removeCollaborator();
-        packageData[projectId_][packageId_]._removeCollaborator(collaborator.mgp, true);
+        packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp, true);
 
-        emit ResolvedDispute(projectId_, packageId_, _collaborator, false)
+        emit RemovedCollaborator(_projectId, _packageId, _collaborator);
     }
 
     /**
      * @notice Adds observer to packages
-     * @param projectId_ Id of the project
-     * @param packageIds_ Id of the package
-     * @param observer_ observer address
+     * @param _projectId Id of the project
+     * @param _packageIds Id of the package
+     * @param _observer observer address
      * Emit {AddedObserver}
      */
     function addObserver(
-        bytes32 projectId_,
-        bytes32[] memory packageIds_,
-        address observer_
-    ) external onlyInitiator(projectId_) {
-        for (uint256 i = 0; i < packageIds_.length; i++) {
-            require(observer_ != address(0), "observer's address is zero");
-            observerData[projectId_][packageIds_[i]][observer_]._addObserver();
-            packageData[projectId_][packageIds_[i]]._addObserver();
+        bytes32 _projectId,
+        bytes32[] memory _packageIds,
+        address _observer
+    ) external onlyInitiator(_projectId) {
+        for (uint256 i = 0; i < _packageIds.length; i++) {
+            require(_observer != address(0), "observer's address is zero");
+            observerData[_projectId][_packageIds[i]][_observer]._addObserver();
+            packageData[_projectId][_packageIds[i]]._addObserver();
         }
-        
-        emit AddedObserver(projectId_, packageIds_, observer_);
+
+        emit AddedObserver(_projectId, _packageIds, _observer);
     }
 
     /**
      * @notice Removes observer from packages
-     * @param projectId_ Id of the project
-     * @param packageIds_ packages' ids
-     * @param observer_ observer address
+     * @param _projectId Id of the project
+     * @param _packageIds packages' ids
+     * @param _observer observer address
      * Emit {RemovedObserver}
      */
     function removeObserver(
-        bytes32 projectId_,
-        bytes32[] memory packageIds_,
-        address observer_
-    ) external onlyInitiator(projectId_) {
-        for (uint256 i = 0; i < packageIds_.length; i++) {
-            observerData[projectId_][packageIds_[i]][observer_]._removeObserver();
-            packageData[projectId_][packageIds_[i]]._removeObserver();
+        bytes32 _projectId,
+        bytes32[] memory _packageIds,
+        address _observer
+    ) external onlyInitiator(_projectId) {
+        for (uint256 i = 0; i < _packageIds.length; i++) {
+            observerData[_projectId][_packageIds[i]][_observer]._removeObserver();
+            packageData[_projectId][_packageIds[i]]._removeObserver();
         }
 
-        emit RemovedObserver(projectId_, packageIds_, observer_);
+        emit RemovedObserver(_projectId, _packageIds, _observer);
     }
 
     /**
      * @notice Pay MGP to collaborator
-     * @param projectId_ Id of the project
-     * @param packageIds_ Id of the package
-     * @param observer_ observer address
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * @param _collaborator collaborator address
      * Emit {PaidMgp}
      */
     function payMgp(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_
-    ) public onlyInitiator(projectId_) {
-        _payMgp(projectId_, packageId_, collaborator_);
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address _collaborator
+    ) public onlyInitiator(_projectId) {
+        _payMgp(_projectId, _packageId, _collaborator);
     }
 
     /**
      * @notice Pay fee to observer
-     * @param projectId_ Id of the project
-     * @param packageIds_ Id of the package
-     * @param observer_ observer address
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * @param _observer observer address
      * Emit {PaidObserverFee}
      */
     function payObserverFee(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address observer_
-    ) public onlyInitiator(projectId_) {
-        observerData[projectId_][packageId_][observer_]._claimObserverFee();
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address _observer
+    ) public onlyInitiator(_projectId) {
+        observerData[_projectId][_packageId][_observer]._claimObserverFee();
 
-        uint256 amount_ = packageData[projectId_][packageId_]._getObserverFee();
-        packageData[projectId_][packageId_]._claimObserverFee(amount_);
-        projectData[projectId_]._pay(observer_, amount_);
+        uint256 amount_ = packageData[_projectId][_packageId]._getObserverFee();
+        packageData[_projectId][_packageId]._claimObserverFee(amount_);
+        projectData[_projectId]._pay(_observer, amount_);
 
-        emit PaidObserverFee(projectId_, packageId_, observer_, amount_);
+        emit PaidObserverFee(_projectId, _packageId, _observer, amount_);
     }
 
     /**
      * @notice Sends approved MGP to collaborator, should be called from collaborator's address
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
      * Emit {PaidMgp}
      */
-    function claimMgp(bytes32 projectId_, bytes32 packageId_) public nonReentrant {
-        address collaborator_ = _msgSender();
-        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+    function claimMgp(bytes32 _projectId, bytes32 _packageId) public nonReentrant {
+        address _collaborator = _msgSender();
+        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
         uint256 amount_ = collaborator._claimMgp();
-        packageData[projectId_][packageId_]._claimMgp(amount_);
-        projectData[projectId_]._pay(collaborator_, amount_);
-        emit PaidMgp(projectId_, packageId_, _msgSender(), amount_);
+        packageData[_projectId][_packageId]._claimMgp(amount_);
+        projectData[_projectId]._pay(_collaborator, amount_);
+        emit PaidMgp(_projectId, _packageId, _msgSender(), amount_);
     }
 
     /**
      * @notice Sends approved Bonus to collaborator, should be called from collaborator's address
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
      * Emit {PaidBonus}
      */
-    function claimBonus(bytes32 projectId_, bytes32 packageId_) external nonReentrant {
-        address collaborator_ = _msgSender();
-        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+    function claimBonus(bytes32 _projectId, bytes32 _packageId) external nonReentrant {
+        address _collaborator = _msgSender();
+        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
         collaborator._claimBonus();
-        Package storage package = packageData[projectId_][packageId_];
-        (, uint256 amount_) = getCollaboratorRewards(projectId_, packageId_, collaborator_);
+        Package storage package = packageData[_projectId][_packageId];
+        (, uint256 amount_) = getCollaboratorRewards(_projectId, _packageId, _collaborator);
         package._claimBonus(amount_);
-        projectData[projectId_]._pay(collaborator_, amount_);
-        emit PaidBonus(projectId_, packageId_, collaborator_, amount_);
+        projectData[_projectId]._pay(_collaborator, amount_);
+        emit PaidBonus(_projectId, _packageId, _collaborator, amount_);
     }
 
     /**
      * @notice Sends observer fee, should be called from observer's address
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
      * Emit {PaidObserverFee}
      */
-    function claimObserverFee(bytes32 projectId_, bytes32 packageId_) external nonReentrant {
-        address observer_ = _msgSender();
-        Observer storage observer = observerData[projectId_][packageId_][observer_];
+    function claimObserverFee(bytes32 _projectId, bytes32 _packageId) external nonReentrant {
+        address _observer = _msgSender();
+        Observer storage observer = observerData[_projectId][_packageId][_observer];
         observer._claimObserverFee();
 
-        uint256 amount_ = packageData[projectId_][packageId_]._getObserverFee();
-        packageData[projectId_][packageId_]._claimObserverFee(amount_);
-        projectData[projectId_]._pay(observer_, amount_);
+        uint256 amount_ = packageData[_projectId][_packageId]._getObserverFee();
+        packageData[_projectId][_packageId]._claimObserverFee(amount_);
+        projectData[_projectId]._pay(_observer, amount_);
 
-        emit PaidObserverFee(projectId_, packageId_, observer_, amount_);
+        emit PaidObserverFee(_projectId, _packageId, _observer, amount_);
     }
 
     /* --------VIEW FUNCTIONS-------- */
 
     /**
      * @notice Get project details
-     * @param projectId_ Id of the project
+     * @param _projectId Id of the project
      */
-    function getProjectData(bytes32 projectId_) external view returns (Project memory) {
-        return projectData[projectId_];
+    function getProjectData(bytes32 _projectId) external view returns (Project memory) {
+        return projectData[_projectId];
     }
 
     /**
      * @notice Get package details
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
      */
-    function getPackageData(bytes32 projectId_, bytes32 packageId_) external view returns (Package memory) {
-        return (packageData[projectId_][packageId_]);
+    function getPackageData(bytes32 _projectId, bytes32 _packageId) external view returns (Package memory) {
+        return (packageData[_projectId][_packageId]);
     }
 
     /**
      * @notice Get collaborator details
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
-     * @param collaborator_ Collaborator address
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * @param _collaborator Collaborator address
      */
     function getCollaboratorData(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address _collaborator
     ) external view returns (Collaborator memory) {
-        return collaboratorData[projectId_][packageId_][collaborator_];
+        return collaboratorData[_projectId][_packageId][_collaborator];
     }
 
     /**
      * @notice Get collaborator rewards
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
-     * @param collaborator_ Collaborator address
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * @param _collaborator Collaborator address
      */
     function getCollaboratorRewards(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address _collaborator
     ) public view returns (uint256, uint256) {
-        Package storage package = packageData[projectId_][packageId_];
-        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+        Package storage package = packageData[_projectId][_packageId];
+        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
 
         uint256 mgpClaimable = (collaborator.timeMgpPaid == 0) ? collaborator.mgp : 0;
         uint256 bonusClaimable;
@@ -574,105 +571,106 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
 
     /**
      * @notice Get observer details
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
-     * @param observer_ Observer address
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * @param _observer Observer address
      */
     function getObserverData(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address observer_
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address _observer
     ) external view returns (Observer memory) {
-        return observerData[projectId_][packageId_][observer_];
+        return observerData[_projectId][_packageId][_observer];
     }
 
     /**
      * @notice Get observer fee
-     * @param projectId_ Id of the project
-     * @param packageId_ Id of the package
-     * @param observer_ Observer address
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * @param _observer Observer address
      */
     function getObserverFee(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address observer_
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address _observer
     ) public view returns (uint256) {
-        Observer storage observer = observerData[projectId_][packageId_][observer_];
+        Observer storage observer = observerData[_projectId][_packageId][_observer];
         if (observer.timePaid > 0 || observer.timeCreated == 0 || observer.isRemoved) {
             return 0;
         }
-        return packageData[projectId_][packageId_]._getObserverFee();
+        return packageData[_projectId][_packageId]._getObserverFee();
     }
 
     /* --------PRIVATE FUNCTIONS-------- */
 
     /**
      * @notice Generates unique id hash based on _msgSender() address and previous block hash.
-     * @param nonce_ nonce
+     * @param _nonce nonce
      * @return Id
      */
-    function _generateId(uint256 nonce_) private view returns (bytes32) {
-        return keccak256(abi.encodePacked(_msgSender(), blockhash(block.number - 1), nonce_));
+    function _generateId(uint256 _nonce) private view returns (bytes32) {
+        return keccak256(abi.encodePacked(_msgSender(), blockhash(block.number - 1), _nonce));
     }
 
     /**
      * @notice Returns a new unique project id.
-     * @return projectId_ Id of the project.
+     * @return _projectId Id of the project.
      */
-    function _generateProjectId() private view returns (bytes32 projectId_) {
-        projectId_ = _generateId(0);
-        require(projectData[projectId_].timeCreated == 0, "duplicate project id");
+    function _generateProjectId() private view returns (bytes32 _projectId) {
+        _projectId = _generateId(0);
+        require(projectData[_projectId].timeCreated == 0, "duplicate project id");
     }
 
     /**
      * @notice Returns a new unique package id.
-     * @param projectId_ Id of the project
-     * @param nonce_ nonce
-     * @return packageId_ Id of the package
+     * @param _projectId Id of the project
+     * @param _nonce nonce
+     * @return _packageId Id of the package
      */
-    function _generatePackageId(bytes32 projectId_, uint256 nonce_) private view returns (bytes32 packageId_) {
-        packageId_ = _generateId(nonce_);
-        require(packageData[projectId_][packageId_].timeCreated == 0, "duplicate package id");
+    function _generatePackageId(bytes32 _projectId, uint256 _nonce) private view returns (bytes32 _packageId) {
+        _packageId = _generateId(_nonce);
+        require(packageData[_projectId][_packageId].timeCreated == 0, "duplicate package id");
     }
 
     /**
      * @notice Starts project
-     * @param projectId_ Id of the project
+     * @param _projectId Id of the project
      * Emit {StartedProject}
      */
-    function _startProject(bytes32 projectId_) private {
-        uint256 _paidAmount = projectData[projectId_].budget;
-        projectData[projectId_]._startProject(tokenFactory);
-        emit StartedProject(projectId_, _paidAmount);
+    function _startProject(bytes32 _projectId) private {
+        uint256 _paidAmount = projectData[_projectId].budget;
+        projectData[_projectId]._startProject(tokenFactory);
+        emit StartedProject(_projectId, _paidAmount);
     }
 
     /**
      * @notice Approve project
-     * @param projectId_ Id of the project
+     * @param _projectId Id of the project
      * Emit {ApprovedProject}
      */
-    function _approveProject(bytes32 projectId_) private {
-        projectData[projectId_]._approveProject();
-        emit ApprovedProject(projectId_);
+    function _approveProject(bytes32 _projectId) private {
+        projectData[_projectId]._approveProject();
+        emit ApprovedProject(_projectId);
     }
 
     /**
      * @notice Pay MGP to collaborator
-     * @param projectId_ Id of the project
-     * @param packageIds_ Id of the package
-     * @param observer_ observer address
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * @param _collaborator collaborator address
      * Emit {PaidMgp}
      */
     function _payMgp(
-        bytes32 projectId_,
-        bytes32 packageId_,
-        address collaborator_
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address _collaborator
     ) private {
-        Collaborator storage collaborator = collaboratorData[projectId_][packageId_][collaborator_];
+        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
 
         collaborator._payMgp();
-        packageData[projectId_][packageId_]._payMgp(collaborator.mgp);
-        projectData[projectId_]._pay(collaborator_, collaborator.mgp);
-        emit PaidMgp(projectId_, packageId_, collaborator_, collaborator.mgp);
+        packageData[_projectId][_packageId]._payMgp(collaborator.mgp);
+        projectData[_projectId]._pay(_collaborator, collaborator.mgp);
+
+        emit PaidMgp(_projectId, _packageId, _collaborator, collaborator.mgp);
     }
 }

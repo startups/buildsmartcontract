@@ -9,16 +9,15 @@ interface IReBakedDAO {
     event FinishedProject(bytes32 indexed projectId);
     event SetBonusScores(bytes32 indexed projectId, bytes32 indexed packageId, address[] collaborators, uint256[] scores);
     event CreatedPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 budget, uint256 bonus);
-    event FinishedPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 indexed budgetLeft);
-    event CanceledPackage(bytes32 indexed projectId, bytes32 indexed packageId);
+    event AddedObserver(bytes32 indexed projectId, bytes32[] packageIds, address indexed observer);
+    event RemovedObserver(bytes32 indexed projectId, bytes32[] packageIds, address indexed observer);
     event AddedCollaborator(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 mgp);
     event ApprovedCollaborator(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator);
-    event RemovedCollaborator(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, bool shouldPayMgp);
-    event SelfRemovedCollaborator(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator);
-    event DefendedRemoval(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator)
-    event ResolvedDispute(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, bool isApproved)
-    event AddedObserver(bytes32 indexed projectId, bytes32[] indexed packageId, address observer);
-    event RemovedObserver(bytes32 indexed projectId, bytes32[] indexed packageId, address observer);
+    event RequestedRemoval(bytes32 indexed projectId_, bytes32 indexed packageId_, address collaborator_);
+    event DefendedRemoval(bytes32 indexed projectId_, bytes32 indexed packageId_, address collaborator_);
+    event RemovedCollaborator(bytes32 indexed projectId_, bytes32 indexed packageId_, address collaborator_);
+    event FinishedPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 indexed budgetLeft);
+    event CanceledPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 indexed revertedBudget);
     event PaidMgp(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 amount);
     event PaidObserverFee(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 amount);
     event PaidBonus(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 amount);
