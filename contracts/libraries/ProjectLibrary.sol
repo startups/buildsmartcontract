@@ -125,7 +125,7 @@ library ProjectLibrary {
         Project storage project_,
         address receiver_,
         uint256 amount_
-    ) internal onlyActiveProject(project_) {
+    ) internal {
         project_.budgetPaid += amount_;
         IERC20(project_.token).safeTransfer(receiver_, amount_);
     }
