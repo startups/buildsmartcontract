@@ -9,15 +9,15 @@ library ProjectLibrary {
     using SafeERC20 for IERC20;
 
     /**
-	@dev Throws if there is no such project
+	@notice Throws if there is no such project
 	 */
-    modifier onlyExistingProject(Project storage project_) {
+    modifier onlyActiveProject(Project storage project_) {
         require(project_.timeCreated > 0, "no such project");
         _;
     }
 
     /**
-     * @dev Creates project proposal
+     * @notice Creates project proposal
      * @param project_ reference to Project struct
      * @param token_ project token address
      * @param budget_ total budget
@@ -35,16 +35,16 @@ library ProjectLibrary {
     }
 
     /**
-     * @dev Approves project
+     * @notice Approves project
      * @param project_ reference to Project struct
      */
-    function _approveProject(Project storage project_) internal onlyExistingProject(project_) {
+    function _approveProject(Project storage project_) internal onlyActiveProject(project_) {
         require(project_.timeApproved == 0, "already approved project");
         project_.timeApproved = block.timestamp;
     }
 
     /**
-     * @dev Starts project, if project own token auto approve, otherwise deploys IOUToken, transfers fee to DAO wallet
+     * @notice Starts project, if project own token auto approve, otherwise deploys IOUToken, transfers fee to DAO wallet
      * @param project_ reference to Project struct
      * @param tokenFactory_ address of token factory contract
      */
@@ -60,7 +60,7 @@ library ProjectLibrary {
     }
 
     /**
-     * @dev Finishes project, checks if already finished or unfinished packages left
+     * @notice Finishes project, checks if already finished or unfinished packages left
      * unallocated budget returned to initiator or burned (in case of IOUToken)
      * @param project_ reference to Project struct
      */
@@ -81,7 +81,7 @@ library ProjectLibrary {
     }
 
     /**
-     * @dev Creates package in project, check if there is budget available
+     * @notice Creates package in project, check if there is budget available
      * allocates budget and increase total number of packages
      * @param project_ reference to Project struct
      * @param totalBudget_ total budget MGP + Bonus
@@ -101,14 +101,12 @@ library ProjectLibrary {
     }
 
     function _revertPackageBudget(Project storage project_, uint256 budgetToBeReverted_) internal {
-        require(project_.timeStarted > 0, "project is not started");
-        require(project_.timeFinished == 0, "project is finished");
         project_.budgetAllocated -= budgetToBeReverted_;
-        project_.totalPackages -= 1;
+        project_.totalPackages--;
     }
 
     /**
-     * @dev Finishes package in project, budget left addded refunded back to project budget
+     * @notice Finishes package in project, budget left addded refunded back to project budget
      * increases total number of finished packages
      * @param project_ reference to Project struct
      * @param budgetLeft_ amount of budget left
@@ -119,11 +117,15 @@ library ProjectLibrary {
     }
 
     /**
-     * @dev Pays from project's budget, increases budget paid
+     * @notice Pays from project's budget, increases budget paid
      * @param project_ reference to Project struct
      * @param amount_ amount to pay
      */
-    function _pay(Project storage project_, address receiver_, uint256 amount_) internal onlyExistingProject(project_) {
+    function _pay(
+        Project storage project_,
+        address receiver_,
+        uint256 amount_
+    ) internal onlyActiveProject(project_) {
         project_.budgetPaid += amount_;
         IERC20(project_.token).safeTransfer(receiver_, amount_);
     }

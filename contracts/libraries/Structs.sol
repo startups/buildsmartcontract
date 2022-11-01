@@ -45,8 +45,7 @@ struct Collaborator {
     uint256 timeBonusPaid;
     uint256 bonusScore;
     uint256 disputeExpiresAt;
-    uint256 appealedAt;
-    bool isInDispute;
+    uint256 resolveExpiresAt;
     bool isRemoved;
 }
 
