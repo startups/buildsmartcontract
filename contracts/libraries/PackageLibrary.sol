@@ -8,7 +8,7 @@ library PackageLibrary {
     uint256 public constant MAX_OBSERVERS = 10;
 
     /**
-	@dev Throws if there is no package
+	@notice Throws if there is no package
 	 */
     modifier onlyActivePackage(Package storage package_) {
         require(package_.timeCreated > 0, "no such package");
@@ -21,7 +21,7 @@ library PackageLibrary {
     }
 
     /**
-     * @dev Creates package in project
+     * @notice Creates package in project
      * @param package_ reference to Package struct
      * @param budget_ MGP budget
      * @param feeObserversBudget_ Observers fee budget
@@ -51,7 +51,7 @@ library PackageLibrary {
     }
 
     /**
-     * @dev Adds observers to package
+     * @notice Adds observers to package
      * @param package_ reference to Package struct
      */
     function _addObserver(Package storage package_) internal onlyActivePackage(package_) activePackage(package_) {
@@ -61,7 +61,7 @@ library PackageLibrary {
     }
 
     /**
-     * @dev Removes observers from package
+     * @notice Removes observers from package
      * @param package_ reference to Package struct
      */
     function _removeObserver(Package storage package_) internal onlyActivePackage(package_) activePackage(package_) {
@@ -70,7 +70,7 @@ library PackageLibrary {
     }
 
     /**
-     * @dev Allocate budget to collaborator and increase number of collaborators
+     * @notice Allocate budget to collaborator and increase number of collaborators
      * @param amount_ amount to reserve
      */
     function _allocateBudget(Package storage package_, uint256 amount_) internal onlyActivePackage(package_) activePackage(package_) {
@@ -82,7 +82,7 @@ library PackageLibrary {
     }
 
     /**
-     * @dev Increase number of approved Collaborator
+     * @notice Increase number of approved Collaborator
      * @param package_ reference to Package struct
      */
     function _approveCollaborator(Package storage package_) internal onlyActivePackage(package_) activePackage(package_) {
@@ -102,7 +102,7 @@ library PackageLibrary {
     }
 
     /**
-     * @dev Finishes package in project, checks if already finished, records time
+     * @notice Finishes package in project, checks if already finished, records time
      * if budget left and there is no collaborators, bonus is refunded to package budget
      * @param package_ reference to Package struct
      */
@@ -118,7 +118,7 @@ library PackageLibrary {
     }
 
     /**
-     * @dev Sets scores for collaborator bonuses
+     * @notice Sets scores for collaborator bonuses
      * @param package_ reference to Package struct
      * @param collaboratorsGetBonus_ max bonus scores (PPM)
      */
@@ -129,7 +129,7 @@ library PackageLibrary {
     }
 
     /**
-     * @dev Get observer's claimable portion in package
+     * @notice Get observer's claimable portion in package
      * @param package_ reference to Package struct
      */
     function _getObserverFee(Package storage package_) internal view onlyActivePackage(package_) returns (uint256) {
@@ -141,7 +141,7 @@ library PackageLibrary {
     }
 
     /**
-     * @dev Increases package's observers budget paid
+     * @notice Increases package's observers budget paid
      * @param package_ reference to Package struct
      */
     function _claimObserverFee(Package storage package_, uint256 amount_) internal {
@@ -150,7 +150,7 @@ library PackageLibrary {
     }
 
     /**
-     * @dev Increases package budget paid
+     * @notice Increases package budget paid
      * @param package_ reference to Package struct
      * @param amount_ MGP amount
      */
@@ -164,7 +164,7 @@ library PackageLibrary {
     }
 
     /**
-     * @dev Increases package bonus paid
+     * @notice Increases package bonus paid
      * @param package_ reference to Package struct
      * @param amount_ Bonus amount
      */

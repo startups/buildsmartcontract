@@ -3,12 +3,11 @@ pragma solidity ^0.8.10;
 import { Collaborator } from "./Structs.sol";
 
 library CollaboratorLibrary {
-
     uint256 public constant DEFEND_REMOVAL_DURATION = 2 days;
     uint256 public constant RESOLVE_DISPUTE_DURATION = 3 days;
 
     /**
-	@dev Throws if there is no such collaborator
+	@notice Throws if there is no such collaborator
 	*/
     modifier onlyActiveCollaborator(Collaborator storage collaborator_) {
         require(collaborator_.timeCreated > 0 && !collaborator_.isRemoved, "no such collaborator");
@@ -16,7 +15,7 @@ library CollaboratorLibrary {
     }
 
     /**
-     * @dev Adds collaborator, checks for zero address and if already added, records mgp
+     * @notice Adds collaborator, checks for zero address and if already added, records mgp
      * @param collaborator_ reference to Collaborator struct
      * @param collaborator_ collaborator's address
      * @param mgp_ minimum guaranteed payment
@@ -30,7 +29,7 @@ library CollaboratorLibrary {
     }
 
     /**
-     * @dev Approves collaborator's MGP or deletes collaborator
+     * @notice Approves collaborator's MGP or deletes collaborator
      * @param collaborator_ reference to Collaborator struct
      */
     function _approveCollaborator(Collaborator storage collaborator_) internal onlyActiveCollaborator(collaborator_) {
@@ -41,11 +40,11 @@ library CollaboratorLibrary {
     function _removeCollaborator(Collaborator storage collaborator_) internal onlyActiveCollaborator(collaborator_) {
         collaborator_.isRemoved = true;
         collaborator_.disputeExpiresAt = 0;
-        collaborator_.resolveExpiresAt = 0;    
+        collaborator_.resolveExpiresAt = 0;
     }
 
     /**
-     * @dev Sets scores for collaborator bonuses
+     * @notice Sets scores for collaborator bonuses
      * @param collaborator_ reference to Collaborator struct
      * @param bonusScore_ collaborator's bonus score
      */
@@ -56,7 +55,7 @@ library CollaboratorLibrary {
     }
 
     /**
-     * @dev request remove collaborator
+     * @notice request remove collaborator
      * @param collaborator_ collaborator
      */
     function _requestRemoval(Collaborator storage collaborator_) internal onlyActiveCollaborator(collaborator_) {
@@ -80,7 +79,7 @@ library CollaboratorLibrary {
     }
 
     /**
-     * @dev Sets MGP time paid flag, checks if approved and already paid
+     * @notice Sets MGP time paid flag, checks if approved and already paid
      * @param collaborator_ reference to Collaborator struct
      */
     function _claimMgp(Collaborator storage collaborator_) internal onlyActiveCollaborator(collaborator_) returns (uint256) {
@@ -96,7 +95,7 @@ library CollaboratorLibrary {
     }
 
     /**
-     * @dev Sets Bonus time paid flag, checks is approved and already paid
+     * @notice Sets Bonus time paid flag, checks is approved and already paid
      * @param collaborator_ reference to Collaborator struct
      */
     function _claimBonus(Collaborator storage collaborator_) internal onlyActiveCollaborator(collaborator_) {

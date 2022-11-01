@@ -3,9 +3,8 @@ pragma solidity ^0.8.10;
 import { Observer } from "./Structs.sol";
 
 library ObserverLibrary {
-
     /**
-	@dev Throws if there is no such observer
+	@notice Throws if there is no such observer
 	 */
     modifier onlyActiveObserver(Observer storage observer_) {
         require(observer_.timeCreated > 0 && !observer_.isRemoved, "no such observer");
