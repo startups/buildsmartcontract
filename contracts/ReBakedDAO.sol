@@ -565,7 +565,6 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
                 ? (package.bonus - package.bonusPaid)
                 : (collaborator.bonusScore * package.bonus) / PCT_PRECISION;
         }
-
         return (mgpClaimable, bonusClaimable);
     }
 
