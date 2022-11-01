@@ -7,11 +7,15 @@ interface IReBakedDAO {
     event StartedProject(bytes32 indexed projectId, uint256 indexed paidAmount);
     event FinishedProject(bytes32 indexed projectId);
     event CreatedPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 budget, uint256 bonus);
-    event AddedObserver(bytes32 indexed projectId, bytes32[] indexed packageId, address observer);
+    event AddedObserver(bytes32 indexed projectId, bytes32[] packageIds, address indexed observer);
+    event RemovedObserver(bytes32 indexed projectId, bytes32[] packageIds, address indexed observer);
     event AddedCollaborator(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 mgp);
     event ApprovedCollaborator(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator);
+    event RequestedRemoval(bytes32 indexed projectId_, bytes32 indexed packageId_, address collaborator_);
+    event DefendedRemoval(bytes32 indexed projectId_, bytes32 indexed packageId_, address collaborator_);
+    event RemovedCollaborator(bytes32 indexed projectId_, bytes32 indexed packageId_, address collaborator_);
     event FinishedPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 indexed budgetLeft);
-    event CanceledPackage(bytes32 indexed projectId, bytes32 indexed packageId);
+    event CanceledPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 indexed revertedBudget);
     event SetBonusScores(bytes32 indexed projectId, bytes32 indexed packageId, address[] collaborators, uint256[] scores);
     event PaidMgp(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 amount);
     event PaidBonus(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 amount);

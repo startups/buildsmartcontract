@@ -170,6 +170,8 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
             _payMgp(_projectId, _packageId, _collaborator);
         }
         collaborator._removeCollaborator();
+
+        emit RemovedCollaborator(_projectId, _packageId, _collaborator);
     }
 
     /***************************************
@@ -251,7 +253,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         uint256 budgetToBeReverted_ = package.budget - package.budgetPaid;
         projectData[projectId_]._revertPackageBudget(budgetToBeReverted_);
 
-        emit CanceledPackage(projectId_, packageId_);
+        emit CanceledPackage(projectId_, packageId_, budgetToBeReverted_);
     }
 
     /**
@@ -305,9 +307,11 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
             // TODO: Initiator can force-remove collaborator without paying bonus
             _payMgp(projectId_, packageId_, collaborator_);
             collaborator._removeCollaborator();
+            emit RemovedCollaborator(projectId_, packageId_, collaborator_);
         } else {
             collaboratorData[projectId_][packageId_][collaborator_]._requestRemoval();
             packageData[projectId_][packageId_].disputesCount++;
+            emit RequestedRemoval(projectId_, packageId_, collaborator_);
         }
     }
 
@@ -321,6 +325,8 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
 
         collaborator._removeCollaborator();
         packageData[projectId_][packageId_]._removeCollaborator(collaborator.mgp, true);
+
+        emit RemovedCollaborator(projectId_, packageId_, collaborator_);
     }
 
     /**
@@ -357,6 +363,8 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
             observerData[projectId_][packageIds_[i]][observer_]._removeObserver();
             packageData[projectId_][packageIds_[i]]._removeObserver();
         }
+
+        emit RemovedObserver(projectId_, packageIds_, observer_);
     }
 
     function payMgp(
@@ -377,6 +385,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         collaborator._payMgp();
         packageData[projectId_][packageId_]._payMgp(collaborator.mgp);
         projectData[projectId_]._pay(collaborator_, collaborator.mgp);
+
         emit PaidMgp(projectId_, packageId_, collaborator_, collaborator.mgp);
     }
 
@@ -449,6 +458,8 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
     function defendRemoval(bytes32 _projectId, bytes32 _packageId) external {
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_msgSender()];
         collaborator._defendRemoval();
+
+        emit DefendedRemoval(_projectId, _packageId, _msgSender());
     }
 
     function selfRemove(bytes32 projectId_, bytes32 packageId_) external {
@@ -458,6 +469,8 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         collaborator._removeCollaborator();
         packageData[projectId_][packageId_]._removeCollaborator(collaborator.mgp, collaborator.disputeExpiresAt > 0);
         approvedUser[projectId_][packageId_][_msgSender()] = false;
+
+        emit RemovedCollaborator(projectId_, packageId_, _msgSender());
     }
 
     /***************************************
