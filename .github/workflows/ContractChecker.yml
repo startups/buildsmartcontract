@@ -1,0 +1,33 @@
+name: Contract Checker
+on: pull_request
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout current project
+        uses: actions/checkout@v3
+        with:
+          path: .
+
+      - name: Setup node LTS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14.18.2
+
+      - name: Install packages
+        run: |
+          cp .env.dev .env
+          npm install
+
+      - name: Run solhint
+        run: npm run solhint
+
+      - name: Run test coverage
+        run: npm run coverage
+
