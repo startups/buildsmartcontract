@@ -3,9 +3,9 @@ pragma solidity ^0.8.10;
 import { IReBakedDAO } from "./interfaces/IReBakedDAO.sol";
 import { ITokenFactory } from "./interfaces/ITokenFactory.sol";
 import { IIOUToken } from "./interfaces/IIOUToken.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { IERC20, SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import { IERC20Upgradeable, SafeERC20Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import { Project, ProjectLibrary } from "./libraries/ProjectLibrary.sol";
 import { Package, PackageLibrary } from "./libraries/PackageLibrary.sol";
 import { Collaborator, CollaboratorLibrary } from "./libraries/CollaboratorLibrary.sol";
@@ -14,10 +14,9 @@ import { Observer, ObserverLibrary } from "./libraries/ObserverLibrary.sol";
 /**
  *  @title  ReBakedDAO Contract
  *  @author ReBaked Team
- *  @notice This smart contract is the main contract
  */
-contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
-    using SafeERC20 for IERC20;
+contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+    using SafeERC20Upgradeable for IERC20Upgradeable;
     using ProjectLibrary for Project;
     using PackageLibrary for Package;
     using CollaboratorLibrary for Collaborator;
@@ -63,7 +62,15 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         _;
     }
 
-    constructor(address treasury_, address tokenFactory_) {
+    /**
+     * @notice Initialize of contract (replace for constructor)
+     * @param treasury_ Treasury address
+     * @param tokenFactory_ Token factory address
+     */
+    function initialize(address treasury_, address tokenFactory_) public initializer {
+        __Ownable_init();
+        __ReentrancyGuard_init();
+
         require(treasury_ != address(0), "invalid treasury address");
         require(tokenFactory_ != address(0), "invalid tokenFactory address");
 
@@ -187,7 +194,7 @@ contract ReBakedDAO is IReBakedDAO, Ownable, ReentrancyGuard {
         bytes32 _packageId = _generatePackageId(_projectId, 0);
         Package storage package = packageData[_projectId][_packageId];
         package._createPackage(_budget, _observerBudget, _bonus, _maxCollaborators);
-        if (project.isOwnToken) IERC20(_token).safeTransferFrom(_msgSender(), treasury, (total * 5) / 100);
+        if (project.isOwnToken) IERC20Upgradeable(_token).safeTransferFrom(_msgSender(), treasury, (total * 5) / 100);
 
         emit CreatedPackage(_projectId, _packageId, _budget, _bonus);
     }

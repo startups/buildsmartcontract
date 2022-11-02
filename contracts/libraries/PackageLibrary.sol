@@ -39,6 +39,10 @@ library PackageLibrary {
         package_.isActive = true;
     }
 
+    /**
+     * @notice Cancel package in project
+     * @param package_ Package want to cancel
+     */
     function _cancelPackage(Package storage package_) internal onlyActivePackage(package_) {
         package_.timeCanceled = block.timestamp;
         package_.isActive = false;
@@ -80,15 +84,21 @@ library PackageLibrary {
         package_.approvedCollaborators++;
     }
 
+    /**
+     * @notice Remove collaborator from package
+     * @param package_ Package want to cancel
+     * @param mgp_ MGP to pay
+     * @param isDispute_ `true` if collaborator is in "Dispute*
+     */
     function _removeCollaborator(
         Package storage package_,
         uint256 mgp_,
-        bool inDispute_
+        bool isDispute_
     ) internal onlyActivePackage(package_) {
         package_.budgetAllocated -= mgp_;
         package_.totalCollaborators--;
 
-        if (inDispute_) package_.disputesCount--;
+        if (isDispute_) package_.disputesCount--;
     }
 
     /**
@@ -147,6 +157,11 @@ library PackageLibrary {
         package_.budgetPaid += amount_;
     }
 
+    /**
+     * @notice Pay MGP to budget
+     * @param package_ reference to Package struct
+     * @param amount_ MGP amount
+     */
     function _payMgp(Package storage package_, uint256 amount_) internal {
         package_.budgetPaid += amount_;
     }
