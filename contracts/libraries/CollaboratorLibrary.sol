@@ -64,12 +64,20 @@ library CollaboratorLibrary {
         collaborator_.disputeExpiresAt = block.timestamp + DEFEND_REMOVAL_DURATION;
     }
 
+    /**
+     * @notice Contributor defend removal
+     * @param collaborator_ collaborator
+     */
     function _defendRemoval(Collaborator storage collaborator_) internal onlyActiveCollaborator(collaborator_) {
         require(collaborator_.resolveExpiresAt == 0, "already defended removal");
         require(block.timestamp <= collaborator_.disputeExpiresAt, "dispute period already expired");
         collaborator_.resolveExpiresAt = block.timestamp + RESOLVE_DISPUTE_DURATION;
     }
 
+    /**
+     * @notice Check if can settle expired disputed to collaborator
+     * @param collaborator_ collaborator
+     */
     function _canSettleExpiredDispute(Collaborator storage collaborator_) internal view returns (bool) {
         if (collaborator_.resolveExpiresAt > 0) {
             return collaborator_.resolveExpiresAt < block.timestamp;
@@ -89,6 +97,10 @@ library CollaboratorLibrary {
         return collaborator_.mgp;
     }
 
+    /**
+     * @notice Pay MGP to collaborator
+     * @param collaborator_ collaborator
+     */
     function _payMgp(Collaborator storage collaborator_) internal onlyActiveCollaborator(collaborator_) {
         require(collaborator_.timeMgpPaid == 0, "mgp already paid");
         collaborator_.timeMgpPaid = block.timestamp;

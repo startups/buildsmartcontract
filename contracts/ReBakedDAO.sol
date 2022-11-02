@@ -14,7 +14,6 @@ import { Observer, ObserverLibrary } from "./libraries/ObserverLibrary.sol";
 /**
  *  @title  ReBakedDAO Contract
  *  @author ReBaked Team
- *  @notice This smart contract is the main contract
  */
 contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;

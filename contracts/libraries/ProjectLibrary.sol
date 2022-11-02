@@ -100,6 +100,11 @@ library ProjectLibrary {
         project_.totalPackages += count_;
     }
 
+    /**
+     * @notice Get back package budget package
+     * @param project_ Project reference address
+     * @param budgetToBeReverted_ Budget amount to be reverted
+     */
     function _revertPackageBudget(Project storage project_, uint256 budgetToBeReverted_) internal {
         project_.budgetAllocated -= budgetToBeReverted_;
         project_.totalPackages--;
