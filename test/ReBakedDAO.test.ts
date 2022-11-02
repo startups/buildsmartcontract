@@ -523,7 +523,7 @@ describe("ReBakedDAO", () => {
 		});
 	});
 
-	describe("Tesing `settleExpiredDispute` function", () => {
+	describe("Testing `settleExpiredDispute` function", () => {
 		beforeEach(async () => {
 			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
 			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, TOKEN_1000);
