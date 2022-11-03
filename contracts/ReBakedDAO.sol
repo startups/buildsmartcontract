@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity 0.8.11;
 import { IReBakedDAO } from "./interfaces/IReBakedDAO.sol";
 import { ITokenFactory } from "./interfaces/ITokenFactory.sol";
 import { IIOUToken } from "./interfaces/IIOUToken.sol";

@@ -4,11 +4,12 @@ const contracts = require("../contracts.json");
 async function main() {
   try {
     await hre.run("verify:verify", {
-      address: contracts.ReBakedDAO,
-      constructorArguments: [
-        "0xD90A5DB9EbFeb22e374Cd44830250B297085d5c3",
-        "0x027594fF9B44b2EbebeaF8aEdF8A426A2A988781"
-      ],
+      // address: contracts.ReBakedDAO,
+      address: "0x0481De78edA83a061119e918d1C95dbEdB864979",
+      // constructorArguments: [
+      //   "0xD90A5DB9EbFeb22e374Cd44830250B297085d5c3",
+      //   "0x027594fF9B44b2EbebeaF8aEdF8A426A2A988781"
+      // ],
     });
   } catch (err) {
     console.log("err :>> ", err);

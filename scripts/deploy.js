@@ -1,9 +1,8 @@
-const hre = require("hardhat");
+const { ethers, upgrades } = require("hardhat");
 const fs = require("fs");
-const ethers = hre.ethers;
 
 async function main() {
-  //Loading accounts
+  // Loading accounts
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
 
@@ -44,12 +43,26 @@ async function main() {
     //   },
     // }
   );
-  const reBakedDAO = await ReBakedDAO.deploy(
+
+  
+  // const reBakedDAO = await ReBakedDAO.deploy(
+  //   "0xD90A5DB9EbFeb22e374Cd44830250B297085d5c3",
+  //   // tokenFactory.address
+  //   "0x027594fF9B44b2EbebeaF8aEdF8A426A2A988781"
+  // );
+  // await reBakedDAO.deployed();
+
+  // Deploying
+  const reBakedDAO = await upgrades.deployProxy(ReBakedDAO, [
     "0xD90A5DB9EbFeb22e374Cd44830250B297085d5c3",
     // tokenFactory.address
     "0x027594fF9B44b2EbebeaF8aEdF8A426A2A988781"
-  );
+  ]);
   await reBakedDAO.deployed();
+
+  // Upgrading
+  // const reBakedDAO = await upgrades.upgradeProxy(instance.address, ReBakedDAO);
+
   console.log("ReBakedDAO         deployed to:", reBakedDAO.address);
 
   // let tx = await tokenFactory.setReBakedDao(reBakedDAO.address);
