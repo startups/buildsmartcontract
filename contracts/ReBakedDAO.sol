@@ -302,6 +302,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         if (_shouldPayMgp) {
             // TODO: Initiator can force-remove collaborator without paying bonus
             _payMgp(_projectId, _packageId, _collaborator);
+            packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp, false);
             collaborator._removeCollaborator();
             emit RemovedCollaborator(_projectId, _packageId, _collaborator);
         } else {
@@ -325,7 +326,6 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
 
         collaborator._removeCollaborator();
         packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp, collaborator.disputeExpiresAt > 0);
-        approvedUser[_projectId][_packageId][_msgSender()] = false;
 
         emit RemovedCollaborator(_projectId, _packageId, _msgSender());
     }

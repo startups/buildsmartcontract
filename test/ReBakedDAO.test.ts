@@ -354,8 +354,8 @@ describe("ReBakedDAO", () => {
 			const addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId1, collaborator2.address);
 			expect(addedCollaborator2.mgp).to.equal(TOKEN_20);
 			currentPackage = await reBakedDAO.getPackageData(projectId, packageId1);
-			expect(currentPackage.budgetAllocated).to.equal(TOKEN_40);
-			expect(currentPackage.totalCollaborators).to.equal(3);
+			expect(currentPackage.budgetAllocated).to.equal(TOKEN_30);
+			expect(currentPackage.totalCollaborators).to.equal(2);
 		});
 	});
 

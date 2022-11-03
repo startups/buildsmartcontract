@@ -2,7 +2,7 @@
 
 This is test flows for integration testing phase.
 
-> All flows will running with contracts deployed in [Flow 1](#flow-1-Deploy-contracts)
+> All flows will running with contracts deployed in [Before](#before-Deploy-contracts)
 
 ## Test flows
 
@@ -48,7 +48,7 @@ Each flow will run sequence by sequence
 1. Add **package 3**
 2. Add **3 collaborators**
 3. Remove **Collaborator 1** with no `MGP` and **Collaborator 1** do not defend removal
-4. **Initiator** Settle expired dispute with collaborator 1
+4. **Initiator** Settle expired dispute for collaborator 1
 5. Remove **Collaborator 2** with `MGP`
 6. Approve **Collaborator 3**
 7. Finish **package 3**
@@ -64,12 +64,13 @@ Each flow will run sequence by sequence
 4. **Collaborator 1** defend removal
 5. Resolve dispute **Collaborator 1** with no `MGP`
 6. Remove **Collaborator 2** with no `MGP`
-7. Resolve dispute **Collaborator 2** with `MGP`
-8. Approve **Collaborator 3**
-9. Finish **package 4**
-10. Pay `MGP` to **Collaborator 3**
-11. **Collaborator 3** try to claim `MGP` but revert
-12. Check balance after flow
+7. **Collaborator 2** defend removal
+8. Resolve dispute **Collaborator 2** with `MGP`
+9. Approve **Collaborator 3**
+10. Finish **package 4**
+11. Pay `MGP` to **Collaborator 3**
+12. **Collaborator 3** try to claim `MGP` but revert
+13. Check balance after flow
 
 ### 6. Self removing (Project 1, Package 5)
 
