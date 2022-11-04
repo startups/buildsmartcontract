@@ -30,8 +30,8 @@ Each flow will run sequence by sequence
 5. Add **2 observers**
 6. Finish **package 1**
 7. Set `Bonus Score` to **Collaborator 1**
-8. Pay `MGP` to **2 collaborators**
-9. Pay `observer fee` to **2 observers**
+8. **2 collaborators** claim `MGP`
+9. **2 observers** claim `observer fee`
 10. **2 Collaborators** try to claim `MGP` but revert
 11. **Collaborator 1** claim `Bonus Score`
 12. **2 Observers** try to claim `observer fee` but revert
@@ -68,7 +68,7 @@ Each flow will run sequence by sequence
 8. Resolve dispute **Collaborator 2** with `MGP`
 9. Approve **Collaborator 3**
 10. Finish **package 4**
-11. Pay `MGP` to **Collaborator 3**
+11. **Collaborator 3** claim `MGP` 
 12. **Collaborator 3** try to claim `MGP` but revert
 13. Check balance after flow
 
@@ -79,7 +79,7 @@ Each flow will run sequence by sequence
 3. **Collaborator 1** self removing
 4. Approve **Collaborator 2**
 5. Finish **package 5**
-6. Pay `MGP` to **Collaborator 2**
+6. **Collaborator 2** claim `MGP` 
 7. Set `Bonus Score` to **Collaborator 2**
 8. **Collaborator 2** claim `Bonus Score`
 9. Check balance after flow
@@ -100,8 +100,8 @@ Each flow will run sequence by sequence
 7. Add **2 observers**
 8. Finish **package 1**
 9. Set `Bonus Score` to **Collaborator 1**
-10. Pay `MGP` to **2 collaborators**
-11. Pay `observer fee` to **2 observers**
+10. **2 collaborators** claim `MGP` 
+11. **2 observers** claim `observer fee`
 12. **Collaborator 1** claim `Bonus Score`
 13. Check balance after flow
 
@@ -117,7 +117,7 @@ Each flow will run sequence by sequence
 8. Initiator Settle expired dispute for **Collaborator 1**
 9. Approve **Collaborator 3**
 10. Finish **package 2**
-11. Pay `MGP` to **Collaborator 3**
+11. **Collaborator 3** claim `MGP` 
 12. **Collaborator 3** try to claim `MGP` but revert
 13. Check balance after flow
 
@@ -166,4 +166,27 @@ Each flow will run sequence by sequence
 5. **Collaborator 3** try to claim mgp but revert
 6. Check balance after flow
 
+### 14. Cancel package when collaborator in dispute (Project 3 package 1)
+1. Create **project 3** with existed token
+2. Add **package 1**
+3. Add **2 collaborators**
+4. Approve **Collaborator 1**
+5. Remove **Collaborator 2** with no `MGP`
+6. **Collaborator 2** defend removal
+7. Cancel **package 1** but revert because package still has unresolved disputes
+8. Resolve dispute **Collaborator 2** with no `MGP`
+9. Cancel **package 1**
+10. Check balance after flow
 
+### 15. Paymgp for unapprove collaborator (Project 3 package 2)
+1. Add **package 2**
+2. Add **2 collaborators**
+3. **Collaborator 1** try to claim `MGP` but revert
+4. Remove collaborator 1 with no `MGP`
+5. Finish **package 2** but revert because package still has unresolved disputes
+6. **Collaborator 1** defend removal
+7. Resolve dispute **Collaborator 1** with no `MGP`
+8. Approve **Collaborator 2**
+9. Finish **package 2**
+10. **Collaborator 2** claim `MGP`
+11. Check balance after flow

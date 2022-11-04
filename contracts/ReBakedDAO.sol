@@ -230,9 +230,9 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
 
         package._cancelPackage();
 
-        for (uint256 i = 0; i < _collaborators.length; i++) payMgp(_projectId, _packageId, _collaborators[i]);
+        for (uint256 i = 0; i < _collaborators.length; i++) _payMgp(_projectId, _packageId, _collaborators[i]);
 
-        for (uint256 i = 0; i < _observers.length; i++) payObserverFee(_projectId, _packageId, _observers[i]);
+        for (uint256 i = 0; i < _observers.length; i++) _payObserverFee(_projectId, _packageId, _observers[i]);
 
         uint256 budgetToBeReverted_ = package.budget - package.budgetPaid + package.bonus;
         budgetToBeReverted_ += (package.totalObservers == 0) ? package.budgetObservers : 0;
@@ -434,32 +434,17 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
     }
 
     /**
-     * @notice Pay MGP to collaborator
-     * @param _projectId Id of the project
-     * @param _packageId Id of the package
-     * @param _collaborator collaborator address
-     * Emit {PaidMgp}
-     */
-    function payMgp(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address _collaborator
-    ) public onlyInitiator(_projectId) {
-        _payMgp(_projectId, _packageId, _collaborator);
-    }
-
-    /**
      * @notice Pay fee to observer
      * @param _projectId Id of the project
      * @param _packageId Id of the package
      * @param _observer observer address
      * Emit {PaidObserverFee}
      */
-    function payObserverFee(
+    function _payObserverFee(
         bytes32 _projectId,
         bytes32 _packageId,
         address _observer
-    ) public onlyInitiator(_projectId) {
+    ) private {
         observerData[_projectId][_packageId][_observer]._claimObserverFee();
 
         uint256 amount_ = packageData[_projectId][_packageId]._getObserverFee();
