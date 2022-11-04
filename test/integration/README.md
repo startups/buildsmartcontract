@@ -145,7 +145,7 @@ Each flow will run sequence by sequence
 10. **Collaborator 2** claim `MGP`
 11. Check balance after flow
 
-### 12. Collaborator defend removal but owner do not resolve dispute and initiator settle (Project 2, Package 4)
+### 12. Collaborator defend removal but owner do not resolve dispute and initiator settle (Project 2, Package 5)
 1. Add **package 5**
 2. Add **2 collaborators**
 7. Approve **Collaborator 1**
@@ -162,9 +162,8 @@ Each flow will run sequence by sequence
 2. Add **3 collaborators**
 3. Approve **3 collaborators**
 3. Add **2 observers**
-4. Cancel **package 6** but not pay mgp for **collaborator 3**
-5. **Collaborator 3** claim mgp but revert
-6. **Initiator** try to pay mgp for **collaborator 3** but revert
-7. Check balance after flow
+4. Cancel **package 6**
+5. **Collaborator 3** try to claim mgp but revert
+6. Check balance after flow
 
 

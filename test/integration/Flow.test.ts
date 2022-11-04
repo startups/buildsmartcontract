@@ -1000,8 +1000,8 @@ describe.only("ReBakedDAO", () => {
 
 		it("Add 2 observers", async () => {
 			await BT.updateFee(reBakedDAO.connect(initiator).addObserver(projectId2, [packageId1], observer1.address));
-
 			await BT.updateFee(reBakedDAO.connect(initiator).addObserver(projectId2, [packageId1], observer2.address));
+
 			const currentTime = await getTimestamp();
 			let addedObserver1 = await reBakedDAO.getObserverData(projectId2, packageId1, observer1.address);
 			let addedObserver2 = await reBakedDAO.getObserverData(projectId2, packageId1, observer2.address);
@@ -1157,8 +1157,8 @@ describe.only("ReBakedDAO", () => {
 		});
 
 		it("Remove Collaborator 1 with no MGP", async () => {
-			await BT.updateFee(reBakedDAO.connect(initiator).removeCollaborator(projectId2, packageId2, collaborator1.address, false))
-				
+			await BT.updateFee(reBakedDAO.connect(initiator).removeCollaborator(projectId2, packageId2, collaborator1.address, false));
+
 			const currentTime = await getTimestamp();
 			let addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId2, collaborator1.address);
 			expect(addedCollaborator1.disputeExpiresAt).to.closeTo(currentTime + TWO_DAYS, 10);
@@ -1176,7 +1176,7 @@ describe.only("ReBakedDAO", () => {
 		});
 
 		it("Resolve dispute Collaborator 1 with no MGP", async () => {
-			await reBakedDAO.connect(owner).resolveDispute(projectId2, packageId2, collaborator1.address, false)
+			await reBakedDAO.connect(owner).resolveDispute(projectId2, packageId2, collaborator1.address, false);
 
 			const package2 = await reBakedDAO.getPackageData(projectId2, packageId2);
 			expect(package2.disputesCount).to.equal(0);
@@ -1190,8 +1190,8 @@ describe.only("ReBakedDAO", () => {
 		});
 
 		it("Remove Collaborator 2 with no MGP", async () => {
-			await BT.updateFee(reBakedDAO.connect(initiator).removeCollaborator(projectId2, packageId2, collaborator2.address, false))
-				
+			await BT.updateFee(reBakedDAO.connect(initiator).removeCollaborator(projectId2, packageId2, collaborator2.address, false));
+
 			const currentTime = await getTimestamp();
 			let addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId2, collaborator2.address);
 			expect(addedCollaborator2.disputeExpiresAt).to.closeTo(currentTime + TWO_DAYS, 10);
@@ -1202,7 +1202,7 @@ describe.only("ReBakedDAO", () => {
 
 		it("Wait for 3 days -> Expired disputed for Collaborator 2", async () => {
 			await skipTime(THREE_DAYS);
-			await BT.expect(reBakedDAO.connect(collaborator2).defendRemoval(projectId2, packageId2)).to.revertedWith("dispute period already expired")
+			await BT.expect(reBakedDAO.connect(collaborator2).defendRemoval(projectId2, packageId2)).to.revertedWith("dispute period already expired");
 		});
 
 		it("Approve Collaborator 3", async () => {
@@ -1217,7 +1217,7 @@ describe.only("ReBakedDAO", () => {
 		});
 
 		it("Initiator Settle expired dispute for collaborator 2", async () => {
-			await BT.updateFee(reBakedDAO.connect(initiator).settleExpiredDispute(projectId2, packageId2, collaborator2.address))
+			await BT.updateFee(reBakedDAO.connect(initiator).settleExpiredDispute(projectId2, packageId2, collaborator2.address));
 
 			let addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId2, collaborator2.address);
 			expect(addedCollaborator2.disputeExpiresAt).to.equal(0);
@@ -1260,6 +1260,567 @@ describe.only("ReBakedDAO", () => {
 		it("Collaborator 1 and 2 try to claim MGP but revert", async () => {
 			await BT.expect(reBakedDAO.connect(collaborator1).claimMgp(projectId2, packageId2)).to.revertedWith("no such collaborator");
 			await BT.expect(reBakedDAO.connect(collaborator2).claimMgp(projectId2, packageId2)).to.revertedWith("no such collaborator");
-		})
+		});
+
+		it("Check balance after flow", async () => {
+			let project2 = await reBakedDAO.getProjectData(projectId2);
+
+			const flowName = "flow9";
+			await initiatorBT.takeSnapshot(flowName);
+			await treasuryBT.takeSnapshot(flowName);
+			await collaborator1BT.takeSnapshot(flowName);
+			await collaborator2BT.takeSnapshot(flowName);
+			await collaborator3BT.takeSnapshot(flowName);
+			await observer1BT.takeSnapshot(flowName);
+			await observer2BT.takeSnapshot(flowName);
+
+			const collaborator1Diff = collaborator1BT.diff("flow8", flowName);
+			const collaborator2Diff = collaborator2BT.diff("flow8", flowName);
+			const collaborator3Diff = collaborator3BT.diff("flow8", flowName);
+
+			expect(collaborator1Diff[project2.token].delta).to.equal(0);
+			expect(collaborator2Diff[project2.token].delta).to.equal(0);
+			expect(collaborator3Diff[project2.token].delta).to.equal(TOKEN_20);
+		});
+	});
+
+	describe("Initiator remove collaborator again after resolving dispute (Project 2, Package 3)", async () => {
+		let packageId3: string;
+
+		it("Add package 3", async () => {
+			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId2, TOKEN_100.mul(2), TOKEN_40, TOKEN_100, 4));
+			receipt = await tx.wait();
+			packageId3 = receipt.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
+			const project2 = await reBakedDAO.getProjectData(projectId2);
+			expect(project2.budgetAllocated).to.equal(TOKEN_100.mul(5).add(TOKEN_50));
+			expect(project2.totalPackages).to.equal(3);
+
+			const package2 = await reBakedDAO.getPackageData(projectId2, packageId3);
+			const currentTime = await getTimestamp();
+			expect(package2.budget).to.equal(TOKEN_100.mul(2));
+			expect(package2.bonus).to.equal(TOKEN_40);
+			expect(package2.budgetObservers).to.equal(TOKEN_100);
+			expect(package2.maxCollaborators).to.equal(4);
+			expect(package2.isActive).to.be.true;
+			expect(package2.timeCreated).to.closeTo(currentTime, 10);
+		});
+
+		it("Add 2 collaborators", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).addCollaborator(projectId2, packageId3, collaborator1.address, TOKEN_50));
+			await BT.updateFee(reBakedDAO.connect(initiator).addCollaborator(projectId2, packageId3, collaborator2.address, TOKEN_40));
+			const currentTime = await getTimestamp();
+			let addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId3, collaborator1.address);
+			let addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId3, collaborator2.address);
+
+			expect(addedCollaborator1.mgp).to.equal(TOKEN_50);
+			expect(addedCollaborator1.timeCreated).to.closeTo(currentTime, 10);
+			expect(addedCollaborator2.mgp).to.equal(TOKEN_40);
+			expect(addedCollaborator2.timeCreated).to.closeTo(currentTime, 10);
+
+			const package3 = await reBakedDAO.getPackageData(projectId2, packageId3);
+			expect(package3.budgetAllocated).to.equal(TOKEN_50.add(TOKEN_40));
+			expect(package3.totalCollaborators).to.equal(2);
+		});
+
+		it("Remove Collaborator 1 with no MGP", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).removeCollaborator(projectId2, packageId3, collaborator1.address, false));
+
+			const currentTime = await getTimestamp();
+			let addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId3, collaborator1.address);
+			expect(addedCollaborator1.disputeExpiresAt).to.closeTo(currentTime + TWO_DAYS, 10);
+
+			const package2 = await reBakedDAO.getPackageData(projectId2, packageId3);
+			expect(package2.disputesCount).to.equal(1);
+		});
+
+		it("Collaborator 1 defend removal", async () => {
+			await BT.updateFee(reBakedDAO.connect(collaborator1).defendRemoval(projectId2, packageId3));
+
+			const currentTime = await getTimestamp();
+			let addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId3, collaborator1.address);
+			expect(addedCollaborator1.resolveExpiresAt).to.closeTo(currentTime + THREE_DAYS, 10);
+		});
+
+		it("Resolve dispute Collaborator 1 with MGP", async () => {
+			await reBakedDAO.connect(owner).resolveDispute(projectId2, packageId3, collaborator1.address, true);
+
+			const package3 = await reBakedDAO.getPackageData(projectId2, packageId3);
+			expect(package3.budgetPaid).to.equal(TOKEN_50);
+			expect(package3.budgetAllocated).to.equal(TOKEN_40);
+			expect(package3.totalCollaborators).to.equal(1);
+			expect(package3.disputesCount).to.equal(0);
+
+			const addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId3, collaborator1.address);
+			expect(addedCollaborator1.isRemoved).to.be.true;
+			expect(addedCollaborator1.disputeExpiresAt).to.equal(0);
+			expect(addedCollaborator1.resolveExpiresAt).to.equal(0);
+
+			const project1 = await reBakedDAO.getProjectData(projectId2);
+			expect(project1.budgetPaid).to.equal(TOKEN_100.mul(2).add(TOKEN_40));
+		});
+
+		it("Initiator remove Collaborator 1 again with no MGP but revert", async () => {
+			await BT.expect(reBakedDAO.connect(initiator).removeCollaborator(projectId2, packageId3, collaborator1.address, false)).to.revertedWith("no such collaborator");
+		});
+
+		it("Approve Collaborator 2", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).approveCollaborator(projectId2, packageId3, collaborator2.address));
+			let addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId3, collaborator2.address);
+
+			const currentTime = await getTimestamp();
+			expect(addedCollaborator2.timeMgpApproved).to.closeTo(currentTime, 10);
+
+			const package3 = await reBakedDAO.getPackageData(projectId2, packageId3);
+			expect(package3.approvedCollaborators).to.equal(1);
+		});
+
+		it("Finish package 3", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).finishPackage(projectId2, packageId3));
+
+			const package3 = await reBakedDAO.getPackageData(projectId2, packageId3);
+			const currentTime = await getTimestamp();
+			expect(package3.isActive).to.be.false;
+			expect(package3.timeFinished).to.closeTo(currentTime, 10);
+
+			const project2 = await reBakedDAO.getProjectData(projectId2);
+			expect(project2.budgetAllocated).to.equal(TOKEN_100.mul(3).sub(TOKEN_10));
+			expect(project2.totalFinishedPackages).to.equal(3);
+		});
+
+		it("Collaborator 2 claim MGP", async () => {
+			let addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId3, collaborator2.address);
+			await BT.updateFee(reBakedDAO.connect(collaborator2).claimMgp(projectId2, packageId3));
+
+			const currentTime = await getTimestamp();
+			addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId3, collaborator2.address);
+			expect(addedCollaborator2.timeMgpPaid).to.closeTo(currentTime, 10);
+
+			const package3 = await reBakedDAO.getPackageData(projectId2, packageId3);
+			expect(package3.budgetPaid).to.equal(TOKEN_40.add(TOKEN_50));
+
+			const project2 = await reBakedDAO.getProjectData(projectId2);
+			expect(project2.budgetPaid).to.equal(TOKEN_100.mul(3).sub(TOKEN_20));
+		});
+
+		it("Check balance after flow", async () => {
+			let project2 = await reBakedDAO.getProjectData(projectId2);
+
+			const flowName = "flow10";
+			await initiatorBT.takeSnapshot(flowName);
+			await treasuryBT.takeSnapshot(flowName);
+			await collaborator1BT.takeSnapshot(flowName);
+			await collaborator2BT.takeSnapshot(flowName);
+			await collaborator3BT.takeSnapshot(flowName);
+			await observer1BT.takeSnapshot(flowName);
+			await observer2BT.takeSnapshot(flowName);
+
+			const collaborator1Diff = collaborator1BT.diff("flow9", flowName);
+			const collaborator2Diff = collaborator2BT.diff("flow9", flowName);
+
+			expect(collaborator1Diff[project2.token].delta).to.equal(TOKEN_50);
+			expect(collaborator2Diff[project2.token].delta).to.equal(TOKEN_40);
+		});
+	});
+
+	describe("Collaborator defend removal again after resolving dispute (Project 2, Package 4)", async () => {
+		let packageId4: string;
+
+		it("Add package 4", async () => {
+			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId2, TOKEN_100.add(TOKEN_50), TOKEN_30, TOKEN_50, 4));
+			receipt = await tx.wait();
+			packageId4 = receipt.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
+			const project2 = await reBakedDAO.getProjectData(projectId2);
+			expect(project2.budgetAllocated).to.equal(TOKEN_100.mul(5).add(TOKEN_20));
+			expect(project2.totalPackages).to.equal(4);
+
+			const package4 = await reBakedDAO.getPackageData(projectId2, packageId4);
+			const currentTime = await getTimestamp();
+			expect(package4.budget).to.equal(TOKEN_100.add(TOKEN_50));
+			expect(package4.bonus).to.equal(TOKEN_30);
+			expect(package4.budgetObservers).to.equal(TOKEN_50);
+			expect(package4.maxCollaborators).to.equal(4);
+			expect(package4.isActive).to.be.true;
+			expect(package4.timeCreated).to.closeTo(currentTime, 10);
+		});
+
+		it("Add 2 collaborators", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).addCollaborator(projectId2, packageId4, collaborator1.address, TOKEN_50));
+			await BT.updateFee(reBakedDAO.connect(initiator).addCollaborator(projectId2, packageId4, collaborator2.address, TOKEN_40));
+			const currentTime = await getTimestamp();
+			let addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId4, collaborator1.address);
+			let addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId4, collaborator2.address);
+
+			expect(addedCollaborator1.mgp).to.equal(TOKEN_50);
+			expect(addedCollaborator1.timeCreated).to.closeTo(currentTime, 10);
+			expect(addedCollaborator2.mgp).to.equal(TOKEN_40);
+			expect(addedCollaborator2.timeCreated).to.closeTo(currentTime, 10);
+
+			const package4 = await reBakedDAO.getPackageData(projectId2, packageId4);
+			expect(package4.budgetAllocated).to.equal(TOKEN_50.add(TOKEN_40));
+			expect(package4.totalCollaborators).to.equal(2);
+		});
+
+		it("Approve Collaborator 2", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).approveCollaborator(projectId2, packageId4, collaborator2.address));
+			let addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId4, collaborator2.address);
+
+			const currentTime = await getTimestamp();
+			expect(addedCollaborator2.timeMgpApproved).to.closeTo(currentTime, 10);
+
+			const package4 = await reBakedDAO.getPackageData(projectId2, packageId4);
+			expect(package4.approvedCollaborators).to.equal(1);
+		});
+
+		it("Remove Collaborator 1 with no MGP", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).removeCollaborator(projectId2, packageId4, collaborator1.address, false));
+
+			const currentTime = await getTimestamp();
+			let addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId4, collaborator1.address);
+			expect(addedCollaborator1.disputeExpiresAt).to.closeTo(currentTime + TWO_DAYS, 10);
+
+			const package2 = await reBakedDAO.getPackageData(projectId2, packageId4);
+			expect(package2.disputesCount).to.equal(1);
+		});
+
+		it("Collaborator 1 defend removal", async () => {
+			await BT.updateFee(reBakedDAO.connect(collaborator1).defendRemoval(projectId2, packageId4));
+
+			const currentTime = await getTimestamp();
+			let addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId4, collaborator1.address);
+			expect(addedCollaborator1.resolveExpiresAt).to.closeTo(currentTime + THREE_DAYS, 10);
+		});
+
+		it("Resolve dispute Collaborator 1 with no MGP", async () => {
+			await reBakedDAO.connect(owner).resolveDispute(projectId2, packageId4, collaborator1.address, false);
+
+			const package4 = await reBakedDAO.getPackageData(projectId2, packageId4);
+			expect(package4.disputesCount).to.equal(0);
+			expect(package4.totalCollaborators).to.equal(1);
+			expect(package4.budgetAllocated).to.equal(TOKEN_40);
+
+			const addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId4, collaborator1.address);
+			expect(addedCollaborator1.isRemoved).to.be.true;
+			expect(addedCollaborator1.disputeExpiresAt).to.equal(0);
+			expect(addedCollaborator1.resolveExpiresAt).to.equal(0);
+		});
+
+		it("Collaborator 1 defend removal again", async () => {
+			await BT.expect(reBakedDAO.connect(collaborator1).defendRemoval(projectId2, packageId4)).to.revertedWith("no such collaborator");
+		});
+
+		it("Finish package 4", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).finishPackage(projectId2, packageId4));
+
+			const package4 = await reBakedDAO.getPackageData(projectId2, packageId4);
+			const currentTime = await getTimestamp();
+			expect(package4.isActive).to.be.false;
+			expect(package4.timeFinished).to.closeTo(currentTime, 10);
+
+			const project2 = await reBakedDAO.getProjectData(projectId2);
+			expect(project2.budgetAllocated).to.equal(TOKEN_100.mul(4).sub(TOKEN_40));
+			expect(project2.totalFinishedPackages).to.equal(4);
+		});
+
+		it("Collaborator 2 claim MGP", async () => {
+			let addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId4, collaborator2.address);
+			await BT.updateFee(reBakedDAO.connect(collaborator2).claimMgp(projectId2, packageId4));
+
+			const currentTime = await getTimestamp();
+			addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId4, collaborator2.address);
+			expect(addedCollaborator2.timeMgpPaid).to.closeTo(currentTime, 10);
+
+			const package4 = await reBakedDAO.getPackageData(projectId2, packageId4);
+			expect(package4.budgetPaid).to.equal(TOKEN_40);
+
+			const project2 = await reBakedDAO.getProjectData(projectId2);
+			expect(project2.budgetPaid).to.equal(TOKEN_100.mul(3).add(TOKEN_20));
+		});
+
+		it("Check balance after flow", async () => {
+			let project2 = await reBakedDAO.getProjectData(projectId2);
+
+			const flowName = "flow11";
+			await initiatorBT.takeSnapshot(flowName);
+			await treasuryBT.takeSnapshot(flowName);
+			await collaborator1BT.takeSnapshot(flowName);
+			await collaborator2BT.takeSnapshot(flowName);
+			await collaborator3BT.takeSnapshot(flowName);
+			await observer1BT.takeSnapshot(flowName);
+			await observer2BT.takeSnapshot(flowName);
+
+			const collaborator1Diff = collaborator1BT.diff("flow10", flowName);
+			const collaborator2Diff = collaborator2BT.diff("flow10", flowName);
+
+			expect(collaborator1Diff[project2.token].delta).to.equal(0);
+			expect(collaborator2Diff[project2.token].delta).to.equal(TOKEN_40);
+		});
+	});
+
+	describe("Collaborator defend removal but owner do not resolve dispute and initiator settle (Project 2, Package 5)", () => {
+		let packageId5: string;
+		it("Add package 5", async () => {
+			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId2, TOKEN_100, TOKEN_30, TOKEN_50, 4));
+			receipt = await tx.wait();
+			packageId5 = receipt.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
+			const project2 = await reBakedDAO.getProjectData(projectId2);
+			expect(project2.budgetAllocated).to.equal(TOKEN_100.mul(5).add(TOKEN_40));
+			expect(project2.totalPackages).to.equal(5);
+
+			const package5 = await reBakedDAO.getPackageData(projectId2, packageId5);
+			const currentTime = await getTimestamp();
+			expect(package5.budget).to.equal(TOKEN_100);
+			expect(package5.bonus).to.equal(TOKEN_30);
+			expect(package5.budgetObservers).to.equal(TOKEN_50);
+			expect(package5.maxCollaborators).to.equal(4);
+			expect(package5.isActive).to.be.true;
+			expect(package5.timeCreated).to.closeTo(currentTime, 10);
+		});
+
+		it("Add 2 collaborators", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).addCollaborator(projectId2, packageId5, collaborator1.address, TOKEN_30));
+			await BT.updateFee(reBakedDAO.connect(initiator).addCollaborator(projectId2, packageId5, collaborator2.address, TOKEN_40));
+			const currentTime = await getTimestamp();
+			let addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId5, collaborator1.address);
+			let addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId5, collaborator2.address);
+
+			expect(addedCollaborator1.mgp).to.equal(TOKEN_30);
+			expect(addedCollaborator1.timeCreated).to.closeTo(currentTime, 10);
+			expect(addedCollaborator2.mgp).to.equal(TOKEN_40);
+			expect(addedCollaborator2.timeCreated).to.closeTo(currentTime, 10);
+
+			const package5 = await reBakedDAO.getPackageData(projectId2, packageId5);
+			expect(package5.budgetAllocated).to.equal(TOKEN_30.add(TOKEN_40));
+			expect(package5.totalCollaborators).to.equal(2);
+		});
+
+		it("Approve Collaborator 1", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).approveCollaborator(projectId2, packageId5, collaborator1.address));
+			let addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId5, collaborator1.address);
+
+			const currentTime = await getTimestamp();
+			expect(addedCollaborator1.timeMgpApproved).to.closeTo(currentTime, 10);
+
+			const package5 = await reBakedDAO.getPackageData(projectId2, packageId5);
+			expect(package5.approvedCollaborators).to.equal(1);
+		});
+
+		it("Remove Collaborator 2 with no MGP", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).removeCollaborator(projectId2, packageId5, collaborator2.address, false));
+
+			const currentTime = await getTimestamp();
+			let addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId5, collaborator2.address);
+			expect(addedCollaborator2.disputeExpiresAt).to.closeTo(currentTime + TWO_DAYS, 10);
+
+			const package5 = await reBakedDAO.getPackageData(projectId2, packageId5);
+			expect(package5.disputesCount).to.equal(1);
+		});
+
+		it("Collaborator 2 defend removal", async () => {
+			await BT.updateFee(reBakedDAO.connect(collaborator2).defendRemoval(projectId2, packageId5));
+
+			const currentTime = await getTimestamp();
+			let addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId5, collaborator2.address);
+			expect(addedCollaborator2.resolveExpiresAt).to.closeTo(currentTime + THREE_DAYS, 10);
+		});
+
+		it("Wait for 3 days -> Expired disputed for Collaborator 2", async () => {
+			await skipTime(THREE_DAYS + 1);
+			await expect(reBakedDAO.connect(owner).resolveDispute(projectId2, packageId5, collaborator2.address, true)).to.revertedWith("resolve period already expired");
+		});
+
+		it("Initiator settles dispute for Collaborator 2", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).settleExpiredDispute(projectId2, packageId5, collaborator2.address));
+
+			let addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId5, collaborator2.address);
+			expect(addedCollaborator2.disputeExpiresAt).to.equal(0);
+			expect(addedCollaborator2.resolveExpiresAt).to.equal(0);
+
+			const package5 = await reBakedDAO.getPackageData(projectId2, packageId5);
+			expect(package5.budgetAllocated).to.equal(TOKEN_30);
+			expect(package5.disputesCount).to.equal(0);
+		});
+
+		it("Finish package 5", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).finishPackage(projectId2, packageId5));
+
+			const package5 = await reBakedDAO.getPackageData(projectId2, packageId5);
+			const currentTime = await getTimestamp();
+			expect(package5.isActive).to.be.false;
+			expect(package5.timeFinished).to.closeTo(currentTime, 10);
+
+			const project2 = await reBakedDAO.getProjectData(projectId2);
+			expect(project2.budgetAllocated).to.equal(TOKEN_100.mul(4).add(TOKEN_20));
+			expect(project2.totalFinishedPackages).to.equal(5);
+		});
+
+		it("Collaborator 1 claim MGP", async () => {
+			let addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId5, collaborator1.address);
+			await BT.updateFee(reBakedDAO.connect(collaborator1).claimMgp(projectId2, packageId5));
+
+			const currentTime = await getTimestamp();
+			addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId5, collaborator1.address);
+			expect(addedCollaborator1.timeMgpPaid).to.closeTo(currentTime, 10);
+
+			const package4 = await reBakedDAO.getPackageData(projectId2, packageId5);
+			expect(package4.budgetPaid).to.equal(TOKEN_30);
+
+			const project2 = await reBakedDAO.getProjectData(projectId2);
+			expect(project2.budgetPaid).to.equal(TOKEN_100.mul(3).add(TOKEN_50));
+		});
+
+		it("Check balance after flow", async () => {
+			let project2 = await reBakedDAO.getProjectData(projectId2);
+
+			const flowName = "flow12";
+			await initiatorBT.takeSnapshot(flowName);
+			await treasuryBT.takeSnapshot(flowName);
+			await collaborator1BT.takeSnapshot(flowName);
+			await collaborator2BT.takeSnapshot(flowName);
+			await collaborator3BT.takeSnapshot(flowName);
+			await observer1BT.takeSnapshot(flowName);
+			await observer2BT.takeSnapshot(flowName);
+
+			const collaborator1Diff = collaborator1BT.diff("flow11", flowName);
+			const collaborator2Diff = collaborator2BT.diff("flow11", flowName);
+
+			expect(collaborator1Diff[project2.token].delta).to.equal(TOKEN_30);
+			expect(collaborator2Diff[project2.token].delta).to.equal(0);
+		});
+	});
+
+	describe("Cancel package (Project 2 package 6)", () => {
+		let packageId6: string;
+
+		it("Add package 6", async () => {
+			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId2, TOKEN_100, TOKEN_30, TOKEN_50, 4));
+			receipt = await tx.wait();
+			packageId6 = receipt.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
+			const project2 = await reBakedDAO.getProjectData(projectId2);
+			expect(project2.budgetAllocated).to.equal(TOKEN_100.mul(6));
+			expect(project2.totalPackages).to.equal(6);
+
+			const package6 = await reBakedDAO.getPackageData(projectId2, packageId6);
+			const currentTime = await getTimestamp();
+			expect(package6.budget).to.equal(TOKEN_100);
+			expect(package6.bonus).to.equal(TOKEN_30);
+			expect(package6.budgetObservers).to.equal(TOKEN_50);
+			expect(package6.maxCollaborators).to.equal(4);
+			expect(package6.isActive).to.be.true;
+			expect(package6.timeCreated).to.closeTo(currentTime, 10);
+		});
+
+		it("Add 3 collaborators", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).addCollaborator(projectId2, packageId6, collaborator1.address, TOKEN_30));
+			await BT.updateFee(reBakedDAO.connect(initiator).addCollaborator(projectId2, packageId6, collaborator2.address, TOKEN_30));
+			await BT.updateFee(reBakedDAO.connect(initiator).addCollaborator(projectId2, packageId6, collaborator3.address, TOKEN_30));
+			const currentTime = await getTimestamp();
+			let addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId6, collaborator1.address);
+			let addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId6, collaborator2.address);
+			let addedCollaborator3 = await reBakedDAO.getCollaboratorData(projectId2, packageId6, collaborator3.address);
+
+			expect(addedCollaborator1.mgp).to.equal(TOKEN_30);
+			expect(addedCollaborator1.timeCreated).to.closeTo(currentTime, 10);
+			expect(addedCollaborator2.mgp).to.equal(TOKEN_30);
+			expect(addedCollaborator2.timeCreated).to.closeTo(currentTime, 10);
+			expect(addedCollaborator3.mgp).to.equal(TOKEN_30);
+			expect(addedCollaborator3.timeCreated).to.closeTo(currentTime, 10);
+
+			const package6 = await reBakedDAO.getPackageData(projectId2, packageId6);
+			expect(package6.budgetAllocated).to.equal(TOKEN_30.mul(3));
+			expect(package6.totalCollaborators).to.equal(3);
+		});
+
+		it("Approve 3 collaborators", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).approveCollaborator(projectId2, packageId6, collaborator1.address));
+			await BT.updateFee(reBakedDAO.connect(initiator).approveCollaborator(projectId2, packageId6, collaborator2.address));
+			await BT.updateFee(reBakedDAO.connect(initiator).approveCollaborator(projectId2, packageId6, collaborator3.address));
+
+			const addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId6, collaborator1.address);
+			const addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId6, collaborator2.address);
+			const addedCollaborator3 = await reBakedDAO.getCollaboratorData(projectId2, packageId6, collaborator3.address);
+
+			const currentTime = await getTimestamp();
+			expect(addedCollaborator1.timeMgpApproved).to.closeTo(currentTime, 10);
+			expect(addedCollaborator2.timeMgpApproved).to.closeTo(currentTime, 10);
+			expect(addedCollaborator3.timeMgpApproved).to.closeTo(currentTime, 10);
+
+			const package6 = await reBakedDAO.getPackageData(projectId2, packageId6);
+			expect(package6.approvedCollaborators).to.equal(3);
+		});
+
+		it("Add 2 observers", async () => {
+			await BT.updateFee(reBakedDAO.connect(initiator).addObserver(projectId2, [packageId6], observer1.address));
+			await BT.updateFee(reBakedDAO.connect(initiator).addObserver(projectId2, [packageId6], observer2.address));
+
+			const currentTime = await getTimestamp();
+			let addedObserver1 = await reBakedDAO.getObserverData(projectId2, packageId6, observer1.address);
+			let addedObserver2 = await reBakedDAO.getObserverData(projectId2, packageId6, observer2.address);
+			expect(addedObserver1.timeCreated).to.closeTo(currentTime, 10);
+			expect(addedObserver2.timeCreated).to.closeTo(currentTime, 10);
+
+			const package6 = await reBakedDAO.getPackageData(projectId2, packageId6);
+			expect(package6.totalObservers).to.equal(2);
+		});
+
+		it("Cancel package 6 but not pay mgp for collaborator 3", async () => {
+			await BT.expect(reBakedDAO.connect(initiator).cancelPackage(projectId2, packageId6, [collaborator1.address, collaborator2.address, collaborator3.address], [observer1.address, observer2.address]))
+			.to.emit(
+				reBakedDAO,
+				"CanceledPackage"
+			);
+
+			const package6 = await reBakedDAO.getPackageData(projectId2, packageId6);
+			const currentTime = await getTimestamp();
+			expect(package6.timeCanceled).to.closeTo(currentTime, 10);
+			expect(package6.isActive).to.be.false;
+			expect(package6.budgetPaid).to.equal(TOKEN_30.mul(3));
+			expect(package6.budgetObserversPaid).to.equal(TOKEN_50);
+
+			const project2 = await reBakedDAO.getProjectData(projectId2);
+			expect(project2.budgetPaid).to.equal(TOKEN_100.mul(5).sub(TOKEN_10));
+			expect(project2.totalPackages).to.equal(5);
+			expect(project2.budgetAllocated).to.equal(TOKEN_50.mul(11).add(TOKEN_10));
+
+			const addedCollaborator1 = await reBakedDAO.getCollaboratorData(projectId2, packageId6, collaborator1.address);
+			const addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId2, packageId6, collaborator2.address);
+			const addedCollaborator3 = await reBakedDAO.getCollaboratorData(projectId2, packageId6, collaborator3.address);
+			expect(addedCollaborator1.timeMgpPaid).to.closeTo(currentTime, 10);
+			expect(addedCollaborator2.timeMgpPaid).to.closeTo(currentTime, 10);
+			expect(addedCollaborator3.timeMgpPaid).to.closeTo(currentTime, 10);
+
+			const addedObserver1 = await reBakedDAO.getObserverData(projectId2, packageId6, observer1.address);
+			const addedObserver2 = await reBakedDAO.getObserverData(projectId2, packageId6, observer2.address);
+			expect(addedObserver1.timePaid).to.closeTo(currentTime, 10);
+			expect(addedObserver2.timePaid).to.closeTo(currentTime, 10);
+		});
+
+		it("Collaborator 3 try to claim mgp but revert", async () => {
+			await BT.expect(reBakedDAO.connect(collaborator3).claimMgp(projectId2, packageId6)).to.revertedWith("mgp already paid");
+		});
+
+		it("Check balance after flow", async () => {
+			let project2 = await reBakedDAO.getProjectData(projectId2);
+
+			const flowName = "flow13";
+			await initiatorBT.takeSnapshot(flowName);
+			await treasuryBT.takeSnapshot(flowName);
+			await collaborator1BT.takeSnapshot(flowName);
+			await collaborator2BT.takeSnapshot(flowName);
+			await collaborator3BT.takeSnapshot(flowName);
+			await observer1BT.takeSnapshot(flowName);
+			await observer2BT.takeSnapshot(flowName);
+
+			const collaborator1Diff = collaborator1BT.diff("flow12", flowName);
+			const collaborator2Diff = collaborator2BT.diff("flow12", flowName);
+			const collaborator3Diff = collaborator3BT.diff("flow12", flowName);
+			const observer1Diff = observer1BT.diff("flow12", flowName);
+			const observer2Diff = observer2BT.diff("flow12", flowName);
+
+			expect(collaborator1Diff[project2.token].delta).to.equal(TOKEN_30);
+			expect(collaborator2Diff[project2.token].delta).to.equal(TOKEN_30);
+			expect(collaborator3Diff[project2.token].delta).to.equal(TOKEN_30);
+			expect(observer1Diff[project2.token].delta).to.equal(TOKEN_20.add(TOKEN_5));
+			expect(observer2Diff[project2.token].delta).to.equal(TOKEN_20.add(TOKEN_5));
+		});
 	});
 });
