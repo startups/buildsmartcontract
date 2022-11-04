@@ -178,7 +178,7 @@ Each flow will run sequence by sequence
 9. Cancel **package 1**
 10. Check balance after flow
 
-### 15. Paymgp for unapprove collaborator (Project 3 package 2)
+### 15. Remove collaborator because of claiming before approving (Project 3 package 2)
 1. Add **package 2**
 2. Add **2 collaborators**
 3. **Collaborator 1** try to claim `MGP` but revert
