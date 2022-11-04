@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
 import { parseUnits, formatBytes32String, parseEther } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { ReBakedDAO, ReBakedDAO__factory, TokenFactory, TokenFactory__factory, IOUToken, IOUToken__factory } from "../typechain-types";
+import { ReBakedDAO, ReBakedDAO__factory, TokenFactory, TokenFactory__factory, IOUToken, IOUToken__factory } from "../typechain-types/index";
 import { ZERO_ADDRESS, MAX_UINT256, getTimestamp, getBlock, solidityKeccak256, skipTime } from "./utils";
 import { Result } from "@ethersproject/abi";
 import { ContractReceipt, ContractTransaction } from "ethers";
@@ -873,7 +873,7 @@ describe("ReBakedDAO", () => {
 
 			const currentProject = await reBakedDAO.getProjectData(projectId);
 			expect(currentProject.totalPackages).to.equal(0);
-			expect(currentProject.budgetAllocated).to.equal(parseUnits("70", 18));
+			expect(currentProject.budgetAllocated).to.equal(parseUnits("60", 18));
 		});
 	});
 

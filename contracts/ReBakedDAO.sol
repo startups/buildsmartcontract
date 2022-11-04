@@ -234,7 +234,8 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
 
         for (uint256 i = 0; i < _observers.length; i++) payObserverFee(_projectId, _packageId, _observers[i]);
 
-        uint256 budgetToBeReverted_ = package.budget - package.budgetPaid;
+        uint256 budgetToBeReverted_ = package.budget - package.budgetPaid + package.bonus;
+        budgetToBeReverted_ += (package.totalObservers == 0) ? package.budgetObservers : 0;
         projectData[_projectId]._revertPackageBudget(budgetToBeReverted_);
 
         emit CanceledPackage(_projectId, _packageId, budgetToBeReverted_);

@@ -48,7 +48,7 @@ Each flow will run sequence by sequence
 1. Add **package 3**
 2. Add **3 collaborators**
 3. Remove **Collaborator 1** with no `MGP` and **Collaborator 1** do not defend removal
-4. **Initiator** Settle expired dispute for collaborator 1
+4. **Initiator** Settle expired dispute for **Collaborator 1**
 5. Remove **Collaborator 2** with `MGP`
 6. Approve **Collaborator 3**
 7. Finish **package 3**
@@ -114,11 +114,12 @@ Each flow will run sequence by sequence
 5. Resolve dispute **Collaborator 1** with no `MGP`
 6. Remove **Collaborator 2** with no `MGP`
 7. Wait for 3 days -> Expired disputed for **Collaborator 2**
-8. Approve **Collaborator 3**
-9. Finish **package 2**
-10. Pay `MGP` to **Collaborator 3**
-11. **Collaborator 3** try to claim `MGP` but revert
-12. Check balance after flow
+8. Initiator Settle expired dispute for **Collaborator 1**
+9. Approve **Collaborator 3**
+10. Finish **package 2**
+11. Pay `MGP` to **Collaborator 3**
+12. **Collaborator 3** try to claim `MGP` but revert
+13. Check balance after flow
 
 ### 10. Initiator remove collaborator again after resolving dispute (Project 2, Package 3)
 1. Add **package 3**
@@ -155,5 +156,15 @@ Each flow will run sequence by sequence
 8. Finish **package 5**
 10. **Collaborator 1** claim `MGP`
 11. Check balance after flow
+
+### 13. Cancel package (Project 2 package 6)
+1. Add **package 6**
+2. Add **3 collaborators**
+3. Approve **3 collaborators**
+3. Add **2 observers**
+4. Cancel **package 6** but not pay mgp for **collaborator 3**
+5. **Collaborator 3** claim mgp but revert
+6. **Initiator** try to pay mgp for **collaborator 3** but revert
+7. Check balance after flow
 
 
