@@ -44,7 +44,7 @@ library PackageLibrary {
      * @param package_ Package want to cancel
      */
     function _cancelPackage(Package storage package_) internal onlyActivePackage(package_) {
-        require(package_.disputesCount == 0, 'package has unresolved disputes');
+        require(package_.disputesCount == 0, "package has unresolved disputes");
         package_.timeCanceled = block.timestamp;
         package_.isActive = false;
     }
