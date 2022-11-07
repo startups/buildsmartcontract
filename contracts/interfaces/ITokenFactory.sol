@@ -2,5 +2,8 @@
 pragma solidity ^0.8.10;
 
 interface ITokenFactory {
-    function deployToken(uint256 totalSupply_) external returns (address);
+    event DeployedToken(address indexed token, uint256 indexed totalSupply);
+    event SetRebakedDao(address indexed oldRebakedDao, address indexed newRebakedDao);
+
+    function deployToken(uint256 totalSupply_, string memory name_, string memory symbol_) external returns (address);
 }

@@ -25,6 +25,7 @@ const TOKEN_100 = parseUnits("100", 18);
 const TOKEN_1000 = parseUnits("1000", 18);
 const TWO_DAYS = 2 * 24 * 60 * 60;
 const THREE_DAYS = 3 * 24 * 60 * 60;
+const tokenName = "Pioneer", tokenSymbol = "PIO";
 
 let projectId1: string, projectId2: string, projectId3: string;
 let initiator: SignerWithAddress;
@@ -49,7 +50,7 @@ describe("ReBakedDAO", () => {
 		const ReBakedDAO = (await ethers.getContractFactory("ReBakedDAO")) as ReBakedDAO__factory;
 
 		tokenFactory = (await upgrades.deployProxy(TokenFactory, [])) as TokenFactory;
-		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000");
+		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000", tokenName, tokenSymbol);
 		reBakedDAO = (await upgrades.deployProxy(ReBakedDAO, [treasury.address, tokenFactory.address])) as ReBakedDAO;
 		await reBakedDAO.deployed();
 
@@ -918,7 +919,7 @@ describe("ReBakedDAO", () => {
 		});
 
 		it("Start project 2", async () => {
-			await expect(reBakedDAO.connect(initiator).startProject(projectId2))
+			await expect(reBakedDAO.connect(initiator).startProject(projectId2, tokenName, tokenSymbol))
 				.to.emit(reBakedDAO, "StartedProject")
 				.withArgs(projectId2, TOKEN_1000);
 			let project2 = await reBakedDAO.getProjectData(projectId2);

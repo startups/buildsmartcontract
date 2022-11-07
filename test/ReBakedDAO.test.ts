@@ -26,6 +26,7 @@ const TOKEN_1000 = parseUnits("1000", 18);
 const ONE_DAY = 1 * 24 * 60 * 60;
 const TWO_DAYS = 2 * 24 * 60 * 60;
 const THREE_DAYS = 3 * 24 * 60 * 60;
+const tokenName = "Pioneer", tokenSymbol = "PIO";
 
 let tx: ContractTransaction;
 let receipt: ContractReceipt;
@@ -48,7 +49,7 @@ describe("ReBakedDAO", () => {
 		const ReBakedDAO = (await ethers.getContractFactory("ReBakedDAO")) as ReBakedDAO__factory;
 
 		tokenFactory = (await upgrades.deployProxy(TokenFactory, [])) as TokenFactory;
-		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000");
+		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000", tokenName, tokenSymbol);
 		reBakedDAO = (await upgrades.deployProxy(ReBakedDAO, [treasury.address, tokenFactory.address])) as ReBakedDAO;
 		await reBakedDAO.deployed();
 
@@ -195,23 +196,23 @@ describe("ReBakedDAO", () => {
 		});
 
 		it("[Fail]: Caller is not the initiator of the project", async () => {
-			await expect(reBakedDAO.connect(accounts[1]).startProject(projectId)).to.revertedWith("caller is not project initiator");
+			await expect(reBakedDAO.connect(accounts[1]).startProject(projectId, tokenName, tokenSymbol)).to.revertedWith("caller is not project initiator");
 		});
 
 		it("[Fail]: Project has not been approved", async () => {
-			await expect(reBakedDAO.connect(initiator).startProject(projectId)).to.revertedWith("project is not approved");
+			await expect(reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol)).to.revertedWith("project is not approved");
 		});
 
 		it("[Fail]: Project has been started", async () => {
 			await reBakedDAO.connect(deployer).approveProject(projectId);
-			await reBakedDAO.connect(initiator).startProject(projectId);
-			await expect(reBakedDAO.connect(initiator).startProject(projectId)).to.revertedWith("project already started");
+			await reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol);
+			await expect(reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol)).to.revertedWith("project already started");
 		});
 
 		it("[OK]: Start project successfully", async () => {
 			let project = await reBakedDAO.getProjectData(projectId);
 			await reBakedDAO.connect(deployer).approveProject(projectId);
-			await expect(reBakedDAO.connect(initiator).startProject(projectId)).to.emit(reBakedDAO, "StartedProject").withArgs(projectId, TOKEN_100);
+			await expect(reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol)).to.emit(reBakedDAO, "StartedProject").withArgs(projectId, TOKEN_100);
 			const timestamp: number = await getTimestamp();
 
 			project = await reBakedDAO.getProjectData(projectId);
@@ -244,27 +245,27 @@ describe("ReBakedDAO", () => {
 
 		it("[Fail]: Project has been finished", async () => {
 			await reBakedDAO.connect(deployer).approveProject(projectId);
-			await reBakedDAO.connect(initiator).startProject(projectId);
+			await reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol);
 			await reBakedDAO.connect(initiator).finishProject(projectId);
 			await expect(reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 5)).to.revertedWith("project is finished");
 		});
 
 		it("[Fail]: Project budget left is not enough", async () => {
 			reBakedDAO.connect(deployer).approveProject(projectId);
-			await reBakedDAO.connect(initiator).startProject(projectId);
+			await reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol);
 			await expect(reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("990", 18), TOKEN_10, TOKEN_40, 5)).to.revertedWith("not enough project budget left");
 		});
 
 		it("[Fail]: Incorrect max collaborators (require 3 <= maxCollaborators <= 19)", async () => {
 			reBakedDAO.connect(deployer).approveProject(projectId);
-			await reBakedDAO.connect(initiator).startProject(projectId);
+			await reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol);
 			await expect(reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 2)).to.revertedWith("incorrect max colalborators");
 			await expect(reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 11)).to.revertedWith("incorrect max colalborators");
 		});
 
 		it("[OK]: Create new package successfully", async () => {
 			reBakedDAO.connect(deployer).approveProject(projectId);
-			await reBakedDAO.connect(initiator).startProject(projectId);
+			await reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol);
 			tx = await reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 3);
 			receipt = await tx.wait();
 			const packageId: string = receipt.events!.find((ev) => ev.event === "CreatedPackage")!.args![1];
@@ -902,14 +903,14 @@ describe("ReBakedDAO", () => {
 
 		it("[Fail]: Finish project but project has been finished before", async () => {
 			await reBakedDAO.connect(deployer).approveProject(projectId);
-			await reBakedDAO.connect(initiator).startProject(projectId);
+			await reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol);
 			await reBakedDAO.connect(initiator).finishProject(projectId);
 			await expect(reBakedDAO.connect(initiator).finishProject(projectId)).to.revertedWith("already finished project");
 		});
 
 		it("[Fail]: Finish project but project still has unfinished packages left", async () => {
 			await reBakedDAO.connect(deployer).approveProject(projectId);
-			await reBakedDAO.connect(initiator).startProject(projectId);
+			await reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol);
 
 			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 5);
 			const packageReceipt: ContractReceipt = await packageTx.wait();
@@ -923,7 +924,7 @@ describe("ReBakedDAO", () => {
 
 		it("[OK]: Finish project that does not have own token successfully", async () => {
 			await reBakedDAO.connect(deployer).approveProject(projectId);
-			await reBakedDAO.connect(initiator).startProject(projectId);
+			await reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol);
 
 			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 5);
 			const packageReceipt: ContractReceipt = await packageTx.wait();

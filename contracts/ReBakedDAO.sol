@@ -97,18 +97,18 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @dev Creates project proposal
      * @param token_ project token address, zero addres if project has not token yet
      * (IOUToken will be deployed on project approval)
-     * @param _budget total budget (has to be approved on token contract if project has its own token)
+     * @param budget_ total budget (has to be approved on token contract if project has its own token)
      *
      * @dev (`token_` == ZERO_ADDRESS) ? project has no token yet : `IOUToken` will be deployed on project approval
      * Emit {CreatedProject}
      */
-    function createProject(address token_, uint256 _budget) external nonZero(_budget) {
+    function createProject(address token_, uint256 budget_) external nonZero(budget_) {
         bytes32 _projectId = _generateProjectId();
-        projectData[_projectId]._createProject(token_, _budget);
-        emit CreatedProject(_projectId, _msgSender(), token_, _budget);
+        projectData[_projectId]._createProject(token_, budget_);
+        emit CreatedProject(_projectId, _msgSender(), token_, budget_);
         if (token_ != address(0)) {
             _approveProject(_projectId);
-            _startProject(_projectId);
+            _startProject(_projectId, "", "");
         }
     }
 
@@ -117,8 +117,10 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _projectId Id of the project
      * Emit {StartedProject}
      */
-    function startProject(bytes32 _projectId) external onlyInitiator(_projectId) {
-        _startProject(_projectId);
+    function startProject(bytes32 _projectId, string memory _name, string memory _symbol) external onlyInitiator(_projectId) {
+        require(bytes(_name).length > 0, "empty token name!");
+        require(bytes(_symbol).length > 0, "empty token symbol!");
+        _startProject(_projectId, _name, _symbol);
     }
 
     /**
@@ -629,9 +631,9 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _projectId Id of the project
      * Emit {StartedProject}
      */
-    function _startProject(bytes32 _projectId) private {
+    function _startProject(bytes32 _projectId, string memory _name, string memory _symbol) private {
         uint256 _paidAmount = projectData[_projectId].budget;
-        projectData[_projectId]._startProject(tokenFactory);
+        projectData[_projectId]._startProject(tokenFactory, _name, _symbol);
         emit StartedProject(_projectId, _paidAmount);
     }
 
