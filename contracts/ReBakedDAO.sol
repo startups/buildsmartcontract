@@ -117,7 +117,11 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _projectId Id of the project
      * Emit {StartedProject}
      */
-    function startProject(bytes32 _projectId, string memory _name, string memory _symbol) external onlyInitiator(_projectId) {
+    function startProject(
+        bytes32 _projectId,
+        string memory _name,
+        string memory _symbol
+    ) external onlyInitiator(_projectId) {
         require(bytes(_name).length > 0, "empty token name!");
         require(bytes(_symbol).length > 0, "empty token symbol!");
         _startProject(_projectId, _name, _symbol);
@@ -631,7 +635,11 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _projectId Id of the project
      * Emit {StartedProject}
      */
-    function _startProject(bytes32 _projectId, string memory _name, string memory _symbol) private {
+    function _startProject(
+        bytes32 _projectId,
+        string memory _name,
+        string memory _symbol
+    ) private {
         uint256 _paidAmount = projectData[_projectId].budget;
         projectData[_projectId]._startProject(tokenFactory, _name, _symbol);
         emit StartedProject(_projectId, _paidAmount);
