@@ -3,7 +3,6 @@ pragma solidity ^0.8.10;
 import { Package } from "./Structs.sol";
 
 library PackageLibrary {
-    uint256 public constant MIN_COLLABORATORS = 3;
     uint256 public constant MAX_COLLABORATORS = 10;
     uint256 public constant MAX_OBSERVERS = 10;
 
@@ -29,7 +28,7 @@ library PackageLibrary {
         uint256 bonus_,
         uint256 maxCollaborators_
     ) internal {
-        require(MIN_COLLABORATORS <= maxCollaborators_ && maxCollaborators_ <= MAX_COLLABORATORS, "incorrect max colalborators");
+        require(0 < maxCollaborators_ && maxCollaborators_ <= MAX_COLLABORATORS, "incorrect max colalborators");
         package_.budget = budget_;
         package_.budgetObservers = feeObserversBudget_;
         package_.bonus = bonus_;

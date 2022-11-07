@@ -256,10 +256,10 @@ describe("ReBakedDAO", () => {
 			await expect(reBakedDAO.connect(initiator).createPackage(projectId, parseUnits("990", 18), TOKEN_10, TOKEN_40, 5)).to.revertedWith("not enough project budget left");
 		});
 
-		it("[Fail]: Incorrect max collaborators (require 3 <= maxCollaborators <= 19)", async () => {
+		it("[Fail]: Incorrect max collaborators (require 0 < maxCollaborators <= 10)", async () => {
 			reBakedDAO.connect(deployer).approveProject(projectId);
 			await reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol);
-			await expect(reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 2)).to.revertedWith("incorrect max colalborators");
+			await expect(reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 0)).to.revertedWith("incorrect max colalborators");
 			await expect(reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 11)).to.revertedWith("incorrect max colalborators");
 		});
 
