@@ -38,11 +38,11 @@ contract TokenFactory is OwnableUpgradeable {
      * @param _totalSupply Token total supply
      * @return token_ IOU token address
      */
-    function deployToken(uint256 _totalSupply) external returns (address token_) {
+    function deployToken(uint256 _totalSupply, string memory _name, string memory _symbol) external returns (address token_) {
         require(reBakedDao != address(0), "reBakedDao address is not set");
-        require(msg.sender == reBakedDao, "can be called only from reBakedDao contract");
+        require(msg.sender == reBakedDao, "only reBakedDao can call");
 
-        token_ = address(new IOUToken(reBakedDao, _totalSupply));
+        token_ = address(new IOUToken(reBakedDao, _totalSupply, _name, _symbol));
         emit DeployedToken(token_, _totalSupply);
     }
 }

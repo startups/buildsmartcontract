@@ -48,13 +48,13 @@ library ProjectLibrary {
      * @param project_ reference to Project struct
      * @param tokenFactory_ address of token factory contract
      */
-    function _startProject(Project storage project_, address tokenFactory_) internal {
+    function _startProject(Project storage project_, address tokenFactory_, string memory name_, string memory symbol_) internal {
         require(project_.timeApproved > 0, "project is not approved");
         require(project_.timeStarted == 0, "project already started");
         if (project_.isOwnToken) {
             IERC20Upgradeable(project_.token).safeTransferFrom(msg.sender, address(this), project_.budget);
         } else {
-            project_.token = ITokenFactory(tokenFactory_).deployToken(project_.budget);
+            project_.token = ITokenFactory(tokenFactory_).deployToken(project_.budget, name_, symbol_);
         }
         project_.timeStarted = block.timestamp;
     }

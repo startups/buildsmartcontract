@@ -54,7 +54,7 @@ interface IReBakedDAO {
      * @notice Starts project
      * @param projectId_ Id of the project
      */
-    function startProject(bytes32 projectId_) external;
+    function startProject(bytes32 projectId_, string memory name_, string memory symbol_) external;
 
     /**
      * @notice Creates package in project
