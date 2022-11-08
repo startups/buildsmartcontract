@@ -1390,7 +1390,7 @@ describe("ReBakedDAO", () => {
 			await expect(reBakedDAO.connect(observer1).claimObserverFee(projectId, packageId1)).to.revertedWith("package is not finished/canceled");
 		});
 
-		it("[OK]: Observer claims successfully", async () => {
+		it("[OK]: Observer claims successfully without dust token", async () => {
 			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId1], observer2.address);
 			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId1);
 			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId2);
@@ -1443,6 +1443,62 @@ describe("ReBakedDAO", () => {
 			currentProject = await reBakedDAO.getProjectData(projectId);
 			expect(currentProject.budgetPaid).to.equal(parseUnits("70", 18));
 		});
+
+		it("[OK]: Observer claims successfully with dust token", async () => {
+			const observer3 = accounts[6];
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId1], observer2.address);
+			await reBakedDAO.connect(initiator).addObserver(projectId, [packageId1], observer3.address);
+
+			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId1);
+
+			// Observer 1 - Package 1
+			await expect(reBakedDAO.connect(observer1).claimObserverFee(projectId, packageId1))
+				.to.emit(reBakedDAO, "PaidObserverFee")
+				.withArgs(projectId, packageId1, observer1.address, TOKEN_40.div(3))
+				.to.changeTokenBalances(iouToken, [observer1.address], [TOKEN_40.div(3)]);
+
+			let timestamp = await getTimestamp();
+			const currentObserver11 = await reBakedDAO.getObserverData(projectId, packageId1, observer1.address);
+			expect(currentObserver11.timePaid).to.closeTo(timestamp, 10);
+
+			let currentPackage1 = await reBakedDAO.getPackageData(projectId, packageId1);
+			expect(currentPackage1.budgetObserversPaid).to.equal(TOKEN_40.div(3));
+
+			let currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.budgetPaid).to.equal(TOKEN_40.div(3));
+
+			// Observer 2 - Package 1
+			await expect(reBakedDAO.connect(observer2).claimObserverFee(projectId, packageId1))
+				.to.emit(reBakedDAO, "PaidObserverFee")
+				.withArgs(projectId, packageId1, observer2.address, TOKEN_40.div(3))
+				.to.changeTokenBalances(iouToken, [observer2.address], [TOKEN_40.div(3)]);
+
+			timestamp = await getTimestamp();
+			const currentObserver21 = await reBakedDAO.getObserverData(projectId, packageId1, observer2.address);
+			expect(currentObserver21.timePaid).to.closeTo(timestamp, 10);
+
+			currentPackage1 = await reBakedDAO.getPackageData(projectId, packageId1);
+			expect(currentPackage1.budgetObserversPaid).to.equal(TOKEN_40.div(3).mul(2));
+
+			currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.budgetPaid).to.equal(TOKEN_40.div(3).mul(2));
+
+			// Observer 3 - Package 1
+			await expect(reBakedDAO.connect(observer3).claimObserverFee(projectId, packageId1))
+				.to.emit(reBakedDAO, "PaidObserverFee")
+				.withArgs(projectId, packageId1, observer3.address, TOKEN_40.sub(TOKEN_40.div(3).mul(2)))
+				.to.changeTokenBalances(iouToken, [observer3.address], [TOKEN_40.sub(TOKEN_40.div(3).mul(2))]);
+
+			timestamp = await getTimestamp();
+			const currentObserver31 = await reBakedDAO.getObserverData(projectId, packageId1, observer3.address);
+			expect(currentObserver31.timePaid).to.closeTo(timestamp, 10);
+
+			currentPackage1 = await reBakedDAO.getPackageData(projectId, packageId1);
+			expect(currentPackage1.budgetObserversPaid).to.equal(TOKEN_40);
+
+			currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.budgetPaid).to.equal(TOKEN_40);
+		})
 	});
 
 	describe("Testing get functions", () => {
