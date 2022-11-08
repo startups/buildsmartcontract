@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 interface IReBakedDAO {
     event UpdatedTreasury(address oldTreasury, address newTreasury);
     event CreatedProject(bytes32 indexed projectId, address initiator, address token, uint256 budget);
-    event StartedProject(bytes32 indexed projectId, uint256 indexed paidAmount);
+    event StartedProject(bytes32 indexed projectId);
     event ApprovedProject(bytes32 indexed projectId);
     event FinishedProject(bytes32 indexed projectId);
     event SetBonusScores(bytes32 indexed projectId, bytes32 indexed packageId, address[] collaborators, uint256[] scores);
