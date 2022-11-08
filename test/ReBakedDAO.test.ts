@@ -212,7 +212,7 @@ describe("ReBakedDAO", () => {
 		it("[OK]: Start project successfully", async () => {
 			let project = await reBakedDAO.getProjectData(projectId);
 			await reBakedDAO.connect(deployer).approveProject(projectId);
-			await expect(reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol)).to.emit(reBakedDAO, "StartedProject").withArgs(projectId, TOKEN_100);
+			await expect(reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol)).to.emit(reBakedDAO, "StartedProject").withArgs(projectId);
 			const timestamp: number = await getTimestamp();
 
 			project = await reBakedDAO.getProjectData(projectId);

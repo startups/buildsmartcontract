@@ -921,7 +921,7 @@ describe("ReBakedDAO", () => {
 		it("Start project 2", async () => {
 			await expect(reBakedDAO.connect(initiator).startProject(projectId2, tokenName, tokenSymbol))
 				.to.emit(reBakedDAO, "StartedProject")
-				.withArgs(projectId2, TOKEN_1000);
+				.withArgs(projectId2);
 			let project2 = await reBakedDAO.getProjectData(projectId2);
 			let currentTime = await getTimestamp();
 			expect(project2.timeStarted).to.closeTo(currentTime, 10);
