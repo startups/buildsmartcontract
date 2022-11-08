@@ -8,33 +8,22 @@ concurrency:
 jobs:
   analyze:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-          submodules: recursive
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Node
-      uses: actions/setup-node@v2
+      - name: Run Slither
+        uses: crytic/slither-action@v0.2.0
+        id: slither
+        with:
+          node-version: 16
+          sarif: results.sarif
+          fail-on: none
 
-    - name: Install Yarn
-      run: npm install --global yarn
-
-    - name: Install Nix
-      uses: cachix/install-nix-action@v16
-
-    - name: Configure Cachix
-      uses: cachix/cachix-action@v10
-      with:
-        name: dapp
-
-    - name: Install dependencies
-      run: nix-shell --run 'make'
-
-    - name: Build the contracts
-      run: nix-shell --run 'make build'
-
-    - name: Run Slither
-      uses: crytic/slither-action@v0.2.0
-      with:
-        ignore-compile: true
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ${{ steps.slither.outputs.sarif }}
