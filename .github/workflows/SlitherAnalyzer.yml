@@ -14,6 +14,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      
+      - name: Setup node LTS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14.18.2
+
+      - name: Install packages
+        run: |
+          cp .env.dev .env
+          npm install
 
       - name: Run Slither
         uses: crytic/slither-action@v0.2.0
