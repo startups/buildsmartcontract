@@ -637,9 +637,8 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         string memory _name,
         string memory _symbol
     ) private {
-        uint256 _paidAmount = projectData[_projectId].budget;
         projectData[_projectId]._startProject(tokenFactory, _name, _symbol);
-        emit StartedProject(_projectId, _paidAmount);
+        emit StartedProject(_projectId);
     }
 
     /**
