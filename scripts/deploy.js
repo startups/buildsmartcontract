@@ -10,11 +10,11 @@ async function main() {
   // const ObserverLibrary = await ethers.getContractFactory("ObserverLibrary");
   // const PackageLibrary = await ethers.getContractFactory("PackageLibrary");
   // const ProjectLibrary = await ethers.getContractFactory("ProjectLibrary");
-  const TokenFactory = await ethers.getContractFactory("TokenFactory");
+  // const TokenFactory = await ethers.getContractFactory("TokenFactory");
 
-  const tokenFactory = await TokenFactory.deploy();
-  await tokenFactory.deployed();
-  console.log("TokenFactory         deployed to:", tokenFactory.address);
+  // const tokenFactory = await upgrades.deployProxy(TokenFactory);
+  // await tokenFactory.deployed();
+  // console.log("TokenFactory         deployed to:", tokenFactory.address);
 
   // const collaboratorLibrary = await CollaboratorLibrary.deploy();
   // await collaboratorLibrary.deployed();
@@ -56,16 +56,16 @@ async function main() {
   // const reBakedDAO = await upgrades.deployProxy(ReBakedDAO, [
   //   "0xD90A5DB9EbFeb22e374Cd44830250B297085d5c3",
   //   // tokenFactory.address
-  //   tokenFactory.address
+  //   "0xAFd644393F817607E6C56a5FD9a968446e1C6699"
   // ]);
   // await reBakedDAO.deployed();
 
   // Upgrading
-  // const reBakedDAO = await upgrades.upgradeProxy("0x5aA68693cABF158558C16042D7449D602b821DE0", ReBakedDAO);
+  const reBakedDAO = await upgrades.upgradeProxy("0x4D8879c650720Df2f2148E66eF09855A097eF6d1", ReBakedDAO);
 
-  // console.log("ReBakedDAO         deployed to:", reBakedDAO.address);
+  console.log("ReBakedDAO               deployed to:", reBakedDAO.address);
 
-  // let tx = await tokenFactory.setReBakedDao(reBakedDAO.address);
+  // const tx = await tokenFactory.setReBakedDao(reBakedDAO.address);
   // await tx.wait();
 
   // const contractAddresses = {

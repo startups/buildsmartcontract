@@ -194,13 +194,12 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         uint256 _maxCollaborators
     ) external onlyInitiator(_projectId) nonZero(_budget) {
         Project storage project = projectData[_projectId];
-        address _token = project.token;
         uint256 total = _budget + _bonus + _observerBudget;
         project._reservePackagesBudget(total, 1);
         bytes32 _packageId = _generatePackageId(_projectId, 0);
         Package storage package = packageData[_projectId][_packageId];
         package._createPackage(_budget, _observerBudget, _bonus, _maxCollaborators);
-        if (project.isOwnToken) IERC20Upgradeable(_token).safeTransferFrom(_msgSender(), treasury, (total * 5) / 100);
+        if (project.isOwnToken) IERC20Upgradeable(project.token).safeTransferFrom(_msgSender(), treasury, (total * 5) / 100);
 
         emit CreatedPackage(_projectId, _packageId, _budget, _bonus);
     }
@@ -240,8 +239,8 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
 
         for (uint256 i = 0; i < _observers.length; i++) _payObserverFee(_projectId, _packageId, _observers[i]);
 
-        uint256 budgetToBeReverted_ = package.budget - package.budgetPaid + package.bonus;
-        budgetToBeReverted_ += (package.totalObservers == 0) ? package.budgetObservers : 0;
+        uint256 budgetToBeReverted_ = (package.budget - package.budgetPaid) + package.bonus;
+        if (package.totalObservers == 0) budgetToBeReverted_ += package.budgetObservers;
         projectData[_projectId]._revertPackageBudget(budgetToBeReverted_);
 
         emit CanceledPackage(_projectId, _packageId, budgetToBeReverted_);
@@ -307,7 +306,6 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
 
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
         if (_shouldPayMgp) {
-            // TODO: Initiator can force-remove collaborator without paying bonus
             _payMgp(_projectId, _packageId, _collaborator);
             packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp, false);
             collaborator._removeCollaborator();
@@ -317,8 +315,6 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
             packageData[_projectId][_packageId].disputesCount++;
             emit RequestedRemoval(_projectId, _packageId, _collaborator);
         }
-
-        emit RemovedCollaborator(_projectId, _packageId, _collaborator);
     }
 
     /**
@@ -559,6 +555,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
 
         uint256 mgpClaimable = (collaborator.timeMgpPaid == 0) ? collaborator.mgp : 0;
         uint256 bonusClaimable;
+
         if (collaborator.bonusScore > 0 && collaborator.timeBonusPaid == 0) {
             bonusClaimable = (package.collaboratorsPaidBonus + 1 == package.collaboratorsGetBonus)
                 ? (package.bonus - package.bonusPaid)
