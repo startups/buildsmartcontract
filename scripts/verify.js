@@ -5,7 +5,7 @@ async function main() {
   try {
     await hre.run("verify:verify", {
       // address: contracts.ReBakedDAO,
-      address: "0x0481De78edA83a061119e918d1C95dbEdB864979",
+      address: "0x8B24Fe2015307dCB460eAbBabd0afc2a7CA20c60",
       // constructorArguments: [
       //   "0xD90A5DB9EbFeb22e374Cd44830250B297085d5c3",
       //   "0x027594fF9B44b2EbebeaF8aEdF8A426A2A988781"
@@ -22,6 +22,8 @@ async function main() {
   // } catch (err) {
   //   console.log("err :>> ", err);
   // }
+
+  // 0xFC10FE756f01D405CeBb465A07A00AF79b93F54f
 }
 
 main()

@@ -51,12 +51,14 @@ library ProjectLibrary {
     function _startProject(Project storage project_, address tokenFactory_, string memory name_, string memory symbol_) internal {
         require(project_.timeApproved > 0, "project is not approved");
         require(project_.timeStarted == 0, "project already started");
+
+        project_.timeStarted = block.timestamp;
+
         if (project_.isOwnToken) {
             IERC20Upgradeable(project_.token).safeTransferFrom(msg.sender, address(this), project_.budget);
         } else {
             project_.token = ITokenFactory(tokenFactory_).deployToken(project_.budget, name_, symbol_);
         }
-        project_.timeStarted = block.timestamp;
     }
 
     /**
@@ -73,9 +75,8 @@ library ProjectLibrary {
         if (budgetLeft_ > 0) {
             if (project_.isOwnToken) {
                 uint256 refundAmount_ = (budgetLeft_ * 5) / 100;
-                budgetLeft_ -= refundAmount_;
                 IERC20Upgradeable(project_.token).safeTransfer(project_.initiator, refundAmount_);
-                IERC20Upgradeable(project_.token).safeTransfer(treasury_, budgetLeft_);
+                IERC20Upgradeable(project_.token).safeTransfer(treasury_, budgetLeft_ - refundAmount_);
             } else IIOUToken(project_.token).burn(budgetLeft_);
         }
     }
@@ -94,8 +95,7 @@ library ProjectLibrary {
     ) internal {
         require(project_.timeStarted > 0, "project is not started");
         require(project_.timeFinished == 0, "project is finished");
-        uint256 _projectBudgetAvailable = project_.budget - project_.budgetAllocated;
-        require(_projectBudgetAvailable >= totalBudget_, "not enough project budget left");
+        require(project_.budget >= project_.budgetAllocated + totalBudget_, "not enough project budget left");
         project_.budgetAllocated += totalBudget_;
         project_.totalPackages += count_;
     }
