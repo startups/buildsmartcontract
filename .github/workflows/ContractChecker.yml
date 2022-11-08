@@ -30,4 +30,10 @@ jobs:
 
       - name: Run test coverage
         run: npm run coverage
+      
+      - name: Run slither analyzer
+        uses: crytic/slither-action@v0.2.0
+        with:
+          ignore-compile: true
+          
 
