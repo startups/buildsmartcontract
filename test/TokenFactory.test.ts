@@ -18,6 +18,8 @@ const TOKEN_10 = parseUnits("10", 18);
 
 let initiator: SignerWithAddress;
 
+const tokenName = "Pioneer", tokenSymbol = "PIO";
+
 describe("Testing TokenFactory contract", () => {
 	beforeEach(async () => {
 		[deployer, initiator, treasury, ...accounts] = await ethers.getSigners();
@@ -26,7 +28,7 @@ describe("Testing TokenFactory contract", () => {
 		const ReBakedDAO = (await ethers.getContractFactory("ReBakedDAO")) as ReBakedDAO__factory;
 
 		tokenFactory = (await upgrades.deployProxy(TokenFactory, [])) as TokenFactory;
-		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000");
+		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000", tokenName, tokenSymbol);
 		reBakedDAO = (await upgrades.deployProxy(ReBakedDAO, [treasury.address, tokenFactory.address])) as ReBakedDAO;
 		await reBakedDAO.deployed();
 	});
@@ -51,12 +53,12 @@ describe("Testing TokenFactory contract", () => {
 
 	describe("Testing `deployToken` function", () => {
 		it("[Fail]: Rebaked DAO is not set", async () => {
-			await expect(tokenFactory.connect(deployer).deployToken(TOKEN_10)).to.revertedWith("reBakedDao address is not set");
+			await expect(tokenFactory.connect(deployer).deployToken(TOKEN_10, tokenName, tokenSymbol)).to.revertedWith("reBakedDao address is not set");
 		});
 
 		it("[Fail]: Caller is not ReBakedDAO", async () => {
 			await tokenFactory.connect(deployer).setReBakedDao(reBakedDAO.address);
-			await expect(tokenFactory.connect(deployer).deployToken(TOKEN_10)).to.revertedWith("can be called only from reBakedDao contract");
+			await expect(tokenFactory.connect(deployer).deployToken(TOKEN_10, tokenName, tokenSymbol)).to.revertedWith("only reBakedDao can call");
 		});
 
 		it("[OK]: Deploy new token successfully", async () => {
@@ -67,7 +69,7 @@ describe("Testing TokenFactory contract", () => {
 			const projectId = args[0];
 
 			await reBakedDAO.connect(deployer).approveProject(projectId);
-			await reBakedDAO.connect(initiator).startProject(projectId);
+			await reBakedDAO.connect(initiator).startProject(projectId, tokenName, tokenSymbol);
 			const project = await reBakedDAO.getProjectData(projectId);
 			expect(project.token).not.equal(ZERO_ADDRESS);
 		});

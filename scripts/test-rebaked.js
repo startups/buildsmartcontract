@@ -3,21 +3,24 @@ const ethers = hre.ethers;
 const ReBakedDAO = require("./ReBakedDAO.json");
 
 async function main() {
-  const [owner, user] = await ethers.getSigners();
-  const addressReBakedDAO = "0xe6f3a1dbf03a4862330192ccf85c9c216ad565f9";
-  const reBakedDAO = new ethers.Contract(
-    addressReBakedDAO,
+  const [deployer] = await ethers.getSigners();
+  const proxyReBakedDAO = "0x5aA68693cABF158558C16042D7449D602b821DE0";
+  const implementationReBakedDAO = "0x0481De78edA83a061119e918d1C95dbEdB864979";
+  
+  const reBakedDao = new ethers.Contract(
+    proxyReBakedDAO,
     ReBakedDAO.abi,
-    user
+    deployer
   );
+  // const reBakedDao = factory.attach(proxyReBakedDAO);
 
-  const tokenFactory = await reBakedDAO.tokenFactory();
+  const tokenFactory = await reBakedDao.tokenFactory();
   console.log({ tokenFactory });
 
-  const treasury = await reBakedDAO.treasury();
+  const treasury = await reBakedDao.treasury();
   console.log({ treasury });
 
-  const contractOwner = await reBakedDAO.owner();
+  const contractOwner = await reBakedDao.owner();
   console.log({ contractOwner });
 
   // const projectObj = await reBakedDAO

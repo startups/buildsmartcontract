@@ -18,46 +18,9 @@ const config: HardhatUserConfig = {
 		hardhat: {
 			accounts: { count: 20 },
 		},
-		// kovan: {
-		//   provider: function () {
-		//     return new HDWalletProvider(
-		//       `situate filter sausage wolf melt general swift almost pelican middle session wage`,
-		//       `https://kovan.infura.io/v3/4e1930aa5d3746908f69149b0731416b`
-		//     );
-		//   },
-		//   network_id: 42,
-		//   networkCheckTimeout: 100000,
-		//   gas: 6700000,
-		// },
-		rinkeby: {
-			url: "https://rinkeby.infura.io/v3/4e1930aa5d3746908f69149b0731416b",
-			accounts: [process.env.RINKEBY_DEPLOY_ACCOUNT as string],
-			// provider: function () {
-			//   return new HDWalletProvider(
-			//     `session spare pride peasant feel father decade remove zone stock paper rhythm`,
-			//     `https://rinkeby.infura.io/v3/4e1930aa5d3746908f69149b0731416b`
-			//   );
-			// },
-			// network_id: 4,
-			// networkCheckTimeout: 100000,
-			//gas: 6700000,
-		},
-		kovan: {
-			url: "https://kovan.infura.io/v3/4e1930aa5d3746908f69149b0731416b",
-			accounts: [process.env.KOVAN_DEPLOY_ACCOUNT as string],
-			// provider: function () {
-			//   return new HDWalletProvider(
-			//     `session spare pride peasant feel father decade remove zone stock paper rhythm`,
-			//     `https://rinkeby.infura.io/v3/4e1930aa5d3746908f69149b0731416b`
-			//   );
-			// },
-			// network_id: 4,
-			// networkCheckTimeout: 100000,
-			//gas: 6700000,
-		},
 		goerli: {
 			url: "https://eth-goerli.g.alchemy.com/v2/yiaZ5Hg5fTRH46ijJywVW1WF5ltv47xI",
-			gasPrice: 8000000000,
+			// gasPrice: 8000000000,
 			accounts: [process.env.GOERLI_DEPLOY_ACCOUNT as string],
 		},
 	},
@@ -67,7 +30,7 @@ const config: HardhatUserConfig = {
 	solidity: {
 		compilers: [
 			{
-				version: "0.8.11",
+				version: "0.8.12",
 				settings: {
 					optimizer: {
 						enabled: true,

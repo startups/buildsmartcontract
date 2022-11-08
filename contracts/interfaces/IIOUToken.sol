@@ -2,5 +2,5 @@
 pragma solidity ^0.8.10;
 
 interface IIOUToken {
-	function burn(uint256 amount_) 	external;
+    function burn(uint256 amount_) external;
 }
