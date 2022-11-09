@@ -134,7 +134,6 @@ library PackageLibrary {
      */
     function _getObserverFee(Package storage package_) internal view returns (uint256) {
         uint256 remains = package_.budgetObservers - package_.budgetObserversPaid;
-        //slither-disable-next-line divide-before-multiply
         uint256 portion = package_.budgetObservers / package_.totalObservers;
         return (remains < 2 * portion) ? remains : portion;
     }
