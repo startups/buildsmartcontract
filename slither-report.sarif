@@ -1,0 +1,3823 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Slither",
+          "informationUri": "https://github.com/crytic/slither",
+          "version": "0.9.1",
+          "rules": [
+            {
+              "id": "2-1-reentrancy-events",
+              "name": "reentrancy-events",
+              "properties": {
+                "precision": "high",
+                "security-severity": "3.0"
+              },
+              "shortDescription": {
+                "text": "Reentrancy vulnerabilities"
+              },
+              "help": {
+                "text": "Apply the [`check-effects-interactions` pattern](http://solidity.readthedocs.io/en/v0.4.21/security-considerations.html#re-entrancy)."
+              }
+            },
+            {
+              "id": "2-1-timestamp",
+              "name": "timestamp",
+              "properties": {
+                "precision": "high",
+                "security-severity": "3.0"
+              },
+              "shortDescription": {
+                "text": "Block timestamp"
+              },
+              "help": {
+                "text": "Avoid relying on `block.timestamp`."
+              }
+            },
+            {
+              "id": "3-0-solc-version",
+              "name": "solc-version",
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "0.0"
+              },
+              "shortDescription": {
+                "text": "Incorrect versions of Solidity"
+              },
+              "help": {
+                "text": "\nDeploy with any of the following Solidity versions:\n- 0.5.16 - 0.5.17\n- 0.6.11 - 0.6.12\n- 0.7.5 - 0.7.6\n- 0.8.16\n\nThe recommendations take into account:\n- Risks related to recent releases\n- Risks of complex code generation changes\n- Risks of new language features\n- Risks of known bugs\n\nUse a simple pragma version that allows any of these versions.\nConsider using the latest version of Solidity for testing."
+              }
+            },
+            {
+              "id": "3-0-missing-inheritance",
+              "name": "missing-inheritance",
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "0.0"
+              },
+              "shortDescription": {
+                "text": "Missing inheritance"
+              },
+              "help": {
+                "text": "Inherit from the missing interface or contract."
+              }
+            },
+            {
+              "id": "3-0-naming-convention",
+              "name": "naming-convention",
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "0.0"
+              },
+              "shortDescription": {
+                "text": "Conformance to Solidity naming conventions"
+              },
+              "help": {
+                "text": "Follow the Solidity [naming convention](https://solidity.readthedocs.io/en/v0.4.25/style-guide.html#naming-conventions)."
+              }
+            },
+            {
+              "id": "3-1-similar-names",
+              "name": "similar-names",
+              "properties": {
+                "precision": "high",
+                "security-severity": "0.0"
+              },
+              "shortDescription": {
+                "text": "Variable names too similar"
+              },
+              "help": {
+                "text": "Prevent variables from having similar names."
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "2-1-reentrancy-events",
+          "message": {
+            "text": "Reentrancy in ReBakedDAO._startProject(bytes32,string,string) (contracts/ReBakedDAO.sol#634-642):\n\tExternal calls:\n\t- projectData[_projectId]._startProject(tokenFactory,_name,_symbol) (contracts/ReBakedDAO.sol#640)\n\tEvent emitted after the call(s):\n\t- StartedProject(_projectId,_paidAmount) (contracts/ReBakedDAO.sol#641)\n",
+            "markdown": "Reentrancy in [ReBakedDAO._startProject(bytes32,string,string)](contracts/ReBakedDAO.sol#L634-L642):\n\tExternal calls:\n\t- [projectData[_projectId]._startProject(tokenFactory,_name,_symbol)](contracts/ReBakedDAO.sol#L640)\n\tEvent emitted after the call(s):\n\t- [StartedProject(_projectId,_paidAmount)](contracts/ReBakedDAO.sol#L641)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 634,
+                  "endLine": 642
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "45fd018d08ba9e3d5780c9b7dc95ecb543eb7ef60df904ef411b354f9366d51f"
+          }
+        },
+        {
+          "ruleId": "2-1-reentrancy-events",
+          "message": {
+            "text": "Reentrancy in ReBakedDAO.finishProject(bytes32) (contracts/ReBakedDAO.sol#145-148):\n\tExternal calls:\n\t- projectData[_projectId]._finishProject(treasury) (contracts/ReBakedDAO.sol#146)\n\tEvent emitted after the call(s):\n\t- FinishedProject(_projectId) (contracts/ReBakedDAO.sol#147)\n",
+            "markdown": "Reentrancy in [ReBakedDAO.finishProject(bytes32)](contracts/ReBakedDAO.sol#L145-L148):\n\tExternal calls:\n\t- [projectData[_projectId]._finishProject(treasury)](contracts/ReBakedDAO.sol#L146)\n\tEvent emitted after the call(s):\n\t- [FinishedProject(_projectId)](contracts/ReBakedDAO.sol#L147)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 145,
+                  "endLine": 148
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "6b8205b99d2cda832b0610773aec51fd4c71f57efcd9c5f447afcd2a267990f8"
+          }
+        },
+        {
+          "ruleId": "2-1-reentrancy-events",
+          "message": {
+            "text": "Reentrancy in ReBakedDAO.claimBonus(bytes32,bytes32) (contracts/ReBakedDAO.sol#480-489):\n\tExternal calls:\n\t- projectData[_projectId]._pay(_collaborator,amount_) (contracts/ReBakedDAO.sol#487)\n\tEvent emitted after the call(s):\n\t- PaidBonus(_projectId,_packageId,_collaborator,amount_) (contracts/ReBakedDAO.sol#488)\n",
+            "markdown": "Reentrancy in [ReBakedDAO.claimBonus(bytes32,bytes32)](contracts/ReBakedDAO.sol#L480-L489):\n\tExternal calls:\n\t- [projectData[_projectId]._pay(_collaborator,amount_)](contracts/ReBakedDAO.sol#L487)\n\tEvent emitted after the call(s):\n\t- [PaidBonus(_projectId,_packageId,_collaborator,amount_)](contracts/ReBakedDAO.sol#L488)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 480,
+                  "endLine": 489
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "6f8867dc5c01bdce4f5c73940ef9fcbf215efb0a43e594cf4b18880eeb184132"
+          }
+        },
+        {
+          "ruleId": "2-1-reentrancy-events",
+          "message": {
+            "text": "Reentrancy in ReBakedDAO.claimObserverFee(bytes32,bytes32) (contracts/ReBakedDAO.sol#497-507):\n\tExternal calls:\n\t- projectData[_projectId]._pay(_observer,amount_) (contracts/ReBakedDAO.sol#504)\n\tEvent emitted after the call(s):\n\t- PaidObserverFee(_projectId,_packageId,_observer,amount_) (contracts/ReBakedDAO.sol#506)\n",
+            "markdown": "Reentrancy in [ReBakedDAO.claimObserverFee(bytes32,bytes32)](contracts/ReBakedDAO.sol#L497-L507):\n\tExternal calls:\n\t- [projectData[_projectId]._pay(_observer,amount_)](contracts/ReBakedDAO.sol#L504)\n\tEvent emitted after the call(s):\n\t- [PaidObserverFee(_projectId,_packageId,_observer,amount_)](contracts/ReBakedDAO.sol#L506)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 497,
+                  "endLine": 507
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "8c1542da9bc1fc9f6a54e459dc83441cd2f9257945cf18d1a16fd66f6e2d72a0"
+          }
+        },
+        {
+          "ruleId": "2-1-reentrancy-events",
+          "message": {
+            "text": "Reentrancy in ReBakedDAO._payMgp(bytes32,bytes32,address) (contracts/ReBakedDAO.sol#661-673):\n\tExternal calls:\n\t- projectData[_projectId]._pay(_collaborator,collaborator.mgp) (contracts/ReBakedDAO.sol#670)\n\tEvent emitted after the call(s):\n\t- PaidMgp(_projectId,_packageId,_collaborator,collaborator.mgp) (contracts/ReBakedDAO.sol#672)\n",
+            "markdown": "Reentrancy in [ReBakedDAO._payMgp(bytes32,bytes32,address)](contracts/ReBakedDAO.sol#L661-L673):\n\tExternal calls:\n\t- [projectData[_projectId]._pay(_collaborator,collaborator.mgp)](contracts/ReBakedDAO.sol#L670)\n\tEvent emitted after the call(s):\n\t- [PaidMgp(_projectId,_packageId,_collaborator,collaborator.mgp)](contracts/ReBakedDAO.sol#L672)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 661,
+                  "endLine": 673
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "a43207911ca61a744951dbedecf5d33405128d132b8f7693fc4b87c916f0d180"
+          }
+        },
+        {
+          "ruleId": "2-1-reentrancy-events",
+          "message": {
+            "text": "Reentrancy in ReBakedDAO._payObserverFee(bytes32,bytes32,address) (contracts/ReBakedDAO.sol#445-457):\n\tExternal calls:\n\t- projectData[_projectId]._pay(_observer,amount_) (contracts/ReBakedDAO.sol#454)\n\tEvent emitted after the call(s):\n\t- PaidObserverFee(_projectId,_packageId,_observer,amount_) (contracts/ReBakedDAO.sol#456)\n",
+            "markdown": "Reentrancy in [ReBakedDAO._payObserverFee(bytes32,bytes32,address)](contracts/ReBakedDAO.sol#L445-L457):\n\tExternal calls:\n\t- [projectData[_projectId]._pay(_observer,amount_)](contracts/ReBakedDAO.sol#L454)\n\tEvent emitted after the call(s):\n\t- [PaidObserverFee(_projectId,_packageId,_observer,amount_)](contracts/ReBakedDAO.sol#L456)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 445,
+                  "endLine": 457
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "b5573ad1b7632096eac4227278ef7a001428ed59e5f07a41ce6a94e78e9a8be1"
+          }
+        },
+        {
+          "ruleId": "2-1-reentrancy-events",
+          "message": {
+            "text": "Reentrancy in ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256) (contracts/ReBakedDAO.sol#189-205):\n\tExternal calls:\n\t- IERC20Upgradeable(project.token).safeTransferFrom(_msgSender(),treasury,(total * 5) / 100) (contracts/ReBakedDAO.sol#202)\n\tEvent emitted after the call(s):\n\t- CreatedPackage(_projectId,_packageId,_budget,_bonus) (contracts/ReBakedDAO.sol#204)\n",
+            "markdown": "Reentrancy in [ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)](contracts/ReBakedDAO.sol#L189-L205):\n\tExternal calls:\n\t- [IERC20Upgradeable(project.token).safeTransferFrom(_msgSender(),treasury,(total * 5) / 100)](contracts/ReBakedDAO.sol#L202)\n\tEvent emitted after the call(s):\n\t- [CreatedPackage(_projectId,_packageId,_budget,_bonus)](contracts/ReBakedDAO.sol#L204)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 189,
+                  "endLine": 205
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "bb9e7c879df8426b389823303e069fa6cfaef543e5a5b769c26a84473376a105"
+          }
+        },
+        {
+          "ruleId": "2-1-reentrancy-events",
+          "message": {
+            "text": "Reentrancy in ReBakedDAO.claimMgp(bytes32,bytes32) (contracts/ReBakedDAO.sol#465-472):\n\tExternal calls:\n\t- projectData[_projectId]._pay(_collaborator,amount_) (contracts/ReBakedDAO.sol#470)\n\tEvent emitted after the call(s):\n\t- PaidMgp(_projectId,_packageId,_msgSender(),amount_) (contracts/ReBakedDAO.sol#471)\n",
+            "markdown": "Reentrancy in [ReBakedDAO.claimMgp(bytes32,bytes32)](contracts/ReBakedDAO.sol#L465-L472):\n\tExternal calls:\n\t- [projectData[_projectId]._pay(_collaborator,amount_)](contracts/ReBakedDAO.sol#L470)\n\tEvent emitted after the call(s):\n\t- [PaidMgp(_projectId,_packageId,_msgSender(),amount_)](contracts/ReBakedDAO.sol#L471)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 465,
+                  "endLine": 472
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "eeb51ce397459c270c311b750556c8c53ba9aceb3484b389058845926e3ca773"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "CollaboratorLibrary._requestRemoval(Collaborator) (contracts/libraries/CollaboratorLibrary.sol#61-65) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(collaborator_.disputeExpiresAt == 0,already in dispute) (contracts/libraries/CollaboratorLibrary.sol#62)\n\t- require(bool,string)(collaborator_.timeMgpPaid == 0,Already Claimed MGP) (contracts/libraries/CollaboratorLibrary.sol#63)\n",
+            "markdown": "[CollaboratorLibrary._requestRemoval(Collaborator)](contracts/libraries/CollaboratorLibrary.sol#L61-L65) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(collaborator_.disputeExpiresAt == 0,already in dispute)](contracts/libraries/CollaboratorLibrary.sol#L62)\n\t- [require(bool,string)(collaborator_.timeMgpPaid == 0,Already Claimed MGP)](contracts/libraries/CollaboratorLibrary.sol#L63)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/CollaboratorLibrary.sol"
+                },
+                "region": {
+                  "startLine": 61,
+                  "endLine": 65
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "10de4cc99888a661064a8e20f0cbff0412d8e0c4302af7e7d29382a7a5cb9ea3"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "ProjectLibrary._startProject(Project,address,string,string) (contracts/libraries/ProjectLibrary.sol#51-62) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(project_.timeApproved > 0,project is not approved) (contracts/libraries/ProjectLibrary.sol#52)\n\t- require(bool,string)(project_.timeStarted == 0,project already started) (contracts/libraries/ProjectLibrary.sol#53)\n",
+            "markdown": "[ProjectLibrary._startProject(Project,address,string,string)](contracts/libraries/ProjectLibrary.sol#L51-L62) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(project_.timeApproved > 0,project is not approved)](contracts/libraries/ProjectLibrary.sol#L52)\n\t- [require(bool,string)(project_.timeStarted == 0,project already started)](contracts/libraries/ProjectLibrary.sol#L53)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/ProjectLibrary.sol"
+                },
+                "region": {
+                  "startLine": 51,
+                  "endLine": 62
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "13d9afa06b9a637f9927af04e6dcb9422a09e6e279efec42effe107e5451346f"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "PackageLibrary._cancelPackage(Package) (contracts/libraries/PackageLibrary.sol#45-49) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(package_.disputesCount == 0,package has unresolved disputes) (contracts/libraries/PackageLibrary.sol#46)\n",
+            "markdown": "[PackageLibrary._cancelPackage(Package)](contracts/libraries/PackageLibrary.sol#L45-L49) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(package_.disputesCount == 0,package has unresolved disputes)](contracts/libraries/PackageLibrary.sol#L46)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/PackageLibrary.sol"
+                },
+                "region": {
+                  "startLine": 45,
+                  "endLine": 49
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "17a3448c7afb28732ceb67e5320720a61cba2312206a903fdcf4d82a4a207077"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "CollaboratorLibrary._claimBonus(Collaborator) (contracts/libraries/CollaboratorLibrary.sol#113-117) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(collaborator_.bonusScore > 0,bonus score is zero) (contracts/libraries/CollaboratorLibrary.sol#114)\n\t- require(bool,string)(collaborator_.timeBonusPaid == 0,bonus already paid) (contracts/libraries/CollaboratorLibrary.sol#115)\n",
+            "markdown": "[CollaboratorLibrary._claimBonus(Collaborator)](contracts/libraries/CollaboratorLibrary.sol#L113-L117) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(collaborator_.bonusScore > 0,bonus score is zero)](contracts/libraries/CollaboratorLibrary.sol#L114)\n\t- [require(bool,string)(collaborator_.timeBonusPaid == 0,bonus already paid)](contracts/libraries/CollaboratorLibrary.sol#L115)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/CollaboratorLibrary.sol"
+                },
+                "region": {
+                  "startLine": 113,
+                  "endLine": 117
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "1f41e2ea69677cbcce6faacfc4e577c0ba4d383bdddab222d8f7c8f8d0dc7e59"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "CollaboratorLibrary._addCollaborator(Collaborator,uint256) (contracts/libraries/CollaboratorLibrary.sol#23-29) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(collaborator_.isRemoved || collaborator_.timeCreated == 0,collaborator already added) (contracts/libraries/CollaboratorLibrary.sol#24)\n",
+            "markdown": "[CollaboratorLibrary._addCollaborator(Collaborator,uint256)](contracts/libraries/CollaboratorLibrary.sol#L23-L29) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(collaborator_.isRemoved || collaborator_.timeCreated == 0,collaborator already added)](contracts/libraries/CollaboratorLibrary.sol#L24)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/CollaboratorLibrary.sol"
+                },
+                "region": {
+                  "startLine": 23,
+                  "endLine": 29
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "26d1e9e015a050b3db907768272be6a1ee5ee96beb1b4a31a2e7d97a38d4bd0b"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "ProjectLibrary._finishProject(Project,address) (contracts/libraries/ProjectLibrary.sol#69-82) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(project_.timeStarted > 0,project not started yet) (contracts/libraries/ProjectLibrary.sol#70)\n\t- require(bool,string)(project_.timeFinished == 0,already finished project) (contracts/libraries/ProjectLibrary.sol#71)\n\t- require(bool,string)(project_.totalPackages == project_.totalFinishedPackages,unfinished packages left) (contracts/libraries/ProjectLibrary.sol#72)\n\t- budgetLeft_ > 0 (contracts/libraries/ProjectLibrary.sol#75)\n",
+            "markdown": "[ProjectLibrary._finishProject(Project,address)](contracts/libraries/ProjectLibrary.sol#L69-L82) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(project_.timeStarted > 0,project not started yet)](contracts/libraries/ProjectLibrary.sol#L70)\n\t- [require(bool,string)(project_.timeFinished == 0,already finished project)](contracts/libraries/ProjectLibrary.sol#L71)\n\t- [require(bool,string)(project_.totalPackages == project_.totalFinishedPackages,unfinished packages left)](contracts/libraries/ProjectLibrary.sol#L72)\n\t- [budgetLeft_ > 0](contracts/libraries/ProjectLibrary.sol#L75)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/ProjectLibrary.sol"
+                },
+                "region": {
+                  "startLine": 69,
+                  "endLine": 82
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "2cfb66d5c594aad51af0263d36144a61615f50127a77c27a3fd6d2a48ef349c5"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "ObserverLibrary._addObserver(Observer) (contracts/libraries/ObserverLibrary.sol#18-22) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(_observer.timeCreated == 0,observer already added) (contracts/libraries/ObserverLibrary.sol#19)\n",
+            "markdown": "[ObserverLibrary._addObserver(Observer)](contracts/libraries/ObserverLibrary.sol#L18-L22) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(_observer.timeCreated == 0,observer already added)](contracts/libraries/ObserverLibrary.sol#L19)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/ObserverLibrary.sol"
+                },
+                "region": {
+                  "startLine": 18,
+                  "endLine": 22
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "2db311e3a151b6bc04552bd26676bc0513e809a691480c2780685fbfdd4316f2"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "ProjectLibrary._approveProject(Project) (contracts/libraries/ProjectLibrary.sol#41-44) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(project_.timeApproved == 0,already approved project) (contracts/libraries/ProjectLibrary.sol#42)\n",
+            "markdown": "[ProjectLibrary._approveProject(Project)](contracts/libraries/ProjectLibrary.sol#L41-L44) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(project_.timeApproved == 0,already approved project)](contracts/libraries/ProjectLibrary.sol#L42)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/ProjectLibrary.sol"
+                },
+                "region": {
+                  "startLine": 41,
+                  "endLine": 44
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "47641c224b5836e57e8838bad26565847a1336324c903e4d7807e93cc87c3999"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "ObserverLibrary._claimObserverFee(Observer) (contracts/libraries/ObserverLibrary.sol#36-39) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(_observer.timePaid == 0,observer already paid) (contracts/libraries/ObserverLibrary.sol#37)\n",
+            "markdown": "[ObserverLibrary._claimObserverFee(Observer)](contracts/libraries/ObserverLibrary.sol#L36-L39) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(_observer.timePaid == 0,observer already paid)](contracts/libraries/ObserverLibrary.sol#L37)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/ObserverLibrary.sol"
+                },
+                "region": {
+                  "startLine": 36,
+                  "endLine": 39
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "4c6ecc72b3b76ad8c2140abe882e900547af99fb4743e22b363046e531bfbac5"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "CollaboratorLibrary._payMgp(Collaborator) (contracts/libraries/CollaboratorLibrary.sol#104-107) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(collaborator_.timeMgpPaid == 0,mgp already paid) (contracts/libraries/CollaboratorLibrary.sol#105)\n",
+            "markdown": "[CollaboratorLibrary._payMgp(Collaborator)](contracts/libraries/CollaboratorLibrary.sol#L104-L107) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(collaborator_.timeMgpPaid == 0,mgp already paid)](contracts/libraries/CollaboratorLibrary.sol#L105)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/CollaboratorLibrary.sol"
+                },
+                "region": {
+                  "startLine": 104,
+                  "endLine": 107
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "55ffbb566867e5e26ccc472ce7f3cdafd05a06f259c57df63541191e4ae3d144"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "CollaboratorLibrary._claimMgp(Collaborator) (contracts/libraries/CollaboratorLibrary.sol#93-98) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(collaborator_.timeMgpApproved > 0,mgp is not approved) (contracts/libraries/CollaboratorLibrary.sol#94)\n\t- require(bool,string)(collaborator_.timeMgpPaid == 0,mgp already paid) (contracts/libraries/CollaboratorLibrary.sol#95)\n",
+            "markdown": "[CollaboratorLibrary._claimMgp(Collaborator)](contracts/libraries/CollaboratorLibrary.sol#L93-L98) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(collaborator_.timeMgpApproved > 0,mgp is not approved)](contracts/libraries/CollaboratorLibrary.sol#L94)\n\t- [require(bool,string)(collaborator_.timeMgpPaid == 0,mgp already paid)](contracts/libraries/CollaboratorLibrary.sol#L95)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/CollaboratorLibrary.sol"
+                },
+                "region": {
+                  "startLine": 93,
+                  "endLine": 98
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "56e4152c0d8c9b73014dd3fb75e1b81d6860425d2953e63b948845d848fea297"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "CollaboratorLibrary._approveCollaborator(Collaborator) (contracts/libraries/CollaboratorLibrary.sol#35-38) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(collaborator_.timeMgpApproved == 0,collaborator already approved) (contracts/libraries/CollaboratorLibrary.sol#36)\n",
+            "markdown": "[CollaboratorLibrary._approveCollaborator(Collaborator)](contracts/libraries/CollaboratorLibrary.sol#L35-L38) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(collaborator_.timeMgpApproved == 0,collaborator already approved)](contracts/libraries/CollaboratorLibrary.sol#L36)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/CollaboratorLibrary.sol"
+                },
+                "region": {
+                  "startLine": 35,
+                  "endLine": 38
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "8f1ae5a437df8631567dfc7528f23617180e76e2c21732434bf249cde08821de"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "CollaboratorLibrary._canSettleExpiredDispute(Collaborator) (contracts/libraries/CollaboratorLibrary.sol#81-87) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- collaborator_.resolveExpiresAt < block.timestamp (contracts/libraries/CollaboratorLibrary.sol#83)\n\t- collaborator_.disputeExpiresAt > 0 && collaborator_.disputeExpiresAt < block.timestamp (contracts/libraries/CollaboratorLibrary.sol#86)\n",
+            "markdown": "[CollaboratorLibrary._canSettleExpiredDispute(Collaborator)](contracts/libraries/CollaboratorLibrary.sol#L81-L87) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [collaborator_.resolveExpiresAt < block.timestamp](contracts/libraries/CollaboratorLibrary.sol#L83)\n\t- [collaborator_.disputeExpiresAt > 0 && collaborator_.disputeExpiresAt < block.timestamp](contracts/libraries/CollaboratorLibrary.sol#L86)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/CollaboratorLibrary.sol"
+                },
+                "region": {
+                  "startLine": 81,
+                  "endLine": 87
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "9330f70a1bdd7dd0dc4737a0a9e673b826818c1d4047fc20de7138b9cf6aa68f"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "PackageLibrary._finishPackage(Package) (contracts/libraries/PackageLibrary.sol#109-118) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(package_.disputesCount == 0,package has unresolved disputes) (contracts/libraries/PackageLibrary.sol#110)\n\t- require(bool,string)(package_.totalCollaborators == package_.approvedCollaborators,unapproved collaborators left) (contracts/libraries/PackageLibrary.sol#111)\n",
+            "markdown": "[PackageLibrary._finishPackage(Package)](contracts/libraries/PackageLibrary.sol#L109-L118) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(package_.disputesCount == 0,package has unresolved disputes)](contracts/libraries/PackageLibrary.sol#L110)\n\t- [require(bool,string)(package_.totalCollaborators == package_.approvedCollaborators,unapproved collaborators left)](contracts/libraries/PackageLibrary.sol#L111)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/PackageLibrary.sol"
+                },
+                "region": {
+                  "startLine": 109,
+                  "endLine": 118
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "a46e9e26771433f1fd02b07344047e4218dc7a027751dad3dae5fd63839acd2a"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "CollaboratorLibrary._defendRemoval(Collaborator) (contracts/libraries/CollaboratorLibrary.sol#71-75) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(collaborator_.resolveExpiresAt == 0,already defended removal) (contracts/libraries/CollaboratorLibrary.sol#72)\n\t- require(bool,string)(block.timestamp <= collaborator_.disputeExpiresAt,dispute period already expired) (contracts/libraries/CollaboratorLibrary.sol#73)\n",
+            "markdown": "[CollaboratorLibrary._defendRemoval(Collaborator)](contracts/libraries/CollaboratorLibrary.sol#L71-L75) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(collaborator_.resolveExpiresAt == 0,already defended removal)](contracts/libraries/CollaboratorLibrary.sol#L72)\n\t- [require(bool,string)(block.timestamp <= collaborator_.disputeExpiresAt,dispute period already expired)](contracts/libraries/CollaboratorLibrary.sol#L73)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/CollaboratorLibrary.sol"
+                },
+                "region": {
+                  "startLine": 71,
+                  "endLine": 75
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "c39c2bde5dd0092c941a5f1536210db0f303e86abcaa49218589bb157f33890c"
+          }
+        },
+        {
+          "ruleId": "2-1-timestamp",
+          "message": {
+            "text": "ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool) (contracts/ReBakedDAO.sol#355-374) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- require(bool,string)(block.timestamp <= collaborator.resolveExpiresAt,resolve period already expired) (contracts/ReBakedDAO.sol#365)\n",
+            "markdown": "[ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)](contracts/ReBakedDAO.sol#L355-L374) uses timestamp for comparisons\n\tDangerous comparisons:\n\t- [require(bool,string)(block.timestamp <= collaborator.resolveExpiresAt,resolve period already expired)](contracts/ReBakedDAO.sol#L365)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 355,
+                  "endLine": 374
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "c85656e9f2829adf7bf580a5485c52273a1bcf97c33a077943515dd18ecf52ae"
+          }
+        },
+        {
+          "ruleId": "3-0-solc-version",
+          "message": {
+            "text": "Pragma version0.8.12 (contracts/ReBakedDAO.sol#2) allows old versions\n",
+            "markdown": "Pragma version[0.8.12](contracts/ReBakedDAO.sol#L2) allows old versions\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "14fcd7d2f16bf338131fa94b291ede2a645caca50b2f6a156763e980147014d5"
+          }
+        },
+        {
+          "ruleId": "3-0-solc-version",
+          "message": {
+            "text": "Pragma version0.8.12 (contracts/libraries/ObserverLibrary.sol#2) allows old versions\n",
+            "markdown": "Pragma version[0.8.12](contracts/libraries/ObserverLibrary.sol#L2) allows old versions\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/ObserverLibrary.sol"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "2bd31c746c1333c7166070fed839bd46304f8af1c128558ad2301017be67bc98"
+          }
+        },
+        {
+          "ruleId": "3-0-solc-version",
+          "message": {
+            "text": "Pragma version0.8.12 (contracts/libraries/PackageLibrary.sol#2) allows old versions\n",
+            "markdown": "Pragma version[0.8.12](contracts/libraries/PackageLibrary.sol#L2) allows old versions\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/PackageLibrary.sol"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "37d5347fd87c4d2406b9c2629ab8fa94d88c596f04404cb221e504283ac5f69b"
+          }
+        },
+        {
+          "ruleId": "3-0-solc-version",
+          "message": {
+            "text": "Pragma version0.8.12 (contracts/interfaces/IReBakedDAO.sol#2) allows old versions\n",
+            "markdown": "Pragma version[0.8.12](contracts/interfaces/IReBakedDAO.sol#L2) allows old versions\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/interfaces/IReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "6b983e90dac973fe4df10fbc955ffe7839d9faf1ae0a7bdbebdb192da11f7827"
+          }
+        },
+        {
+          "ruleId": "3-0-solc-version",
+          "message": {
+            "text": "Pragma version0.8.12 (contracts/libraries/Structs.sol#2) allows old versions\n",
+            "markdown": "Pragma version[0.8.12](contracts/libraries/Structs.sol#L2) allows old versions\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/Structs.sol"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "7f609de0bb3dfaf4bf0cfaf66f76f96d175f1efdaa006e4c965eff1842660c3e"
+          }
+        },
+        {
+          "ruleId": "3-0-solc-version",
+          "message": {
+            "text": "Pragma version0.8.12 (contracts/IOUToken.sol#2) allows old versions\n",
+            "markdown": "Pragma version[0.8.12](contracts/IOUToken.sol#L2) allows old versions\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/IOUToken.sol"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "821e5c1a2e5d78bdc2d4774c9f24222e9d3a53467686bcc83b1fd4bf8f4c6ff3"
+          }
+        },
+        {
+          "ruleId": "3-0-solc-version",
+          "message": {
+            "text": "Pragma version0.8.12 (contracts/TokenFactory.sol#2) allows old versions\n",
+            "markdown": "Pragma version[0.8.12](contracts/TokenFactory.sol#L2) allows old versions\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/TokenFactory.sol"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "94dcfdfa3aa4f8356745aea15b16568edd60064270eaa36f45aec47070d9cd9b"
+          }
+        },
+        {
+          "ruleId": "3-0-solc-version",
+          "message": {
+            "text": "Pragma version0.8.12 (contracts/libraries/ProjectLibrary.sol#2) allows old versions\n",
+            "markdown": "Pragma version[0.8.12](contracts/libraries/ProjectLibrary.sol#L2) allows old versions\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/ProjectLibrary.sol"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "99935b7f637deb60aafb2a73c96aaff0093e7098ecf383084f2ad00b2cac39c1"
+          }
+        },
+        {
+          "ruleId": "3-0-solc-version",
+          "message": {
+            "text": "Pragma version0.8.12 (contracts/interfaces/IIOUToken.sol#2) allows old versions\n",
+            "markdown": "Pragma version[0.8.12](contracts/interfaces/IIOUToken.sol#L2) allows old versions\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/interfaces/IIOUToken.sol"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "a04ff9a4fd18f7bfad3394bf7d4668698beeb3f7b825da73c84bccc650efda67"
+          }
+        },
+        {
+          "ruleId": "3-0-solc-version",
+          "message": {
+            "text": "Pragma version0.8.12 (contracts/interfaces/ITokenFactory.sol#2) allows old versions\n",
+            "markdown": "Pragma version[0.8.12](contracts/interfaces/ITokenFactory.sol#L2) allows old versions\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/interfaces/ITokenFactory.sol"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "cf3a6e5b19a277533ffd65c31d82dffa567fb4a2481c764b1ee27c72ccce3d83"
+          }
+        },
+        {
+          "ruleId": "3-0-solc-version",
+          "message": {
+            "text": "Pragma version0.8.12 (contracts/libraries/CollaboratorLibrary.sol#2) allows old versions\n",
+            "markdown": "Pragma version[0.8.12](contracts/libraries/CollaboratorLibrary.sol#L2) allows old versions\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/CollaboratorLibrary.sol"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "ea24732f27e4757747a6bd31a1727e3c5b665775679c26b3a2f09c04a0dc7cf0"
+          }
+        },
+        {
+          "ruleId": "3-0-missing-inheritance",
+          "message": {
+            "text": "IOUToken (contracts/IOUToken.sol#9-22) should inherit from IIOUToken (contracts/interfaces/IIOUToken.sol#4-6)\n",
+            "markdown": "[IOUToken](contracts/IOUToken.sol#L9-L22) should inherit from [IIOUToken](contracts/interfaces/IIOUToken.sol#L4-L6)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/IOUToken.sol"
+                },
+                "region": {
+                  "startLine": 9,
+                  "endLine": 22
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "795db8ef5d055aab76a554d3ff1bc898ae1275bbdc6b928d9b6d9ad9d63770b6"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getObserverData(bytes32,bytes32,address)._packageId (contracts/ReBakedDAO.sol#574) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getObserverData(bytes32,bytes32,address)._packageId](contracts/ReBakedDAO.sol#L574) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 574,
+                  "endLine": 574
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "0124e98dc87d822960fcc43ee8af96ba4df060617c4f121af4c1e2c22537c65d"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.startProject(bytes32,string,string)._name (contracts/ReBakedDAO.sol#122) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.startProject(bytes32,string,string)._name](contracts/ReBakedDAO.sol#L122) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 122,
+                  "endLine": 122
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "039a8d00a1f2e99a8e7f08c0085026fe237c23046fc6fdf9ffe607ae423f2403"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.defendRemoval(bytes32,bytes32)._packageId (contracts/ReBakedDAO.sol#342) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.defendRemoval(bytes32,bytes32)._packageId](contracts/ReBakedDAO.sol#L342) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 342,
+                  "endLine": 342
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "0adb676de9f867e8767dfc263da100127fd8dc366ef6c42487bfc8912f5009c7"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[])._collaborators (contracts/ReBakedDAO.sol#161) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[])._collaborators](contracts/ReBakedDAO.sol#L161) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 161,
+                  "endLine": 161
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "1935a94ae6062f9897b2ca64b406249ef80c24ec0047add74b90577ced5db576"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.finishProject(bytes32)._projectId (contracts/ReBakedDAO.sol#145) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.finishProject(bytes32)._projectId](contracts/ReBakedDAO.sol#L145) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 145,
+                  "endLine": 145
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "1d4544ce6cb082dbb767ca5da32602abb42ff2ad1dc2dbcd8ed09e8deb3dfe73"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._bonus (contracts/ReBakedDAO.sol#192) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._bonus](contracts/ReBakedDAO.sol#L192) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 192,
+                  "endLine": 192
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "1dc6c5aca9328bf21ff13e4b53f5b91d9d6959b11b81543a0661f87f550002b0"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.approveProject(bytes32)._projectId (contracts/ReBakedDAO.sol#135) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.approveProject(bytes32)._projectId](contracts/ReBakedDAO.sol#L135) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 135,
+                  "endLine": 135
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "21383b4c45922c23e56588a9a6530096cfeeaa7ba2715fd233b4f063cf52d65a"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[])._projectId (contracts/ReBakedDAO.sol#227) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[])._projectId](contracts/ReBakedDAO.sol#L227) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 227,
+                  "endLine": 227
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "2248fb98869814a6b58ffceaae192b29bc696174948f40b7283eb8b4df6f0996"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getObserverFee(bytes32,bytes32,address)._packageId (contracts/ReBakedDAO.sol#588) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getObserverFee(bytes32,bytes32,address)._packageId](contracts/ReBakedDAO.sol#L588) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 588,
+                  "endLine": 588
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "2b63baf3931010aac4b15d64493e866c8efc0d1f8ceffae7e89dbc91baf955d9"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.claimMgp(bytes32,bytes32)._projectId (contracts/ReBakedDAO.sol#465) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.claimMgp(bytes32,bytes32)._projectId](contracts/ReBakedDAO.sol#L465) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 465,
+                  "endLine": 465
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "2c18b5ab6de843859cdaaa1e5a7d964670a0d77c461561ddf746d8a247019f9f"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._packageId (contracts/ReBakedDAO.sol#280) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._packageId](contracts/ReBakedDAO.sol#L280) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 280,
+                  "endLine": 280
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "30d5599070ecf4ba3f79f1f7e392fb086ff7125bf1197c0d4cf7a45c4714566a"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._packageId (contracts/ReBakedDAO.sol#357) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._packageId](contracts/ReBakedDAO.sol#L357) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 357,
+                  "endLine": 357
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "31f28b6a6d9a597d20ec88e089f0f9a0e93d9bb2156675516f523250fc9baff8"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[])._packageId (contracts/ReBakedDAO.sol#160) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[])._packageId](contracts/ReBakedDAO.sol#L160) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 160,
+                  "endLine": 160
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "327c2071b1eb6aab017e8d801da69fbeec0b6cfe0de407cd4b6354e10b878ec7"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter TokenFactory.deployToken(uint256,string,string)._name (contracts/TokenFactory.sol#40) is not in mixedCase\n",
+            "markdown": "Parameter [TokenFactory.deployToken(uint256,string,string)._name](contracts/TokenFactory.sol#L40) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/TokenFactory.sol"
+                },
+                "region": {
+                  "startLine": 40,
+                  "endLine": 40
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "3395298452983f36b7d21f8f7a2083fef7da1004b12f792d9c6d09f317dae800"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._mgp (contracts/ReBakedDAO.sol#261) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._mgp](contracts/ReBakedDAO.sol#L261) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 261,
+                  "endLine": 261
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "33eab141a1bb70220559ec496d1a4833156ae68ffc21cedf4cc8d7b34fc2c942"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.addObserver(bytes32,bytes32[],address)._observer (contracts/ReBakedDAO.sol#407) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.addObserver(bytes32,bytes32[],address)._observer](contracts/ReBakedDAO.sol#L407) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 407,
+                  "endLine": 407
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "35be800292006403a3205ee54620b553841df212f41aef4e4fe4523fb996658d"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.claimBonus(bytes32,bytes32)._projectId (contracts/ReBakedDAO.sol#480) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.claimBonus(bytes32,bytes32)._projectId](contracts/ReBakedDAO.sol#L480) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 480,
+                  "endLine": 480
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "3f0043ade8e87349bf110120a68cfbc3c8cb946dd3de77be126ed4d7ccd6900a"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._collaborator (contracts/ReBakedDAO.sol#302) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._collaborator](contracts/ReBakedDAO.sol#L302) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 302,
+                  "endLine": 302
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "452a173b8c800c9327591e4379a88286a76b082d538f8003bdcc11e4018d9158"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._projectId (contracts/ReBakedDAO.sol#190) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._projectId](contracts/ReBakedDAO.sol#L190) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 190,
+                  "endLine": 190
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "4b0a9cd343f1745d72349d2c47100521e30674ec32c1103f467350af39c2b3ea"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._shouldPayMgp (contracts/ReBakedDAO.sol#303) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._shouldPayMgp](contracts/ReBakedDAO.sol#L303) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 303,
+                  "endLine": 303
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "4ecacc4f32cc186e6f792319a59c0bd2cb18dd6520470469cc01553949fa94c2"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.claimBonus(bytes32,bytes32)._packageId (contracts/ReBakedDAO.sol#480) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.claimBonus(bytes32,bytes32)._packageId](contracts/ReBakedDAO.sol#L480) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 480,
+                  "endLine": 480
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "53cf162c1132b910ff2a5c4d09159b4f45bee8e3c7287d3a608644b6af1a6dcb"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._maxCollaborators (contracts/ReBakedDAO.sol#194) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._maxCollaborators](contracts/ReBakedDAO.sol#L194) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 194,
+                  "endLine": 194
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "544c3365986e42560c11f764b67fb37c7995b80f81a874dd32a7f8dd42b9174b"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getObserverFee(bytes32,bytes32,address)._projectId (contracts/ReBakedDAO.sol#587) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getObserverFee(bytes32,bytes32,address)._projectId](contracts/ReBakedDAO.sol#L587) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 587,
+                  "endLine": 587
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "56ee93e19064c2e4ad544385d790da1a3d7fa18220a2ed27068d2028e698feea"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._projectId (contracts/ReBakedDAO.sol#549) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._projectId](contracts/ReBakedDAO.sol#L549) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 549,
+                  "endLine": 549
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "572ecdd1b9fcf5e4db05492fdd9070637f917e9ee385c531be198637ede73219"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.claimObserverFee(bytes32,bytes32)._packageId (contracts/ReBakedDAO.sol#497) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.claimObserverFee(bytes32,bytes32)._packageId](contracts/ReBakedDAO.sol#L497) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 497,
+                  "endLine": 497
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "5ab8a6eed6412d0d996f902eb028b4138821e70562ce1388150477802de4fcb3"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[])._projectId (contracts/ReBakedDAO.sol#159) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[])._projectId](contracts/ReBakedDAO.sol#L159) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 159,
+                  "endLine": 159
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "5beeb568f4ebcf284fcb9b142929ea962dad87fbae7ed16693bcb68b44c6e28d"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._budget (contracts/ReBakedDAO.sol#191) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._budget](contracts/ReBakedDAO.sol#L191) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 191,
+                  "endLine": 191
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "63ef2b82c10463ef5ad39fe52bb7ec7e7934838fd17bf181560070bcc6b83823"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getObserverFee(bytes32,bytes32,address)._observer (contracts/ReBakedDAO.sol#589) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getObserverFee(bytes32,bytes32,address)._observer](contracts/ReBakedDAO.sol#L589) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 589,
+                  "endLine": 589
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "64839a51835210353b16d685219bda936279aa74cff2a099d7576c4fb8938df6"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._projectId (contracts/ReBakedDAO.sol#384) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._projectId](contracts/ReBakedDAO.sol#L384) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 384,
+                  "endLine": 384
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "6764c1d6bc952a8afb2fba118ea5abef231111f311f2a9f9163f3651350b7b0d"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._packageId (contracts/ReBakedDAO.sol#259) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._packageId](contracts/ReBakedDAO.sol#L259) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 259,
+                  "endLine": 259
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "67ae487bad5d3360478a2599d31db0e794e4a81e6510bed55e437d3716908d2b"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[])._collaborators (contracts/ReBakedDAO.sol#229) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[])._collaborators](contracts/ReBakedDAO.sol#L229) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 229,
+                  "endLine": 229
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "68371c0ab3ebf94f509b23916dc1dbd00e296d46dba3886f93050a522214eec3"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getObserverData(bytes32,bytes32,address)._projectId (contracts/ReBakedDAO.sol#573) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getObserverData(bytes32,bytes32,address)._projectId](contracts/ReBakedDAO.sol#L573) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 573,
+                  "endLine": 573
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "69565945b2e777a2eefb461885562940ed368832fa8c5210f42340fe03b72305"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.startProject(bytes32,string,string)._projectId (contracts/ReBakedDAO.sol#121) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.startProject(bytes32,string,string)._projectId](contracts/ReBakedDAO.sol#L121) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 121,
+                  "endLine": 121
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "6cc9f2bceee1603350d594a39ac1a2a58fef78fa87efb03f416fc018a2657fd3"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getPackageData(bytes32,bytes32)._packageId (contracts/ReBakedDAO.sol#524) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getPackageData(bytes32,bytes32)._packageId](contracts/ReBakedDAO.sol#L524) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 524,
+                  "endLine": 524
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "6e4ab317d293f34230bb1851ae6fd0d2410091de22bec9e3bd448b377990cf01"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.selfRemove(bytes32,bytes32)._packageId (contracts/ReBakedDAO.sol#326) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.selfRemove(bytes32,bytes32)._packageId](contracts/ReBakedDAO.sol#L326) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 326,
+                  "endLine": 326
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "7535565244b2f2b2fd44c8b39775426c1bce2e072ef7131705590dfbaecc6020"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.addObserver(bytes32,bytes32[],address)._projectId (contracts/ReBakedDAO.sol#405) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.addObserver(bytes32,bytes32[],address)._projectId](contracts/ReBakedDAO.sol#L405) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 405,
+                  "endLine": 405
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "75da1359ed6a92897735a4858d51b004eb64bf985326f783d48377499a6baa82"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.finishPackage(bytes32,bytes32)._projectId (contracts/ReBakedDAO.sol#212) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.finishPackage(bytes32,bytes32)._projectId](contracts/ReBakedDAO.sol#L212) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 212,
+                  "endLine": 212
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "76d633430096eff25839d9df5821b226e5ccff8f3b8b5d078c21d6f61ed710a8"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#281) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L281) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 281,
+                  "endLine": 281
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "7d8d779c3db6f4152dbb51a48da27de4d402c226a5ac43d2c6fc90fc2a8e10eb"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._packageId (contracts/ReBakedDAO.sol#536) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._packageId](contracts/ReBakedDAO.sol#L536) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 536,
+                  "endLine": 536
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "80510b6e7d1475652f9733ec798f8828d68a452c3dbff9ab68ad1cfb8bc7e2ae"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.removeObserver(bytes32,bytes32[],address)._projectId (contracts/ReBakedDAO.sol#426) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.removeObserver(bytes32,bytes32[],address)._projectId](contracts/ReBakedDAO.sol#L426) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 426,
+                  "endLine": 426
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "8158d8f61c13e2d2fd4dbee87fac3bc58deb27841a993b9e01ca12e39d444c93"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._projectId (contracts/ReBakedDAO.sol#356) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._projectId](contracts/ReBakedDAO.sol#L356) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 356,
+                  "endLine": 356
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "932dbbe177f2826971b975535418609d958134cc3498d1a7852514d8f62a7e43"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getProjectData(bytes32)._projectId (contracts/ReBakedDAO.sol#515) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getProjectData(bytes32)._projectId](contracts/ReBakedDAO.sol#L515) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 515,
+                  "endLine": 515
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "971d7cc73ef238913710c63eebb18641ce6c83375e006749c1e9e32a64465eb7"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._packageId (contracts/ReBakedDAO.sol#385) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._packageId](contracts/ReBakedDAO.sol#L385) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 385,
+                  "endLine": 385
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "9aa62b68e19b6bb2e6da81bef0bf92319243f3bf9c8f915bfc2e45fac12851f8"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[])._scores (contracts/ReBakedDAO.sol#162) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[])._scores](contracts/ReBakedDAO.sol#L162) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 162,
+                  "endLine": 162
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "9fea21bc8983b3912f01de0b99a953ea71510e8ce31a6fea63ad85e3227880bd"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.claimObserverFee(bytes32,bytes32)._projectId (contracts/ReBakedDAO.sol#497) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.claimObserverFee(bytes32,bytes32)._projectId](contracts/ReBakedDAO.sol#L497) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 497,
+                  "endLine": 497
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "a60925e5e4a370f3d880358ec6b814258c9728fce7f2953ed4adebee5714c230"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter TokenFactory.deployToken(uint256,string,string)._symbol (contracts/TokenFactory.sol#40) is not in mixedCase\n",
+            "markdown": "Parameter [TokenFactory.deployToken(uint256,string,string)._symbol](contracts/TokenFactory.sol#L40) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/TokenFactory.sol"
+                },
+                "region": {
+                  "startLine": 40,
+                  "endLine": 40
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "ad225f9fb5cf70a8df2820b2e587466f605ac59c0949947fcebb298a6d656a14"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._collaborator (contracts/ReBakedDAO.sol#260) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._collaborator](contracts/ReBakedDAO.sol#L260) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 260,
+                  "endLine": 260
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "adb12f0f0f6c0cb316ffc1386ae46f77f12bb15390d52564341f9af566b1cce1"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getPackageData(bytes32,bytes32)._projectId (contracts/ReBakedDAO.sol#524) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getPackageData(bytes32,bytes32)._projectId](contracts/ReBakedDAO.sol#L524) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 524,
+                  "endLine": 524
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "b37f729873ab1ba959ca70f7edfa7b30589cca144cd5948da07a8925d2be13c1"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter TokenFactory.setReBakedDao(address)._reBakedDao (contracts/TokenFactory.sol#28) is not in mixedCase\n",
+            "markdown": "Parameter [TokenFactory.setReBakedDao(address)._reBakedDao](contracts/TokenFactory.sol#L28) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/TokenFactory.sol"
+                },
+                "region": {
+                  "startLine": 28,
+                  "endLine": 28
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "b487590c91aac8be9c55368badccca73460719277a88f63e102d4e66be4318cb"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#537) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L537) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 537,
+                  "endLine": 537
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "b5db4860429acb92b98cc5ed86f0c7fcc508e22009ba731e60f4a345225c7d7a"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._projectId (contracts/ReBakedDAO.sol#535) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._projectId](contracts/ReBakedDAO.sol#L535) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 535,
+                  "endLine": 535
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "b66e189200960fd8a7b208ce49b42476978d6501a70c0ec2edda57f9ce61caa8"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._packageId (contracts/ReBakedDAO.sol#301) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._packageId](contracts/ReBakedDAO.sol#L301) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 301,
+                  "endLine": 301
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "bb6a7938d801da2c05a12b8616d401ecf1b6ea732214c6745f7ad281948eacce"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#386) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L386) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 386,
+                  "endLine": 386
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "bc0ab93019a5d28e13a09dcc15300e1a06de9bb8462d04197f4b109439b605c2"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.removeObserver(bytes32,bytes32[],address)._observer (contracts/ReBakedDAO.sol#428) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.removeObserver(bytes32,bytes32[],address)._observer](contracts/ReBakedDAO.sol#L428) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 428,
+                  "endLine": 428
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "bda7e0902010885ebe6033ac47e828cf91f4445655e8eb9fe7c5daca3890ce39"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.defendRemoval(bytes32,bytes32)._projectId (contracts/ReBakedDAO.sol#342) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.defendRemoval(bytes32,bytes32)._projectId](contracts/ReBakedDAO.sol#L342) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 342,
+                  "endLine": 342
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "c0e531344a9a27744333ec8ac4f147b0f39aa40fd197999342501d3d57a243a2"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.selfRemove(bytes32,bytes32)._projectId (contracts/ReBakedDAO.sol#326) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.selfRemove(bytes32,bytes32)._projectId](contracts/ReBakedDAO.sol#L326) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 326,
+                  "endLine": 326
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "c4fe7c8ada7674155a8f4d5e842c0472b5d18cc5f073fbf30dbac51c26a82ff9"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._projectId (contracts/ReBakedDAO.sol#300) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._projectId](contracts/ReBakedDAO.sol#L300) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 300,
+                  "endLine": 300
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "c8bb1dd2e69461e4ccd64f8c5e326721a4a6e0acb5707d69ca3cdc9d741e61b3"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.startProject(bytes32,string,string)._symbol (contracts/ReBakedDAO.sol#123) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.startProject(bytes32,string,string)._symbol](contracts/ReBakedDAO.sol#L123) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 123,
+                  "endLine": 123
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "cd9590ed06013b75dfc34b53698e7fd2e1247c3e016b2194d2125c9b4ae3060d"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.finishPackage(bytes32,bytes32)._packageId (contracts/ReBakedDAO.sol#212) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.finishPackage(bytes32,bytes32)._packageId](contracts/ReBakedDAO.sol#L212) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 212,
+                  "endLine": 212
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "ce7154238ad97c9435710995f3506c1bb1f4b9fb4df677359076d14c5281a65c"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._packageId (contracts/ReBakedDAO.sol#550) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._packageId](contracts/ReBakedDAO.sol#L550) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 550,
+                  "endLine": 550
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "ce8cd0a3b0da2c97f17f010ba75318456e53f87cb5e4c438d2323305b66572dc"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getObserverData(bytes32,bytes32,address)._observer (contracts/ReBakedDAO.sol#575) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getObserverData(bytes32,bytes32,address)._observer](contracts/ReBakedDAO.sol#L575) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 575,
+                  "endLine": 575
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "da244efd6f15fa9cac7c8d7fe16a427368ea990a3f3e8049993687ad0477e998"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.claimMgp(bytes32,bytes32)._packageId (contracts/ReBakedDAO.sol#465) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.claimMgp(bytes32,bytes32)._packageId](contracts/ReBakedDAO.sol#L465) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 465,
+                  "endLine": 465
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "dcb7570defd97600e7cc875398f4d8bb34590e8a9280b1d0f9ee6b089e76cc76"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.removeObserver(bytes32,bytes32[],address)._packageIds (contracts/ReBakedDAO.sol#427) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.removeObserver(bytes32,bytes32[],address)._packageIds](contracts/ReBakedDAO.sol#L427) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 427,
+                  "endLine": 427
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "e0ee525e5620f13d881538d710ad44fff4fec433180160b91ecdcd13b8cfa14e"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._collaborator (contracts/ReBakedDAO.sol#358) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._collaborator](contracts/ReBakedDAO.sol#L358) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 358,
+                  "endLine": 358
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "e7afeb1f4812af27cd3d391d1164db947d372b7355db2d8622e08b93c204ba24"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._observerBudget (contracts/ReBakedDAO.sol#193) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._observerBudget](contracts/ReBakedDAO.sol#L193) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 193,
+                  "endLine": 193
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "ebfd1b4d0596cc1ff95f9f22e105516e772f954f329fcc7a76faad1d1a59275a"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._projectId (contracts/ReBakedDAO.sol#258) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._projectId](contracts/ReBakedDAO.sol#L258) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 258,
+                  "endLine": 258
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "ec9b3afa44e92dbc3992e36ec031d47b93b89d39cf29f080ccbfbf82bf336650"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[])._observers (contracts/ReBakedDAO.sol#230) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[])._observers](contracts/ReBakedDAO.sol#L230) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 230,
+                  "endLine": 230
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "ed9b6c7dc7855090b60395d8f1d4ccf3f195b09b7520b8b3f28877dbf776006d"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._approved (contracts/ReBakedDAO.sol#359) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._approved](contracts/ReBakedDAO.sol#L359) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 359,
+                  "endLine": 359
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "ef058574215f4e3386bfed776398f6d0c2c8731beee0f6b6f33b04cf2346fded"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter TokenFactory.deployToken(uint256,string,string)._totalSupply (contracts/TokenFactory.sol#40) is not in mixedCase\n",
+            "markdown": "Parameter [TokenFactory.deployToken(uint256,string,string)._totalSupply](contracts/TokenFactory.sol#L40) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/TokenFactory.sol"
+                },
+                "region": {
+                  "startLine": 40,
+                  "endLine": 40
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "efdf2c73c10fec7707e94041874dd7500d6e98c2a629460a2e4c463c0e0cbb3e"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[])._packageId (contracts/ReBakedDAO.sol#228) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[])._packageId](contracts/ReBakedDAO.sol#L228) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 228,
+                  "endLine": 228
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "f03559fb2475d6acd0eb05021b35a98ac259731f64e2492854b2955f05581899"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._projectId (contracts/ReBakedDAO.sol#279) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._projectId](contracts/ReBakedDAO.sol#L279) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 279,
+                  "endLine": 279
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "f55d28d337d805304d77b4815fd9b614bf9e7aa2cc5bc1a706f599c2aed7e9c3"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#551) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L551) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 551,
+                  "endLine": 551
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "f6da4469d592e5ccfd01d48a00d4d86e4e192848fde68752de3a6e23c9442501"
+          }
+        },
+        {
+          "ruleId": "3-0-naming-convention",
+          "message": {
+            "text": "Parameter ReBakedDAO.addObserver(bytes32,bytes32[],address)._packageIds (contracts/ReBakedDAO.sol#406) is not in mixedCase\n",
+            "markdown": "Parameter [ReBakedDAO.addObserver(bytes32,bytes32[],address)._packageIds](contracts/ReBakedDAO.sol#L406) is not in mixedCase\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 406,
+                  "endLine": 406
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "f9502ffe26d9f6c62cd6ec51bd654432062d92ba9af47438e9da2e6466ac0baf"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._collaborator (contracts/ReBakedDAO.sol#302) is too similar to IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_ (contracts/interfaces/IReBakedDAO.sol#88)\n",
+            "markdown": "Variable [ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._collaborator](contracts/ReBakedDAO.sol#L302) is too similar to [IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_](contracts/interfaces/IReBakedDAO.sol#L88)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 302,
+                  "endLine": 302
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "028865e3803f80bd40db6493d2eac40f35b92c51e157245043dda2c6c1ad6626"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._maxCollaborators (contracts/ReBakedDAO.sol#194) is too similar to IReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256).maxCollaborators_ (contracts/interfaces/IReBakedDAO.sol#70)\n",
+            "markdown": "Variable [ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._maxCollaborators](contracts/ReBakedDAO.sol#L194) is too similar to [IReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256).maxCollaborators_](contracts/interfaces/IReBakedDAO.sol#L70)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 194,
+                  "endLine": 194
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "0404517ac7a89e7b64b38d03bc1f5b429faffd3b673730a30a5822988ba48e4c"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#551) is too similar to IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_ (contracts/interfaces/IReBakedDAO.sol#114)\n",
+            "markdown": "Variable [ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L551) is too similar to [IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_](contracts/interfaces/IReBakedDAO.sol#L114)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 551,
+                  "endLine": 551
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "095707a11d6a39b6f3945f34b83ac99e46d1fcd081cc0fb8dfbb63c9062629ff"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._collaborator (contracts/ReBakedDAO.sol#260) is too similar to IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_ (contracts/interfaces/IReBakedDAO.sol#114)\n",
+            "markdown": "Variable [ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._collaborator](contracts/ReBakedDAO.sol#L260) is too similar to [IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_](contracts/interfaces/IReBakedDAO.sol#L114)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 260,
+                  "endLine": 260
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "0f1bdecb82c48c41872aa362caf84c72d724104e4acfedb47237826795ece12b"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO._payMgp(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#664) is too similar to IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_ (contracts/interfaces/IReBakedDAO.sol#88)\n",
+            "markdown": "Variable [ReBakedDAO._payMgp(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L664) is too similar to [IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_](contracts/interfaces/IReBakedDAO.sol#L88)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 664,
+                  "endLine": 664
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "10b50611aa107c19743d4f316e07b22a10ea4e898f96177cc5052cfd231165e0"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.claimMgp(bytes32,bytes32)._collaborator (contracts/ReBakedDAO.sol#466) is too similar to IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_ (contracts/interfaces/IReBakedDAO.sol#114)\n",
+            "markdown": "Variable [ReBakedDAO.claimMgp(bytes32,bytes32)._collaborator](contracts/ReBakedDAO.sol#L466) is too similar to [IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_](contracts/interfaces/IReBakedDAO.sol#L114)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 466,
+                  "endLine": 466
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "140942ba6ba139609e57f3f3dd05ba9a08e06719ddbf0686e1fcb1117544b389"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._collaborator (contracts/ReBakedDAO.sol#358) is too similar to IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_ (contracts/interfaces/IReBakedDAO.sol#121)\n",
+            "markdown": "Variable [ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._collaborator](contracts/ReBakedDAO.sol#L358) is too similar to [IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_](contracts/interfaces/IReBakedDAO.sol#L121)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 358,
+                  "endLine": 358
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "14dbff0549ee4d47278ef47a798caa114e051ff6efb082b513c29e6f07cd45ba"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#551) is too similar to IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_ (contracts/interfaces/IReBakedDAO.sol#121)\n",
+            "markdown": "Variable [ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L551) is too similar to [IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_](contracts/interfaces/IReBakedDAO.sol#L121)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 551,
+                  "endLine": 551
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "152e70ab686bb15a0df59edc693795ee6369f3f5e36a711289d8e97b7b853b60"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO._payMgp(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#664) is too similar to IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_ (contracts/interfaces/IReBakedDAO.sol#114)\n",
+            "markdown": "Variable [ReBakedDAO._payMgp(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L664) is too similar to [IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_](contracts/interfaces/IReBakedDAO.sol#L114)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 664,
+                  "endLine": 664
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "1b7d7b0aab5fb007810e3e3942c8a03a9aca0b2f314ae1f22d6052d3213f918e"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#551) is too similar to IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_ (contracts/interfaces/IReBakedDAO.sol#88)\n",
+            "markdown": "Variable [ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L551) is too similar to [IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_](contracts/interfaces/IReBakedDAO.sol#L88)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 551,
+                  "endLine": 551
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "1d2e3553b500cdcff007d388da2af2cfb00a572a84a89d98032e092ca3e4eb4e"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._collaborator (contracts/ReBakedDAO.sol#302) is too similar to IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_ (contracts/interfaces/IReBakedDAO.sol#82)\n",
+            "markdown": "Variable [ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._collaborator](contracts/ReBakedDAO.sol#L302) is too similar to [IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_](contracts/interfaces/IReBakedDAO.sol#L82)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 302,
+                  "endLine": 302
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "1f6218fc4ccb64e0e47b8672f1b7d66416fabaf42ad80e833d8928f9d1f9bc4f"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#551) is too similar to IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_ (contracts/interfaces/IReBakedDAO.sol#82)\n",
+            "markdown": "Variable [ReBakedDAO.getCollaboratorRewards(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L551) is too similar to [IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_](contracts/interfaces/IReBakedDAO.sol#L82)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 551,
+                  "endLine": 551
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "24b98df5353ca9cb8bdee16900e0ebe922435dce54f56b00b3289a7aa43915e4"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[])._collaborators (contracts/ReBakedDAO.sol#229) is too similar to IReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[]).collaborators_ (contracts/interfaces/IReBakedDAO.sol#41)\n",
+            "markdown": "Variable [ReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[])._collaborators](contracts/ReBakedDAO.sol#L229) is too similar to [IReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[]).collaborators_](contracts/interfaces/IReBakedDAO.sol#L41)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 229,
+                  "endLine": 229
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "25359433ddab336bbf3d98b4d643d40bdd4f9bde96a2f6e1567c8166f1df2952"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#537) is too similar to IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_ (contracts/interfaces/IReBakedDAO.sol#114)\n",
+            "markdown": "Variable [ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L537) is too similar to [IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_](contracts/interfaces/IReBakedDAO.sol#L114)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 537,
+                  "endLine": 537
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "2ded922f07f6b0ba10d7b0ce76ac436ea09006175c26663fbf2de5cb741cb4ba"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#386) is too similar to IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_ (contracts/interfaces/IReBakedDAO.sol#121)\n",
+            "markdown": "Variable [ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L386) is too similar to [IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_](contracts/interfaces/IReBakedDAO.sol#L121)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 386,
+                  "endLine": 386
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "36d80b4ad135dab80d763388f9fa294b31d6840f83341b7bdeb28a6b7c886c35"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#386) is too similar to IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_ (contracts/interfaces/IReBakedDAO.sol#82)\n",
+            "markdown": "Variable [ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L386) is too similar to [IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_](contracts/interfaces/IReBakedDAO.sol#L82)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 386,
+                  "endLine": 386
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "4733b92a427a363159fdf8f0d93ca03fb3ed28e8086e45a149b092bf4bc5c47a"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#537) is too similar to IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_ (contracts/interfaces/IReBakedDAO.sol#82)\n",
+            "markdown": "Variable [ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L537) is too similar to [IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_](contracts/interfaces/IReBakedDAO.sol#L82)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 537,
+                  "endLine": 537
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "52cefae2190944c22d7f33c0add1e997821ffcab5e77fd39fc89bcefe0de61bf"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._collaborator (contracts/ReBakedDAO.sol#358) is too similar to IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_ (contracts/interfaces/IReBakedDAO.sol#88)\n",
+            "markdown": "Variable [ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._collaborator](contracts/ReBakedDAO.sol#L358) is too similar to [IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_](contracts/interfaces/IReBakedDAO.sol#L88)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 358,
+                  "endLine": 358
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "5b556dc001d970c8dff3ffe79e9555f7a2a4eaf0e8aa8491480e7a1e338dfefb"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#281) is too similar to IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_ (contracts/interfaces/IReBakedDAO.sol#82)\n",
+            "markdown": "Variable [ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L281) is too similar to [IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_](contracts/interfaces/IReBakedDAO.sol#L82)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 281,
+                  "endLine": 281
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "6338bdf968f85e2bfe30c200d90243cc16fe53dd4d58d03d1ba70129d3d2c19e"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[])._collaborators (contracts/ReBakedDAO.sol#161) is too similar to IReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[]).collaborators_ (contracts/interfaces/IReBakedDAO.sol#41)\n",
+            "markdown": "Variable [ReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[])._collaborators](contracts/ReBakedDAO.sol#L161) is too similar to [IReBakedDAO.setBonusScores(bytes32,bytes32,address[],uint256[]).collaborators_](contracts/interfaces/IReBakedDAO.sol#L41)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 161,
+                  "endLine": 161
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "6688d97fc8df12340a75434bb195fa34387ea3f5b0f065710b02c62c56d1766e"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._collaborator (contracts/ReBakedDAO.sol#260) is too similar to IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_ (contracts/interfaces/IReBakedDAO.sol#82)\n",
+            "markdown": "Variable [ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._collaborator](contracts/ReBakedDAO.sol#L260) is too similar to [IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_](contracts/interfaces/IReBakedDAO.sol#L82)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 260,
+                  "endLine": 260
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "6b966857c8793d20812a2ba8927a6a37f42dc99e0ad893c711bbd15cd753eef8"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._collaborator (contracts/ReBakedDAO.sol#358) is too similar to IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_ (contracts/interfaces/IReBakedDAO.sol#114)\n",
+            "markdown": "Variable [ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._collaborator](contracts/ReBakedDAO.sol#L358) is too similar to [IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_](contracts/interfaces/IReBakedDAO.sol#L114)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 358,
+                  "endLine": 358
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "6e8d3614eaea1c1bbeb31d701e43c83c2c986fe791c129da296d6c9568520012"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.claimBonus(bytes32,bytes32)._collaborator (contracts/ReBakedDAO.sol#481) is too similar to IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_ (contracts/interfaces/IReBakedDAO.sol#121)\n",
+            "markdown": "Variable [ReBakedDAO.claimBonus(bytes32,bytes32)._collaborator](contracts/ReBakedDAO.sol#L481) is too similar to [IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_](contracts/interfaces/IReBakedDAO.sol#L121)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 481,
+                  "endLine": 481
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "7429aa464180fb6a2e28acd2d252694e0c8863548c1c2878098c8a10ee1f7a5b"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#537) is too similar to IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_ (contracts/interfaces/IReBakedDAO.sol#121)\n",
+            "markdown": "Variable [ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L537) is too similar to [IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_](contracts/interfaces/IReBakedDAO.sol#L121)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 537,
+                  "endLine": 537
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "7b60d9a83fcfced0a7f97e65c3b1780c95d5b03ceb47fdcb6230f2133232fdcd"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO._payMgp(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#664) is too similar to IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_ (contracts/interfaces/IReBakedDAO.sol#82)\n",
+            "markdown": "Variable [ReBakedDAO._payMgp(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L664) is too similar to [IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_](contracts/interfaces/IReBakedDAO.sol#L82)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 664,
+                  "endLine": 664
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "7c1171aff0c41c70c9d043ab2e7195e5e7332ea8b6582b07002a79735cf69061"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._collaborator (contracts/ReBakedDAO.sol#302) is too similar to IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_ (contracts/interfaces/IReBakedDAO.sol#121)\n",
+            "markdown": "Variable [ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._collaborator](contracts/ReBakedDAO.sol#L302) is too similar to [IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_](contracts/interfaces/IReBakedDAO.sol#L121)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 302,
+                  "endLine": 302
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "863a219f0495280477cb1c2a9679946efd96a28e43d77d897cb7cf611c2c5e83"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._collaborator (contracts/ReBakedDAO.sol#302) is too similar to IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_ (contracts/interfaces/IReBakedDAO.sol#114)\n",
+            "markdown": "Variable [ReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool)._collaborator](contracts/ReBakedDAO.sol#L302) is too similar to [IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_](contracts/interfaces/IReBakedDAO.sol#L114)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 302,
+                  "endLine": 302
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "8d9cbbfb0c99cbf89b3550edb092b4663548df9e67a008d9d176f1d0cb5a0ac8"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#386) is too similar to IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_ (contracts/interfaces/IReBakedDAO.sol#88)\n",
+            "markdown": "Variable [ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L386) is too similar to [IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_](contracts/interfaces/IReBakedDAO.sol#L88)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 386,
+                  "endLine": 386
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "8f20112c63bdaf2a4a1e9d1828aa5d5fa508b95bfdb1a72401f23b00dcb88b44"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.claimMgp(bytes32,bytes32)._collaborator (contracts/ReBakedDAO.sol#466) is too similar to IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_ (contracts/interfaces/IReBakedDAO.sol#88)\n",
+            "markdown": "Variable [ReBakedDAO.claimMgp(bytes32,bytes32)._collaborator](contracts/ReBakedDAO.sol#L466) is too similar to [IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_](contracts/interfaces/IReBakedDAO.sol#L88)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 466,
+                  "endLine": 466
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "90f6a503ad0a3125ef4abc5e67dbcdb6a4f7a6b854cebb98f408d11f49c1a572"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable PackageLibrary.MAX_COLLABORATORS (contracts/libraries/PackageLibrary.sol#6) is too similar to PackageLibrary._createPackage(Package,uint256,uint256,uint256,uint256).maxCollaborators_ (contracts/libraries/PackageLibrary.sol#29)\n",
+            "markdown": "Variable [PackageLibrary.MAX_COLLABORATORS](contracts/libraries/PackageLibrary.sol#L6) is too similar to [PackageLibrary._createPackage(Package,uint256,uint256,uint256,uint256).maxCollaborators_](contracts/libraries/PackageLibrary.sol#L29)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/libraries/PackageLibrary.sol"
+                },
+                "region": {
+                  "startLine": 6,
+                  "endLine": 6
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "910e2ad352bb4b2da5bcc29d12689f5e3fd5775a80ae8d4afe320886398e37b1"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.claimMgp(bytes32,bytes32)._collaborator (contracts/ReBakedDAO.sol#466) is too similar to IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_ (contracts/interfaces/IReBakedDAO.sol#82)\n",
+            "markdown": "Variable [ReBakedDAO.claimMgp(bytes32,bytes32)._collaborator](contracts/ReBakedDAO.sol#L466) is too similar to [IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_](contracts/interfaces/IReBakedDAO.sol#L82)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 466,
+                  "endLine": 466
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "9584e60b4f6c5de86ab8d2d8109002ba304a4eb9b2e066afa7227a5300edec48"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#281) is too similar to IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_ (contracts/interfaces/IReBakedDAO.sol#121)\n",
+            "markdown": "Variable [ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L281) is too similar to [IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_](contracts/interfaces/IReBakedDAO.sol#L121)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 281,
+                  "endLine": 281
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "964d4cd3178104edf2bde1fd44dcba757cdbb2126f82ff4710097ce382e46b70"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.claimBonus(bytes32,bytes32)._collaborator (contracts/ReBakedDAO.sol#481) is too similar to IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_ (contracts/interfaces/IReBakedDAO.sol#88)\n",
+            "markdown": "Variable [ReBakedDAO.claimBonus(bytes32,bytes32)._collaborator](contracts/ReBakedDAO.sol#L481) is too similar to [IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_](contracts/interfaces/IReBakedDAO.sol#L88)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 481,
+                  "endLine": 481
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "9712f00692bed7f1bc3457e3b571aae7e24d51630ea636aeee2bd93b6ae08d0d"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._collaborator (contracts/ReBakedDAO.sol#260) is too similar to IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_ (contracts/interfaces/IReBakedDAO.sol#121)\n",
+            "markdown": "Variable [ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._collaborator](contracts/ReBakedDAO.sol#L260) is too similar to [IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_](contracts/interfaces/IReBakedDAO.sol#L121)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 260,
+                  "endLine": 260
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "9e6f491c7f3abceb5d5bf51b9b9a2493133baf3d52c01812552a162956f0b5f8"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#281) is too similar to IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_ (contracts/interfaces/IReBakedDAO.sol#114)\n",
+            "markdown": "Variable [ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L281) is too similar to [IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_](contracts/interfaces/IReBakedDAO.sol#L114)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 281,
+                  "endLine": 281
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "b7062aab6af683f1ba21ec5883f3ed224c858d2ba83c41ce2927ce1cce7db7ee"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#386) is too similar to IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_ (contracts/interfaces/IReBakedDAO.sol#114)\n",
+            "markdown": "Variable [ReBakedDAO.settleExpiredDispute(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L386) is too similar to [IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_](contracts/interfaces/IReBakedDAO.sol#L114)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 386,
+                  "endLine": 386
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "b726798de70243f0ea8259c252eeaff03c0b354e1ad28d5f9abe5443a012fe4b"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#281) is too similar to IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_ (contracts/interfaces/IReBakedDAO.sol#88)\n",
+            "markdown": "Variable [ReBakedDAO.approveCollaborator(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L281) is too similar to [IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_](contracts/interfaces/IReBakedDAO.sol#L88)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 281,
+                  "endLine": 281
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "b95c5e8bdc64bda21d3d3fa369bb0226ca296b6513161f0e6661d9ff7b0c40b5"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable TokenFactory.deployToken(uint256,string,string)._totalSupply (contracts/TokenFactory.sol#40) is too similar to ITokenFactory.deployToken(uint256,string,string).totalSupply_ (contracts/interfaces/ITokenFactory.sol#8)\n",
+            "markdown": "Variable [TokenFactory.deployToken(uint256,string,string)._totalSupply](contracts/TokenFactory.sol#L40) is too similar to [ITokenFactory.deployToken(uint256,string,string).totalSupply_](contracts/interfaces/ITokenFactory.sol#L8)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/TokenFactory.sol"
+                },
+                "region": {
+                  "startLine": 40,
+                  "endLine": 40
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "c0e3fb318fefde576c84a7ab7bf2eaf32e151484d295ec6f4a15e9044b29891b"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.claimBonus(bytes32,bytes32)._collaborator (contracts/ReBakedDAO.sol#481) is too similar to IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_ (contracts/interfaces/IReBakedDAO.sol#82)\n",
+            "markdown": "Variable [ReBakedDAO.claimBonus(bytes32,bytes32)._collaborator](contracts/ReBakedDAO.sol#L481) is too similar to [IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_](contracts/interfaces/IReBakedDAO.sol#L82)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 481,
+                  "endLine": 481
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "c7c7ad5bfaf6dc59a10c45f7c123e9bf74555028384c754e93518da6a90cd41c"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._observerBudget (contracts/ReBakedDAO.sol#193) is too similar to IReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256).observerBudget_ (contracts/interfaces/IReBakedDAO.sol#69)\n",
+            "markdown": "Variable [ReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256)._observerBudget](contracts/ReBakedDAO.sol#L193) is too similar to [IReBakedDAO.createPackage(bytes32,uint256,uint256,uint256,uint256).observerBudget_](contracts/interfaces/IReBakedDAO.sol#L69)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 193,
+                  "endLine": 193
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "eccdbb494ff4084316d49bbb7865cc2799ed3fe2b8c4efb6c37f6a5903b03bea"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.claimBonus(bytes32,bytes32)._collaborator (contracts/ReBakedDAO.sol#481) is too similar to IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_ (contracts/interfaces/IReBakedDAO.sol#114)\n",
+            "markdown": "Variable [ReBakedDAO.claimBonus(bytes32,bytes32)._collaborator](contracts/ReBakedDAO.sol#L481) is too similar to [IReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256).collaborator_](contracts/interfaces/IReBakedDAO.sol#L114)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 481,
+                  "endLine": 481
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "f5cd83b32921a25f000de7f574ac8c73e55046683261368b98d929d153402ceb"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._collaborator (contracts/ReBakedDAO.sol#260) is too similar to IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_ (contracts/interfaces/IReBakedDAO.sol#88)\n",
+            "markdown": "Variable [ReBakedDAO.addCollaborator(bytes32,bytes32,address,uint256)._collaborator](contracts/ReBakedDAO.sol#L260) is too similar to [IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_](contracts/interfaces/IReBakedDAO.sol#L88)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 260,
+                  "endLine": 260
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "f7b14cf75852af01aa54963ad9495c03e9cd05b0e75557a7e7884160dba5dfff"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.claimMgp(bytes32,bytes32)._collaborator (contracts/ReBakedDAO.sol#466) is too similar to IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_ (contracts/interfaces/IReBakedDAO.sol#121)\n",
+            "markdown": "Variable [ReBakedDAO.claimMgp(bytes32,bytes32)._collaborator](contracts/ReBakedDAO.sol#L466) is too similar to [IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_](contracts/interfaces/IReBakedDAO.sol#L121)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 466,
+                  "endLine": 466
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "f8f1b23dc54fa0dc66dbca4ce41a08ccf6aa7bc40e897fe25c4ad879bc8c0c4b"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#537) is too similar to IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_ (contracts/interfaces/IReBakedDAO.sol#88)\n",
+            "markdown": "Variable [ReBakedDAO.getCollaboratorData(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L537) is too similar to [IReBakedDAO.cancelPackage(bytes32,bytes32,address[],address[]).collaborator_](contracts/interfaces/IReBakedDAO.sol#L88)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 537,
+                  "endLine": 537
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "fdbcae02eebd02dc5061b088534f986a10d1905d376e4de7b6b3231f42cd72bf"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO._payMgp(bytes32,bytes32,address)._collaborator (contracts/ReBakedDAO.sol#664) is too similar to IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_ (contracts/interfaces/IReBakedDAO.sol#121)\n",
+            "markdown": "Variable [ReBakedDAO._payMgp(bytes32,bytes32,address)._collaborator](contracts/ReBakedDAO.sol#L664) is too similar to [IReBakedDAO.removeCollaborator(bytes32,bytes32,address,bool).collaborator_](contracts/interfaces/IReBakedDAO.sol#L121)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 664,
+                  "endLine": 664
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "fde2421f90f4bd5108f0ea58f579e4bcad574841b5766dca0bfedb2724ee0e8d"
+          }
+        },
+        {
+          "ruleId": "3-1-similar-names",
+          "message": {
+            "text": "Variable ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._collaborator (contracts/ReBakedDAO.sol#358) is too similar to IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_ (contracts/interfaces/IReBakedDAO.sol#82)\n",
+            "markdown": "Variable [ReBakedDAO.resolveDispute(bytes32,bytes32,address,bool)._collaborator](contracts/ReBakedDAO.sol#L358) is too similar to [IReBakedDAO.approveCollaborator(bytes32,bytes32,address).collaborator_](contracts/interfaces/IReBakedDAO.sol#L82)\n"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contracts/ReBakedDAO.sol"
+                },
+                "region": {
+                  "startLine": 358,
+                  "endLine": 358
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "id": "fe2fd8d2fd9a035269d5c4a91e99089532e5ce1d974fd7681d68f423d5d8362d"
+          }
+        }
+      ]
+    }
+  ]
+}

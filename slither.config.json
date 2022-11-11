@@ -3,7 +3,7 @@
   "exclude_low": false,
   "exclude_medium": false,
   "exclude_high": false,
-  "json": "./slither-report.json",
+  "sarif": "./slither-report.sarif",
   "disable_color": false,
   "filter_paths": "(mocks/|test/|openzeppelin/)",
   "legacy_ast": false
