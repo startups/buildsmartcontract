@@ -61,4 +61,4 @@ deployed/hardhat*
 .openzeppelin/unknown*.json
 
 # slither analyzer
-slither-report.json
+slither-report.sarif
