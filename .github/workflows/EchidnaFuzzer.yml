@@ -30,6 +30,7 @@ jobs:
         solc-version: 0.8.16
         files: .
         contract: ReBakedDAO
+        test-mode: exploration
         crytic-args: --hardhat-ignore-compile
 
       
