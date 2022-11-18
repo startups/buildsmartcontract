@@ -1,0 +1,1 @@
+[{"_value":"0x0","_dst":"0x00a329c0648769A73afAc7F9381E08FB43dBEA72","_gas'":"0xbebc20","_gasprice'":"0x0","_delay":["0x2a369","0x971a"],"_call":{"tag":"SolCall","contents":["transferOwnership",[{"tag":"AbiAddress","contents":"0x5e4060E86f986ffBa731a211700fcc0418915c5b"}]]},"_src":"0x0000000000000000000000000000000000020000"}]
