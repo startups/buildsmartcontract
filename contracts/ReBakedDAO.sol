@@ -2,7 +2,6 @@
 pragma solidity 0.8.12;
 import { IReBakedDAO } from "./interfaces/IReBakedDAO.sol";
 import { ITokenFactory } from "./interfaces/ITokenFactory.sol";
-import { IIOUToken } from "./interfaces/IIOUToken.sol";
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import { IERC20Upgradeable, SafeERC20Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -143,7 +142,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * Emit {FinishedProject}
      */
     function finishProject(bytes32 _projectId) external onlyInitiator(_projectId) {
-        projectData[_projectId]._finishProject(treasury);
+        projectData[_projectId]._finishProject();
         emit FinishedProject(_projectId);
     }
 
@@ -307,14 +306,12 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
         if (_shouldPayMgp) {
             _payMgp(_projectId, _packageId, _collaborator);
-            packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp, false);
-            collaborator._removeCollaborator();
-            emit RemovedCollaborator(_projectId, _packageId, _collaborator);
-        } else {
-            collaboratorData[_projectId][_packageId][_collaborator]._requestRemoval();
-            packageData[_projectId][_packageId].disputesCount++;
-            emit RequestedRemoval(_projectId, _packageId, _collaborator);
         }
+
+        packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp);
+        collaborator._removeCollaborator();
+        
+        emit RemovedCollaborator(_projectId, _packageId, _collaborator);
     }
 
     /**
@@ -328,70 +325,9 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         require(!approvedUser[_projectId][_packageId][_msgSender()], "collaborator approved already!");
 
         collaborator._removeCollaborator();
-        packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp, collaborator.disputeExpiresAt > 0);
+        packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp);
 
         emit RemovedCollaborator(_projectId, _packageId, _msgSender());
-    }
-
-    /**
-     * @notice Defend when collaborator was removed
-     * @param _projectId Id of the project
-     * @param _packageId Id of the package
-     * Emit {DefendedRemoval}
-     */
-    function defendRemoval(bytes32 _projectId, bytes32 _packageId) external {
-        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_msgSender()];
-        collaborator._defendRemoval();
-
-        emit DefendedRemoval(_projectId, _packageId, _msgSender());
-    }
-
-    /**
-     * @notice Resolve dispute for the collaborator
-     * @param _projectId Id of the project
-     * @param _packageId Id of the package
-     * Emit {RemovedCollaborator}
-     */
-    function resolveDispute(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address _collaborator,
-        bool _approved
-    ) external {
-        Observer storage observer = observerData[_projectId][_packageId][_msgSender()];
-        require(_msgSender() == owner() || (observer.timeCreated > 0 && !observer.isRemoved), "Caller is not authorized");
-
-        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
-        require(block.timestamp <= collaborator.resolveExpiresAt, "resolve period already expired");
-
-        packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp, true);
-        if (_approved) {
-            _payMgp(_projectId, _packageId, _collaborator);
-        }
-        collaborator._removeCollaborator();
-
-        emit RemovedCollaborator(_projectId, _packageId, _collaborator);
-    }
-
-    /**
-     * @notice Decide the result of the dispute when it is expired
-     * @dev Only initialtor can call this function
-     * @param _projectId Id of the project
-     * @param _packageId Id of the package
-     * Emit {RemovedCollaborator}
-     */
-    function settleExpiredDispute(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address _collaborator
-    ) external onlyInitiator(_projectId) {
-        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
-        require(collaborator._canSettleExpiredDispute(), "not elligible to remove yet");
-
-        collaborator._removeCollaborator();
-        packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp, true);
-
-        emit RemovedCollaborator(_projectId, _packageId, _collaborator);
     }
 
     /**

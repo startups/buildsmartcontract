@@ -47,32 +47,15 @@ Each flow will run sequence by sequence
 
 1. Add **package 3**
 2. Add **3 collaborators**
-3. Remove **Collaborator 1** with no `MGP` and **Collaborator 1** do not defend removal
-4. **Initiator** Settle expired dispute for **Collaborator 1**
-5. Remove **Collaborator 2** with `MGP`
-6. Approve **Collaborator 3**
-7. Finish **package 3**
-8. **Collaborator 2** try to claim `MGP` but revert
-9. **Collaborator 3** claim `MGP`
-10. Check balance after flow
-
-### 5. Defend removal (Project 1, Package 4)
-
-1. Add **package 4**
-2. Add **3 collaborators**
 3. Remove **Collaborator 1** with no `MGP`
-4. **Collaborator 1** defend removal
-5. Resolve dispute **Collaborator 1** with no `MGP`
-6. Remove **Collaborator 2** with no `MGP`
-7. **Collaborator 2** defend removal
-8. Resolve dispute **Collaborator 2** with `MGP`
-9. Approve **Collaborator 3**
-10. Finish **package 4**
-11. **Collaborator 3** claim `MGP` 
-12. **Collaborator 3** try to claim `MGP` but revert
-13. Check balance after flow
+4. Remove **Collaborator 2** with `MGP`
+5. Approve **Collaborator 3**
+6. Finish **package 3**
+7. **Collaborator 1 & Collaborator 2** try to claim `MGP` but revert
+8. **Collaborator 3** claim `MGP`
+9. Check balance after flow
 
-### 6. Self removing (Project 1, Package 5)
+### 5. Self removing (Project 1, Package 4)
 
 1. Add **package 5**
 2. Add **2 collaborators**
@@ -84,12 +67,12 @@ Each flow will run sequence by sequence
 8. **Collaborator 2** claim `Bonus Score`
 9. Check balance after flow
 
-### 7. Finish project (Project 1)
+### 6. Finish project (Project 1)
 
 1. Finish **project 1**
 2. Check balance after flow
 
-### 8. Start project with no token (Project 2)
+### 7. Start project with no token (Project 2, Package 1)
 
 1. Create **project 2** with no token
 2. Approve **project 2**
@@ -105,88 +88,17 @@ Each flow will run sequence by sequence
 12. **Collaborator 1** claim `Bonus Score`
 13. Check balance after flow
 
-### 9. Expired defend removal (Project 2, Package 2)
+### 8. Cancel package (Project 2 package 2)
 
 1. Add **package 2**
-2. Add **3 collaborators**
-3. Remove **Collaborator 1** with no `MGP`
-4. **Collaborator 1** defend removal
-5. Resolve dispute **Collaborator 1** with no `MGP`
-6. Remove **Collaborator 2** with no `MGP`
-7. Wait for 3 days -> Expired disputed for **Collaborator 2**
-8. Initiator Settle expired dispute for **Collaborator 1**
-9. Approve **Collaborator 3**
-10. Finish **package 2**
-11. **Collaborator 3** claim `MGP` 
-12. **Collaborator 3** try to claim `MGP` but revert
-13. Check balance after flow
-
-### 10. Initiator remove collaborator again after resolving dispute (Project 2, Package 3)
-1. Add **package 3**
-2. Add **2 collaborators**
-3. Remove **Collaborator 1** with no `MGP`
-4. **Collaborator 1** defend removal
-5. Resolve dispute **Collaborator 1** with `MGP`
-6. Initiator remove **Collaborator 1** again with no `MGP` but revert
-7. Approve **Collaborator 2**
-8. Finish **package 3**
-10. **Collaborator 2** claim `MGP`
-11. Check balance after flow
-
-### 11. Collaborator defend removal again after resolving dispute (Project 2, Package 4)
-1. Add **package 4**
-2. Add **2 collaborators**
-7. Approve **Collaborator 2**
-3. Remove **Collaborator 1** with no `MGP`
-4. **Collaborator 1** defend removal
-5. Resolve dispute **Collaborator 1** with no `MGP`
-6. **Collaborator 1** defend removal again
-8. Finish **package 4**
-10. **Collaborator 2** claim `MGP`
-11. Check balance after flow
-
-### 12. Collaborator defend removal but owner do not resolve dispute and initiator settle (Project 2, Package 5)
-1. Add **package 5**
-2. Add **2 collaborators**
-7. Approve **Collaborator 1**
-3. Remove **Collaborator 2** with no `MGP`
-4. **Collaborator 2** defend removal
-5. Wait for 3 days -> Expired disputed for **Collaborator 2**
-6. **Initiator** settles dispute for **Collaborator 2**
-8. Finish **package 5**
-10. **Collaborator 1** claim `MGP`
-11. Check balance after flow
-
-### 13. Cancel package (Project 2 package 6)
-1. Add **package 6**
 2. Add **3 collaborators**
 3. Approve **3 collaborators**
 3. Add **2 observers**
-4. Cancel **package 6**
+4. Cancel **package 2**
 5. **Collaborator 3** try to claim mgp but revert
 6. Check balance after flow
 
-### 14. Cancel package when collaborator in dispute (Project 3 package 1)
-1. Create **project 3** with existed token
-2. Add **package 1**
-3. Add **2 collaborators**
-4. Approve **Collaborator 1**
-5. Remove **Collaborator 2** with no `MGP`
-6. **Collaborator 2** defend removal
-7. Cancel **package 1** but revert because package still has unresolved disputes
-8. Resolve dispute **Collaborator 2** with no `MGP`
-9. Cancel **package 1**
-10. Check balance after flow
+### 9. Finish project (Project 2)
 
-### 15. Remove collaborator because of claiming before approving (Project 3 package 2)
-1. Add **package 2**
-2. Add **2 collaborators**
-3. **Collaborator 1** try to claim `MGP` but revert
-4. Remove collaborator 1 with no `MGP`
-5. Finish **package 2** but revert because package still has unresolved disputes
-6. **Collaborator 1** defend removal
-7. Resolve dispute **Collaborator 1** with no `MGP`
-8. Approve **Collaborator 2**
-9. Finish **package 2**
-10. **Collaborator 2** claim `MGP`
-11. Check balance after flow
+1. Finish **project 1**
+2. Check balance after flow
