@@ -416,9 +416,9 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
     function claimBonus(bytes32 _projectId, bytes32 _packageId) external nonReentrant {
         address _collaborator = _msgSender();
 
-        collaboratorData[_projectId][_packageId][_collaborator]._claimBonus();
-
         (, uint256 amount_) = getCollaboratorRewards(_projectId, _packageId, _collaborator);
+
+        collaboratorData[_projectId][_packageId][_collaborator]._claimBonus();
         packageData[_projectId][_packageId]._claimBonus(amount_);
         projectData[_projectId]._pay(_collaborator, amount_);
 
