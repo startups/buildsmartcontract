@@ -30,4 +30,3 @@ jobs:
 
       - name: Run test coverage
         run: npm run coverage
-

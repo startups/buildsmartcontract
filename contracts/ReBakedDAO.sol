@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity 0.8.12;
 import { IReBakedDAO } from "./interfaces/IReBakedDAO.sol";
 import { ITokenFactory } from "./interfaces/ITokenFactory.sol";
 import { IIOUToken } from "./interfaces/IIOUToken.sol";
@@ -554,8 +554,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
 
         uint256 mgpClaimable = (collaborator.timeMgpPaid == 0) ? collaborator.mgp : 0;
-        uint256 bonusClaimable;
-
+        uint256 bonusClaimable = 0;
         if (collaborator.bonusScore > 0 && collaborator.timeBonusPaid == 0) {
             bonusClaimable = (package.collaboratorsPaidBonus + 1 == package.collaboratorsGetBonus)
                 ? (package.bonus - package.bonusPaid)
