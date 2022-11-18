@@ -3,6 +3,5 @@ testMode: exploration
 testLimit: 20000
 seqLen: 2
 stopOnFail: True
-corpusDir: "corpus-exploration"
 cryticArgs: ["--hardhat-ignore-compile"]
 # solcArgs: "--allow-paths /home/phong_ho/NAPA/buildsmartcontract/node_modules"
