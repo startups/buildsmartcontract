@@ -1,8 +1,7 @@
 # run: echidna-parade ./ --contract ReBakedDAO --config echidna.config.yaml --timeout 60 
 testMode: exploration
-testLimit: 5000
-timeout: 300 
+testLimit: 20000
 seqLen: 2
 stopOnFail: True
 corpusDir: "corpus-exploration"
-solcArgs: "--allow-paths /home/phong_ho/NAPA/buildsmartcontract/node_modules"
+# solcArgs: "--allow-paths /home/phong_ho/NAPA/buildsmartcontract/node_modules"

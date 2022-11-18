@@ -1,0 +1,15 @@
+corpusDir: /home/phong_ho/NAPA/buildsmartcontract/parade.11151/corpus
+coverage: true
+dictFreq: 0.4
+filterBlacklist: true
+filterFunctions: []
+mutConsts:
+- 1
+- 1
+- 1
+- 1
+seqLen: 2
+stopOnFail: false
+testLimit: 1000000000
+testMode: exploration
+timeout: 300

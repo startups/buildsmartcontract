@@ -31,10 +31,6 @@ jobs:
         solc-version: 0.8.16
         files: .
         contract: ReBakedDAO
-        crytic-args: --hardhat-ignore-compile
-        test-mode: exploration
-        test-limit: 5000
-        seq-len: 2
-        corpus-dir: "corpus-exploration"
+        config: ./echidna.config.yaml
 
       
