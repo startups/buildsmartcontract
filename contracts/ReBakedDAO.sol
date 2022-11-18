@@ -310,7 +310,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
 
         packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp);
         collaborator._removeCollaborator();
-        
+
         emit RemovedCollaborator(_projectId, _packageId, _collaborator);
     }
 
@@ -400,8 +400,8 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      */
     function claimMgp(bytes32 _projectId, bytes32 _packageId) public nonReentrant {
         address _collaborator = _msgSender();
-        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
-        uint256 amount_ = collaborator._claimMgp();
+        uint256 amount_ = collaboratorData[_projectId][_packageId][_collaborator]._claimMgp();
+
         packageData[_projectId][_packageId]._claimMgp(amount_);
         projectData[_projectId]._pay(_collaborator, amount_);
         emit PaidMgp(_projectId, _packageId, _msgSender(), amount_);
@@ -415,12 +415,13 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      */
     function claimBonus(bytes32 _projectId, bytes32 _packageId) external nonReentrant {
         address _collaborator = _msgSender();
-        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
+
+        collaboratorData[_projectId][_packageId][_collaborator]._claimBonus();
+
         (, uint256 amount_) = getCollaboratorRewards(_projectId, _packageId, _collaborator);
-        collaborator._claimBonus();
-        Package storage package = packageData[_projectId][_packageId];
-        package._claimBonus(amount_);
+        packageData[_projectId][_packageId]._claimBonus(amount_);
         projectData[_projectId]._pay(_collaborator, amount_);
+
         emit PaidBonus(_projectId, _packageId, _collaborator, amount_);
     }
 
@@ -432,8 +433,8 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      */
     function claimObserverFee(bytes32 _projectId, bytes32 _packageId) external nonReentrant {
         address _observer = _msgSender();
-        Observer storage observer = observerData[_projectId][_packageId][_observer];
-        observer._claimObserverFee();
+
+        observerData[_projectId][_packageId][_observer]._claimObserverFee();
 
         uint256 amount_ = packageData[_projectId][_packageId]._getObserverFee();
         packageData[_projectId][_packageId]._claimObserverFee(amount_);
