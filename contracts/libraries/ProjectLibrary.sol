@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.12;
+pragma solidity 0.8.16;
 import { IERC20Upgradeable, SafeERC20Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import { ITokenFactory } from "../interfaces/ITokenFactory.sol";
-import { IIOUToken } from "../interfaces/IIOUToken.sol";
 import { Project } from "./Structs.sol";
 
 library ProjectLibrary {
@@ -66,18 +65,14 @@ library ProjectLibrary {
      * unallocated budget returned to initiator or burned (in case of IOUToken)
      * @param project_ reference to Project struct
      */
-    function _finishProject(Project storage project_, address treasury_) internal {
+    function _finishProject(Project storage project_) internal {
         require(project_.timeStarted > 0, "project not started yet");
         require(project_.timeFinished == 0, "already finished project");
         require(project_.totalPackages == project_.totalFinishedPackages, "unfinished packages left");
         project_.timeFinished = block.timestamp;
         uint256 budgetLeft_ = project_.budget - project_.budgetAllocated;
         if (budgetLeft_ > 0) {
-            if (project_.isOwnToken) {
-                uint256 refundAmount_ = (budgetLeft_ * 5) / 100;
-                IERC20Upgradeable(project_.token).safeTransfer(project_.initiator, refundAmount_);
-                IERC20Upgradeable(project_.token).safeTransfer(treasury_, budgetLeft_ - refundAmount_);
-            } else IIOUToken(project_.token).burn(budgetLeft_);
+            IERC20Upgradeable(project_.token).safeTransfer(project_.initiator, budgetLeft_);
         }
     }
 

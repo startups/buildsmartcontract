@@ -1,0 +1,7 @@
+# run: echidna-parade ./ --contract ReBakedDAO --config echidna.config.yaml --timeout 60 
+testMode: exploration
+testLimit: 20000
+seqLen: 2
+stopOnFail: True
+cryticArgs: ["--hardhat-ignore-compile"]
+# solcArgs: "--allow-paths /home/phong_ho/NAPA/buildsmartcontract/node_modules"

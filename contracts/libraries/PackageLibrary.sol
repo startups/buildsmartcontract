@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.12;
+pragma solidity 0.8.16;
 import { Package } from "./Structs.sol";
 
 library PackageLibrary {
@@ -43,7 +43,6 @@ library PackageLibrary {
      * @param package_ Package want to cancel
      */
     function _cancelPackage(Package storage package_) internal onlyActivePackage(package_) {
-        require(package_.disputesCount == 0, "package has unresolved disputes");
         package_.timeCanceled = block.timestamp;
         package_.isActive = false;
     }
@@ -88,17 +87,13 @@ library PackageLibrary {
      * @notice Remove collaborator from package
      * @param package_ Package want to cancel
      * @param mgp_ MGP to pay
-     * @param isDispute_ `true` if collaborator is in "Dispute*
      */
     function _removeCollaborator(
         Package storage package_,
-        uint256 mgp_,
-        bool isDispute_
+        uint256 mgp_
     ) internal onlyActivePackage(package_) {
         package_.budgetAllocated -= mgp_;
         package_.totalCollaborators--;
-
-        if (isDispute_) package_.disputesCount--;
     }
 
     /**
@@ -107,7 +102,6 @@ library PackageLibrary {
      * @param package_ reference to Package struct
      */
     function _finishPackage(Package storage package_) internal onlyActivePackage(package_) returns (uint256 budgetLeft_) {
-        require(package_.disputesCount == 0, "package has unresolved disputes");
         require(package_.totalCollaborators == package_.approvedCollaborators, "unapproved collaborators left");
         budgetLeft_ = package_.budget - package_.budgetAllocated;
         if (package_.totalObservers == 0) budgetLeft_ += package_.budgetObservers;

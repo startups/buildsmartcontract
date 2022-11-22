@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.12;
+pragma solidity 0.8.16;
 
 struct Project {
     address initiator;
@@ -32,7 +32,6 @@ struct Package {
     uint256 totalCollaborators;
     uint256 maxCollaborators;
     uint256 approvedCollaborators;
-    uint256 disputesCount;
     uint256 timeCanceled;
     bool isActive;
 }
@@ -44,8 +43,6 @@ struct Collaborator {
     uint256 timeMgpPaid;
     uint256 timeBonusPaid;
     uint256 bonusScore;
-    uint256 disputeExpiresAt;
-    uint256 resolveExpiresAt;
     bool isRemoved;
 }
 

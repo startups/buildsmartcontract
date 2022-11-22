@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.12;
+pragma solidity 0.8.16;
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { ITokenFactory } from "./interfaces/ITokenFactory.sol";
 import { IOUToken } from "./IOUToken.sol";
@@ -39,7 +39,7 @@ contract TokenFactory is OwnableUpgradeable, ITokenFactory {
      */
     function deployToken(uint256 _totalSupply, string memory _name, string memory _symbol) external returns (address token_) {
         require(reBakedDao != address(0), "reBakedDao address is not set");
-        require(msg.sender == reBakedDao, "only reBakedDao can call");
+        require(_msgSender() == reBakedDao, "only reBakedDao can call");
 
         token_ = address(new IOUToken(reBakedDao, _totalSupply, _name, _symbol));
         emit DeployedToken(token_, _totalSupply);
