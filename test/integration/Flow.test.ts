@@ -23,8 +23,6 @@ const TOKEN_40 = parseUnits("40", 18);
 const TOKEN_50 = parseUnits("50", 18);
 const TOKEN_100 = parseUnits("100", 18);
 const TOKEN_1000 = parseUnits("1000", 18);
-const TWO_DAYS = 2 * 24 * 60 * 60;
-const THREE_DAYS = 3 * 24 * 60 * 60;
 const tokenName = "Pioneer", tokenSymbol = "PIO";
 
 let projectId1: string, projectId2: string, projectId3: string;
@@ -41,7 +39,7 @@ let treasuryBT: BT, initiatorBT: BT;
 let collaborator1BT: BT, collaborator2BT: BT, collaborator3BT: BT;
 let observer1BT: BT, observer2BT: BT;
 
-describe("ReBakedDAO", () => {
+describe("Integration test", () => {
 	before(async () => {
 		[owner, treasury, initiator, collaborator1, collaborator2, collaborator3, observer1, observer2, ...accounts] = await ethers.getSigners();
 
@@ -49,15 +47,14 @@ describe("ReBakedDAO", () => {
 		const IOUToken = (await ethers.getContractFactory("IOUToken")) as IOUToken__factory;
 		const ReBakedDAO = (await ethers.getContractFactory("ReBakedDAO")) as ReBakedDAO__factory;
 
-		tokenFactory = (await upgrades.deployProxy(TokenFactory, [])) as TokenFactory;
+		tokenFactory = await TokenFactory.deploy();		
 		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000", tokenName, tokenSymbol);
-		reBakedDAO = (await upgrades.deployProxy(ReBakedDAO, [treasury.address, tokenFactory.address])) as ReBakedDAO;
+		reBakedDAO = (await upgrades.deployProxy(ReBakedDAO, [treasury.address])) as ReBakedDAO;
 		await reBakedDAO.deployed();
 
 		await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
 
 		// Early transactions
-		await tokenFactory.setReBakedDao(reBakedDAO.address);
 
 		treasuryBT = new BT(treasury.address, [iouToken.address]);
 		initiatorBT = new BT(initiator.address, [iouToken.address]);
@@ -78,13 +75,8 @@ describe("ReBakedDAO", () => {
 
 	describe("Verify contract parameter", () => {
 		// Verify contract parameters
-		it("Verify TokenFactory contract parameters", async () => {
-			expect(await tokenFactory.reBakedDao()).to.equal(reBakedDAO.address);
-		});
-
 		it("Verify RebakedDAO contract parameters", async () => {
 			expect(await reBakedDAO.treasury()).to.equal(treasury.address);
-			expect(await reBakedDAO.tokenFactory()).to.equal(tokenFactory.address);
 		});
 	});
 
@@ -98,7 +90,6 @@ describe("ReBakedDAO", () => {
 			let project1 = await reBakedDAO.getProjectData(projectId1);
 			let currentTime = await getTimestamp();
 			expect(project1.token).to.equal(iouToken.address);
-			expect(project1.isOwnToken).to.be.true;
 			expect(project1.budget).to.equal(TOKEN_1000);
 			expect(project1.timeCreated).to.closeTo(currentTime, 10);
 			expect(project1.timeApproved).to.closeTo(currentTime, 10);
@@ -686,58 +677,18 @@ describe("ReBakedDAO", () => {
 	describe("Start project with no token (Project 2, Package 1)", () => {
 		let packageId1: string;
 		it("Create project 2 with no token", async () => {
-			let tx: ContractTransaction = await BT.updateFee(reBakedDAO.connect(initiator).createProject(ZERO_ADDRESS, TOKEN_1000));
+			let tx: ContractTransaction = await BT.updateFee(reBakedDAO.connect(initiator).createProject(iouToken.address, TOKEN_1000));
 			let receipt: ContractReceipt = await tx.wait();
 			projectId2 = receipt.events!.find(ev => ev.event === "CreatedProject")!.args![0];
 
 			let project2 = await reBakedDAO.getProjectData(projectId2);
 			let currentTime = await getTimestamp();
 			expect(project2.initiator).to.equal(initiator.address);
-			expect(project2.token).to.equal(ZERO_ADDRESS);
-			expect(project2.isOwnToken).to.be.false;
+			expect(project2.token).to.equal(iouToken.address);
 			expect(project2.budget).to.equal(TOKEN_1000);
 			expect(project2.timeCreated).to.closeTo(currentTime, 10);
-		});
-
-		it("Approve project 2", async () => {
-			await expect(reBakedDAO.connect(owner).approveProject(projectId2))
-				.to.emit(reBakedDAO, "ApprovedProject")
-				.withArgs(projectId2);
-
-			let project2 = await reBakedDAO.getProjectData(projectId2);
-			let currentTime = await getTimestamp();
 			expect(project2.timeApproved).to.closeTo(currentTime, 10);
-		});
-
-		it("Start project 2", async () => {
-			await expect(reBakedDAO.connect(initiator).startProject(projectId2, tokenName, tokenSymbol))
-				.to.emit(reBakedDAO, "StartedProject")
-				.withArgs(projectId2);
-			let project2 = await reBakedDAO.getProjectData(projectId2);
-			let currentTime = await getTimestamp();
 			expect(project2.timeStarted).to.closeTo(currentTime, 10);
-			expect(project2.token).not.equal(ZERO_ADDRESS);
-		});
-
-		it("Update balance tracker with new token", async () => {
-			let project2 = await reBakedDAO.getProjectData(projectId2);
-
-			treasuryBT.addToken(project2.token);
-			initiatorBT.addToken(project2.token);
-			collaborator1BT.addToken(project2.token);
-			collaborator2BT.addToken(project2.token);
-			collaborator3BT.addToken(project2.token);
-			observer1BT.addToken(project2.token);
-			observer2BT.addToken(project2.token);
-
-			const flowName = "begin project 2";
-			await collaborator1BT.takeSnapshot(flowName);
-			await collaborator2BT.takeSnapshot(flowName);
-			await collaborator3BT.takeSnapshot(flowName);
-			await observer1BT.takeSnapshot(flowName);
-			await observer2BT.takeSnapshot(flowName);
-			await initiatorBT.takeSnapshot(flowName);
-			await treasuryBT.takeSnapshot(flowName);
 		});
 
 		it("Add package 1", async () => {
@@ -884,7 +835,7 @@ describe("ReBakedDAO", () => {
 		it("Check balance after flow", async () => {
 			let project2 = await reBakedDAO.getProjectData(projectId2);
 
-			const flowName = "flow7";
+			const flowName = "flow6";
 			await initiatorBT.takeSnapshot(flowName);
 			await treasuryBT.takeSnapshot(flowName);
 			await collaborator1BT.takeSnapshot(flowName);
@@ -893,10 +844,10 @@ describe("ReBakedDAO", () => {
 			await observer1BT.takeSnapshot(flowName);
 			await observer2BT.takeSnapshot(flowName);
 
-			const collaborator1Diff = collaborator1BT.diff("begin project 2", flowName);
-			const collaborator2Diff = collaborator2BT.diff("begin project 2", flowName);
-			const observer1Diff = observer1BT.diff("begin project 2", flowName);
-			const observer2Diff = observer2BT.diff("begin project 2", flowName);
+			const collaborator1Diff = collaborator1BT.diff("flow5", flowName);
+			const collaborator2Diff = collaborator2BT.diff("flow5", flowName);
+			const observer1Diff = observer1BT.diff("flow5", flowName);
+			const observer2Diff = observer2BT.diff("flow5", flowName);
 
 			expect(collaborator1Diff[project2.token].delta).to.equal(TOKEN_50.add(TOKEN_30));
 			expect(collaborator2Diff[project2.token].delta).to.equal(TOKEN_40);
@@ -1018,7 +969,7 @@ describe("ReBakedDAO", () => {
 		it("Check balance after flow", async () => {
 			let project2 = await reBakedDAO.getProjectData(projectId2);
 
-			const flowName = "flow8";
+			const flowName = "flow7";
 			await initiatorBT.takeSnapshot(flowName);
 			await treasuryBT.takeSnapshot(flowName);
 			await collaborator1BT.takeSnapshot(flowName);
@@ -1027,11 +978,11 @@ describe("ReBakedDAO", () => {
 			await observer1BT.takeSnapshot(flowName);
 			await observer2BT.takeSnapshot(flowName);
 
-			const collaborator1Diff = collaborator1BT.diff("flow7", flowName);
-			const collaborator2Diff = collaborator2BT.diff("flow7", flowName);
-			const collaborator3Diff = collaborator3BT.diff("flow7", flowName);
-			const observer1Diff = observer1BT.diff("flow7", flowName);
-			const observer2Diff = observer2BT.diff("flow7", flowName);
+			const collaborator1Diff = collaborator1BT.diff("flow6", flowName);
+			const collaborator2Diff = collaborator2BT.diff("flow6", flowName);
+			const collaborator3Diff = collaborator3BT.diff("flow6", flowName);
+			const observer1Diff = observer1BT.diff("flow6", flowName);
+			const observer2Diff = observer2BT.diff("flow6", flowName);
 
 			expect(collaborator1Diff[project2.token].delta).to.equal(TOKEN_30);
 			expect(collaborator2Diff[project2.token].delta).to.equal(TOKEN_30);
@@ -1049,7 +1000,7 @@ describe("ReBakedDAO", () => {
 		});
 
 		it("Check balance after flow", async () => {
-			const flowName = "flow9";
+			const flowName = "flow8";
 			await collaborator1BT.takeSnapshot(flowName);
 			await collaborator2BT.takeSnapshot(flowName);
 			await collaborator3BT.takeSnapshot(flowName);
@@ -1058,7 +1009,7 @@ describe("ReBakedDAO", () => {
 			await initiatorBT.takeSnapshot(flowName);
 			await treasuryBT.takeSnapshot(flowName);
 
-			const initiatorDiff = initiatorBT.diff("flow8", flowName);
+			const initiatorDiff = initiatorBT.diff("flow7", flowName);
 
 			const project2 = await reBakedDAO.getProjectData(projectId2);
 			expect(initiatorDiff[project2.token].delta).to.equal(parseUnits("690", 18));

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 import { IReBakedDAO } from "./interfaces/IReBakedDAO.sol";
-import { ITokenFactory } from "./interfaces/ITokenFactory.sol";
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import { IERC20Upgradeable, SafeERC20Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -26,9 +25,6 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
 
     // Rebaked DAO wallet
     address public treasury;
-
-    // Token Factory contract address
-    address public tokenFactory;
 
     // projectId => Project
     mapping(bytes32 => Project) private projectData;
@@ -64,17 +60,14 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
     /**
      * @notice Initialize of contract (replace for constructor)
      * @param treasury_ Treasury address
-     * @param tokenFactory_ Token factory address
      */
-    function initialize(address treasury_, address tokenFactory_) public initializer {
+    function initialize(address treasury_) public initializer {
         __Ownable_init();
         __ReentrancyGuard_init();
 
         require(treasury_ != address(0), "invalid treasury address");
-        require(tokenFactory_ != address(0), "invalid tokenFactory address");
 
         treasury = treasury_;
-        tokenFactory = tokenFactory_;
     }
 
     /* --------EXTERNAL FUNCTIONS-------- */
@@ -102,38 +95,10 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * Emit {CreatedProject}
      */
     function createProject(address token_, uint256 budget_) external nonZero(budget_) {
+        require(token_ != address(0), "Invalid token address");
         bytes32 _projectId = _generateProjectId();
         projectData[_projectId]._createProject(token_, budget_);
         emit CreatedProject(_projectId, _msgSender(), token_, budget_);
-        if (token_ != address(0)) {
-            _approveProject(_projectId);
-            _startProject(_projectId, "", "");
-        }
-    }
-
-    /**
-     * @notice Starts project
-     * @param _projectId Id of the project
-     * Emit {StartedProject}
-     */
-    function startProject(
-        bytes32 _projectId,
-        string memory _name,
-        string memory _symbol
-    ) external onlyInitiator(_projectId) {
-        require(bytes(_name).length > 0, "empty token name!");
-        require(bytes(_symbol).length > 0, "empty token symbol!");
-        _startProject(_projectId, _name, _symbol);
-    }
-
-    /**
-     * @notice Approves project
-     * @param _projectId Id of the project
-     * Emit {ApprovedProject}
-     */
-    function approveProject(bytes32 _projectId) external onlyOwner {
-        _approveProject(_projectId);
-        emit ApprovedProject(_projectId);
     }
 
     /**
@@ -198,7 +163,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         bytes32 _packageId = _generatePackageId(_projectId, 0);
         Package storage package = packageData[_projectId][_packageId];
         package._createPackage(_budget, _observerBudget, _bonus, _maxCollaborators);
-        if (project.isOwnToken) IERC20Upgradeable(project.token).safeTransferFrom(_msgSender(), treasury, (total * 5) / 100);
+        IERC20Upgradeable(project.token).safeTransferFrom(_msgSender(), treasury, (total * 5) / 100);
 
         emit CreatedPackage(_projectId, _packageId, _budget, _bonus);
     }
@@ -561,30 +526,6 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
     function _generatePackageId(bytes32 _projectId, uint256 _nonce) private view returns (bytes32 _packageId) {
         _packageId = _generateId(_nonce);
         require(packageData[_projectId][_packageId].timeCreated == 0, "duplicate package id");
-    }
-
-    /**
-     * @notice Starts project
-     * @param _projectId Id of the project
-     * Emit {StartedProject}
-     */
-    function _startProject(
-        bytes32 _projectId,
-        string memory _name,
-        string memory _symbol
-    ) private {
-        projectData[_projectId]._startProject(tokenFactory, _name, _symbol);
-        emit StartedProject(_projectId);
-    }
-
-    /**
-     * @notice Approve project
-     * @param _projectId Id of the project
-     * Emit {ApprovedProject}
-     */
-    function _approveProject(bytes32 _projectId) private {
-        projectData[_projectId]._approveProject();
-        emit ApprovedProject(_projectId);
     }
 
     /**

@@ -23,12 +23,6 @@ interface IReBakedDAO {
     event PaidBonus(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 amount);
 
     /**
-     * @notice Approves project
-     * @param projectId_ Id of the project
-     */
-    function approveProject(bytes32 projectId_) external;
-
-    /**
      * @notice Sets scores for collaborator bonuses
      * @param projectId_ Id of the project
      * @param packageId_ Id of the package
@@ -49,12 +43,6 @@ interface IReBakedDAO {
      * @param budget_ total budget (has to be approved on token contract if project has its own token)
      */
     function createProject(address token_, uint256 budget_) external;
-
-    /**
-     * @notice Starts project
-     * @param projectId_ Id of the project
-     */
-    function startProject(bytes32 projectId_, string memory name_, string memory symbol_) external;
 
     /**
      * @notice Creates package in project

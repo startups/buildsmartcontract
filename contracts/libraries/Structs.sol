@@ -4,7 +4,6 @@ pragma solidity 0.8.16;
 struct Project {
     address initiator;
     address token;
-    bool isOwnToken;
     uint256 budget;
     uint256 budgetAllocated;
     uint256 budgetPaid;

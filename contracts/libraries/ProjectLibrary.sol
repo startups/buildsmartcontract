@@ -8,14 +8,6 @@ library ProjectLibrary {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /**
-	@notice Throws if there is no such project
-	 */
-    modifier onlyActiveProject(Project storage project_) {
-        require(project_.timeCreated > 0, "no such project");
-        _;
-    }
-
-    /**
      * @notice Creates project proposal
      * @param project_ reference to Project struct
      * @param token_ project token address
@@ -30,34 +22,10 @@ library ProjectLibrary {
         project_.token = token_;
         project_.budget = budget_;
         project_.timeCreated = block.timestamp;
-        project_.isOwnToken = token_ != address(0);
-    }
-
-    /**
-     * @notice Approves project
-     * @param project_ reference to Project struct
-     */
-    function _approveProject(Project storage project_) internal onlyActiveProject(project_) {
-        require(project_.timeApproved == 0, "already approved project");
         project_.timeApproved = block.timestamp;
-    }
-
-    /**
-     * @notice Starts project, if project own token auto approve, otherwise deploys IOUToken, transfers fee to DAO wallet
-     * @param project_ reference to Project struct
-     * @param tokenFactory_ address of token factory contract
-     */
-    function _startProject(Project storage project_, address tokenFactory_, string memory name_, string memory symbol_) internal {
-        require(project_.timeApproved > 0, "project is not approved");
-        require(project_.timeStarted == 0, "project already started");
-
         project_.timeStarted = block.timestamp;
 
-        if (project_.isOwnToken) {
-            IERC20Upgradeable(project_.token).safeTransferFrom(msg.sender, address(this), project_.budget);
-        } else {
-            project_.token = ITokenFactory(tokenFactory_).deployToken(project_.budget, name_, symbol_);
-        }
+        IERC20Upgradeable(project_.token).safeTransferFrom(msg.sender, address(this), project_.budget);
     }
 
     /**
@@ -66,7 +34,6 @@ library ProjectLibrary {
      * @param project_ reference to Project struct
      */
     function _finishProject(Project storage project_) internal {
-        require(project_.timeStarted > 0, "project not started yet");
         require(project_.timeFinished == 0, "already finished project");
         require(project_.totalPackages == project_.totalFinishedPackages, "unfinished packages left");
         project_.timeFinished = block.timestamp;
@@ -88,7 +55,6 @@ library ProjectLibrary {
         uint256 totalBudget_,
         uint256 count_
     ) internal {
-        require(project_.timeStarted > 0, "project is not started");
         require(project_.timeFinished == 0, "project is finished");
         require(project_.budget >= project_.budgetAllocated + totalBudget_, "not enough project budget left");
         project_.budgetAllocated += totalBudget_;
