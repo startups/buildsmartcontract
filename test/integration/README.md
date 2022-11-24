@@ -72,21 +72,19 @@ Each flow will run sequence by sequence
 1. Finish **project 1**
 2. Check balance after flow
 
-### 7. Start project with no token (Project 2, Package 1)
+### 7. Start project 2 with existed token (Project 2, Package 1)
 
-1. Create **project 2** with no token
-2. Approve **project 2**
-3. Start **project 2**
-4. Add **package 1**
-5. Add **2 collaborators**
-6. Approve **2 collaborators**
-7. Add **2 observers**
-8. Finish **package 1**
-9. Set `Bonus Score` to **Collaborator 1**
-10. **2 collaborators** claim `MGP` 
-11. **2 observers** claim `observer fee`
-12. **Collaborator 1** claim `Bonus Score`
-13. Check balance after flow
+1. Create **project 2** with iou token
+2. Add **package 1**
+3. Add **2 collaborators**
+4. Approve **2 collaborators**
+5. Add **2 observers**
+6. Finish **package 1**
+7. Set `Bonus Score` to **Collaborator 1**
+8. **2 collaborators** claim `MGP` 
+9. **2 observers** claim `observer fee`
+10. **Collaborator 1** claim `Bonus Score`
+11. Check balance after flow
 
 ### 8. Cancel package (Project 2 package 2)
 
