@@ -22,8 +22,6 @@ library ProjectLibrary {
         project_.token = token_;
         project_.budget = budget_;
         project_.timeCreated = block.timestamp;
-        project_.timeApproved = block.timestamp;
-        project_.timeStarted = block.timestamp;
 
         IERC20Upgradeable(project_.token).safeTransferFrom(msg.sender, address(this), project_.budget);
     }

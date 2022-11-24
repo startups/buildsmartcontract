@@ -92,8 +92,6 @@ describe("Integration test", () => {
 			expect(project1.token).to.equal(iouToken.address);
 			expect(project1.budget).to.equal(TOKEN_1000);
 			expect(project1.timeCreated).to.closeTo(currentTime, 10);
-			expect(project1.timeApproved).to.closeTo(currentTime, 10);
-			expect(project1.timeStarted).to.closeTo(currentTime, 10);
 		});
 
 		it("Add package 1", async () => {
@@ -687,8 +685,6 @@ describe("Integration test", () => {
 			expect(project2.token).to.equal(iouToken.address);
 			expect(project2.budget).to.equal(TOKEN_1000);
 			expect(project2.timeCreated).to.closeTo(currentTime, 10);
-			expect(project2.timeApproved).to.closeTo(currentTime, 10);
-			expect(project2.timeStarted).to.closeTo(currentTime, 10);
 		});
 
 		it("Add package 1", async () => {

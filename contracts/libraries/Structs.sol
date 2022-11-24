@@ -8,8 +8,6 @@ struct Project {
     uint256 budgetAllocated;
     uint256 budgetPaid;
     uint256 timeCreated;
-    uint256 timeApproved;
-    uint256 timeStarted;
     uint256 timeFinished;
     uint256 totalPackages;
     uint256 totalFinishedPackages;

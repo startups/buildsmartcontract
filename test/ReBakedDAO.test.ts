@@ -119,8 +119,6 @@ describe("ReBakedDAO", () => {
 				expect(project.token).to.equal(iouToken.address);
 				expect(project.budget).to.equal(budget);
 				expect(project.timeCreated).to.closeTo(timestamp, 10);
-				expect(project.timeApproved).to.closeTo(timestamp, 10);
-				expect(project.timeStarted).to.closeTo(timestamp, 10);
 			});
 
 			it("[OK]: Token balance has been changed after creating project", async () => {
