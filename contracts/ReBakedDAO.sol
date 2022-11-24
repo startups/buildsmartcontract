@@ -94,7 +94,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @dev (`token_` == ZERO_ADDRESS) ? project has no token yet : `IOUToken` will be deployed on project approval
      * Emit {CreatedProject}
      */
-    function createProject(address token_, uint256 budget_) external nonZero(budget_) {
+    function createProject(address token_, uint256 budget_) external nonZero(budget_) nonReentrant {
         require(token_ != address(0), "Invalid token address");
         bytes32 _projectId = _generateProjectId();
         projectData[_projectId]._createProject(token_, budget_);
@@ -156,7 +156,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         uint256 _bonus,
         uint256 _observerBudget,
         uint256 _maxCollaborators
-    ) external onlyInitiator(_projectId) nonZero(_budget) {
+    ) external onlyInitiator(_projectId) nonZero(_budget) nonReentrant {
         Project storage project = projectData[_projectId];
         uint256 total = _budget + _bonus + _observerBudget;
         project._reservePackagesBudget(total, 1);
