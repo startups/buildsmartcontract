@@ -47,7 +47,6 @@ describe("ReBakedDAO", () => {
 		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000", tokenName, tokenSymbol);
 		reBakedDAO = (await upgrades.deployProxy(ReBakedDAO, [treasury.address])) as ReBakedDAO;
 		await reBakedDAO.deployed();
-
 	});
 
 	describe("Validating initialized state of contracts", () => {

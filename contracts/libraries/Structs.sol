@@ -1,17 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 
-enum CourseStatus {
-    PENDING,
-    CREATED,
-    RELEASED
-}
-
-enum LessonStatus {
-    PENDING,
-    CREATED
-}
-
 enum LearnerCourseStatus {
     PENDING,
     STARTED,
@@ -76,20 +65,23 @@ struct Observer {
 struct Course {
     address creator;
     address token;
-    uint256 budget;
-    uint256 budgetAvailable;
+    uint256 maxRewardLearners;
+    uint256 totalRewardLearners;
     uint256 awards;
     uint256 totalAssignments;
-    CourseStatus status;
+    uint256 timeCreated;
+    bool isRewardToken;
 }
 
 struct Lesson {
     bool isOwnAssignment;
-    LessonStatus status;
+    uint256 timeCreated;
 }
 
 struct LearnerCourse {
     uint256 totalAssignmentsAccepted;
+    uint256 timeStarted;
+    uint256 timeCompleted;
     LearnerCourseStatus status; 
 }
 

@@ -47,7 +47,7 @@ describe("Integration test", () => {
 		const IOUToken = (await ethers.getContractFactory("IOUToken")) as IOUToken__factory;
 		const ReBakedDAO = (await ethers.getContractFactory("ReBakedDAO")) as ReBakedDAO__factory;
 
-		tokenFactory = await TokenFactory.deploy();		
+		tokenFactory = (await upgrades.deployProxy(TokenFactory, [])) as TokenFactory;	
 		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000", tokenName, tokenSymbol);
 		reBakedDAO = (await upgrades.deployProxy(ReBakedDAO, [treasury.address])) as ReBakedDAO;
 		await reBakedDAO.deployed();
