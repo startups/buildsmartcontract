@@ -64,13 +64,16 @@ struct Observer {
 
 struct Course {
     address creator;
-    address token;
-    uint256 maxRewardLearners;
+    address rewardAddress;
+    uint256 budget;
+    uint256 budgetAvailable;
+    uint256 bonus;
     uint256 totalRewardLearners;
-    uint256 awards;
     uint256 totalAssignments;
     uint256 timeCreated;
+    uint256[] nftIds;
     bool isRewardToken;
+    bool isOwnNFT;
 }
 
 struct Lesson {
