@@ -77,7 +77,7 @@ interface ILearnToEarn {
      *
      * emit {AddedBudget} events
      */
-    function addBudget(bytes32 _courseId, uint256 _budget, uint256[] memory _nftIds) external;
+    function addBudget(bytes32 _courseId, uint256 _budget) external;
 
     /**
      * @notice Creator can update lesson of course
