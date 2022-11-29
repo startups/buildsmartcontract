@@ -65,5 +65,5 @@ struct Learner {
     uint256 timeStarted;
     uint256 timeCompleted;
     uint256 timeRewarded;
-    uint256 nftId;
+    uint256[] nftId;
 }
