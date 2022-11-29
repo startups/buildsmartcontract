@@ -1,30 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 
-enum CourseStatus {
-    PENDING,
-    PREPARING,
-    STARTED
-}
-
-enum LessonStatus {
-    PENDING,
-    CREATED
-}
-
-enum LearnerCourseStatus {
-    PENDING,
-    STARTED,
-    COMPLETED,
-    REWARDED
-}
-
-enum LearnerLessonStatus {
-    PENDING,
-    SUBMITTED,
-    REVIEWED
-}
-
 struct Project {
     address initiator;
     address token;
@@ -79,27 +55,15 @@ struct Course {
     uint256 budget;
     uint256 budgetAvailable;
     uint256 bonus;
-    uint256 totalRewardLearners;
-    uint256 totalAssignments;
-    uint256[] nftIds;
-    bool isRewardToken;
-    bool isOwnNFT;
-    CourseStatus status;
+    uint256 totalLearnersClaimedBonus;
+    uint256 timeCreated;
+    bool isBonusToken;
+    bool isExternalNFT;
 }
 
-struct Lesson {
-    bool isOwnAssignment;
-    LessonStatus status;
-}
-
-struct LearnerCourse {
-    uint256 totalAssignmentsAccepted;
+struct Learner {
     uint256 timeStarted;
     uint256 timeCompleted;
-    LearnerCourseStatus status;
-}
-
-struct LearnerLesson {
-    bool isAccepted;
-    LearnerLessonStatus status;
+    uint256 timeRewarded;
+    uint256 nftId;
 }

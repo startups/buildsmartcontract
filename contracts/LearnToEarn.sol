@@ -2,29 +2,25 @@
 pragma solidity 0.8.16;
 
 import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { IERC20Upgradeable, SafeERC20Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import { IERC721Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
-import { Authorizable } from "./Authorizable.sol";
+import { ERC165CheckerUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
 import { ILearnToEarn } from "./interfaces/ILearnToEarn.sol";
 import { INFTReward } from "./interfaces/INFTReward.sol";
-import { Course, Lesson, LearnerCourse, LearnerLesson, CourseStatus, LessonStatus, LearnerCourseStatus, LearnerLessonStatus } from "./libraries/Structs.sol";
+import { Course, Learner } from "./libraries/Structs.sol";
 
-contract LearnToEarn is ReentrancyGuardUpgradeable, Authorizable, ILearnToEarn {
+contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnToEarn {
     using SafeERC20Upgradeable for IERC20Upgradeable;
+    using ERC165CheckerUpgradeable for address;
 
-    uint256 public constant MAX_DEPOSITE = 30;
+    uint256 public constant REWARD_COMPLETED_DURATION = 60 days;
 
     // courseId => Course
     mapping(bytes32 => Course) private courseData;
 
-    // courseId => lessonId => Lesson
-    mapping(bytes32 => mapping(bytes32 => Lesson)) private lessonData;
-
     // courseId => learnerAddress => LearnerCourse
-    mapping(bytes32 => mapping(address => LearnerCourse)) private learnerCourseData;
-
-    // courseId => lessonId => learnerAddress => LearnerLesson
-    mapping(bytes32 => mapping(bytes32 => mapping(address => LearnerLesson))) private learnerLessonData;
+    mapping(bytes32 => mapping(address => Learner)) private learnerData;
 
     /**
      * @notice Throws if amount provided is zero
@@ -46,6 +42,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, Authorizable, ILearnToEarn {
      * @notice Initialize of contract (replace for constructor)
      */
     function initialize() public initializer {
+        __Ownable_init();
         __ReentrancyGuard_init();
     }
 
@@ -56,9 +53,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, Authorizable, ILearnToEarn {
      * @param _rewardAddress Address of token that reward to student after completing course
      * @param _budget Total tokens/NFTs that reward
      * @param _bonus Bonus when learner completed course
-     * @param _isRewardToken Awards is token (true) or NFT (false)
-     * @param _isOwnNFT If awards is NFT, creator own nfts or not // default false for token
-     * @param _nftIds Array of NFTs' id
+     * @param _isBonusToken Awards is token (true) or NFT (false)
      *
      * emit {CreatedCourse} event
      */
@@ -66,143 +61,60 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, Authorizable, ILearnToEarn {
         address _rewardAddress,
         uint256 _budget,
         uint256 _bonus,
-        bool _isRewardToken,
-        bool _isOwnNFT,
-        uint256[] memory _nftIds
+        bool _isBonusToken
     ) external nonZero(_bonus) nonZero(_budget) nonReentrant {
         require(_rewardAddress != address(0), "Invalid rewardAddress address");
         require(_budget > _bonus, "Budget is not enough");
 
         bytes32 _courseId = _generateCourseId();
+        bool _isExternalNFT = false;
+        if(!_isBonusToken) {
+            _isExternalNFT = !_rewardAddress.supportsInterface(type(INFTReward).interfaceId);
+        }
+        
         courseData[_courseId] = Course({
             creator: _msgSender(),
             rewardAddress: _rewardAddress,
-            bonus: _bonus,
-            totalRewardLearners: 0,
             budget: _budget,
             budgetAvailable: _budget,
-            totalAssignments: 0,
-            nftIds: _nftIds,
-            isRewardToken: _isRewardToken,
-            isOwnNFT: _isOwnNFT,
-            status: CourseStatus.PREPARING
+            bonus: _bonus,
+            totalLearnersClaimedBonus: 0,
+            timeCreated: block.timestamp,
+            isBonusToken: _isBonusToken,
+            isExternalNFT: _isExternalNFT
         });
 
-        if (_isRewardToken) {
+        if (_isBonusToken) {
             IERC20Upgradeable(_rewardAddress).safeTransferFrom(_msgSender(), address(this), _budget);
-        } else {
-            if (_isOwnNFT) {
-                courseData[_courseId].budgetAvailable = 0;
-            }
         }
 
         emit CreatedCourse(_courseId, _msgSender(), _rewardAddress, _bonus);
     }
 
     /**
-     * @notice Deposite NFT to course because number of NFTs is too large
+     * @notice Mark as learner completed course when the user submitted all assignments and accepted by creator
      * @param _courseId Id of course
-     * @param _nftIds Array of NFTs' id
-     */
-    function depositAwards(bytes32 _courseId, uint256[] memory _nftIds) external onlyCreator(_courseId) {
-        require(_nftIds.length <= MAX_DEPOSITE, "Reach max deposite (30)");
-        require(!courseData[_courseId].isRewardToken && courseData[_courseId].isOwnNFT, "Invalid action");
-
-        courseData[_courseId].budgetAvailable += _nftIds.length;
-
-        for (uint256 i = 0; i < _nftIds.length; i++) {
-            courseData[_courseId].nftIds.push(_nftIds[i]);
-            IERC721Upgradeable(courseData[_courseId].rewardAddress).safeTransferFrom(_msgSender(), address(this), _nftIds[i]);
-        }
-
-        if (courseData[_courseId].nftIds.length >= courseData[_courseId].budget) {
-            courseData[_courseId].status = CourseStatus.STARTED;
-        }
-    }
-
-    /**
-     * @notice Add new lesson to course
-     * @param _courseId Id of course that want to add new lesson
-     * @param _isOwnAssignment Define that lesson has assignment or not
-     *
-     * emit {AddedLesson} event
-     */
-    function addLesson(bytes32 _courseId, bool _isOwnAssignment) external onlyCreator(_courseId) {
-        bytes32 _lessonId = _generateLessonId(_courseId, 0);
-        lessonData[_courseId][_lessonId] = Lesson({ isOwnAssignment: _isOwnAssignment, status: LessonStatus.CREATED });
-        if (_isOwnAssignment) courseData[_courseId].totalAssignments++;
-
-        emit AddedLesson(_courseId, _lessonId);
-    }
-
-    /**
-     * @dev Moderators will call from backend
-     * @notice Learner enroll in a course and start learning
-     * @param _courseId If of course that learner enrolls
-     * emit {EnrolledCourse} event
-     */
-    function enrollCourse(bytes32 _courseId, address _learner) external onlyModerators(_msgSender()) {
-        require(learnerCourseData[_courseId][_learner].status == LearnerCourseStatus.PENDING, "already enrolled");
-
-        learnerCourseData[_courseId][_learner].status = LearnerCourseStatus.STARTED;
-        learnerCourseData[_courseId][_learner].timeStarted = block.timestamp;
-
-        emit EnrolledCourse(_courseId, _learner);
-    }
-
-    /**
-     * @dev Moderators will call from backend
-     * @notice learner submitted assignment of a lesson
-     * @param _courseId If of course
-     * @param _lessonId If of lesson
      * @param _learner Address of learner
-     *
-     * emit {SubmitttedAssignment} event
+     * @param _timeStarted Time when learner enrollred in course
+     * @param _nftId Id of nft that learner can receive
      */
-    function submitAssignment(bytes32 _courseId, bytes32 _lessonId, address _learner) external onlyModerators(_msgSender()) {
-        require(learnerCourseData[_courseId][_learner].status == LearnerCourseStatus.STARTED, "Unenrolled or already completed course");
-        require(lessonData[_courseId][_lessonId].isOwnAssignment, "Lesson does not has assignment");
+    function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256 _nftId) external onlyCreator(_courseId) {
+        Learner storage learner = learnerData[_courseId][_learner];
 
-        LearnerLesson storage learnerLesson = learnerLessonData[_courseId][_lessonId][_learner];
-        require(!learnerLesson.isAccepted, "Assignment is accepted");
+        require(learner.timeCompleted == 0, "already completed");
 
-        learnerLesson.status = LearnerLessonStatus.SUBMITTED;
-
-        emit SubmitttedAssignment(_courseId, _lessonId, _learner);
-    }
-
-    /**
-     * @notice Creator review asssignments of learner
-     * @param _courseId If of course
-     * @param _lessonId Array of lesson Id
-     * @param _learner Address of learner
-     * @param _isAccepted Array of decions accept or deny asssignment, follow by _lessonId
-     *
-     * emit {ReviewedAssignment} event
-     */
-    function reviewAssignment(bytes32 _courseId, bytes32[] memory _lessonId, address _learner, bool[] memory _isAccepted) external onlyCreator(_courseId) {
-        require(learnerCourseData[_courseId][_learner].status == LearnerCourseStatus.STARTED, "Unenrolled course");
-        require(_lessonId.length == _isAccepted.length, "Arrays length mismatch");
-        for (uint256 i = 0; i < _lessonId.length; i++) {
-            LearnerLesson storage learnerLesson = learnerLessonData[_courseId][_lessonId[i]][_learner];
-            if ((learnerLesson.status == LearnerLessonStatus.SUBMITTED) && lessonData[_courseId][_lessonId[i]].isOwnAssignment) {
-                learnerLesson.status = LearnerLessonStatus.REVIEWED;
-                learnerLesson.isAccepted = _isAccepted[i];
-
-                if (_isAccepted[i]) {
-                    learnerCourseData[_courseId][_learner].totalAssignmentsAccepted += 1;
-                }
-            }
+        learner.timeStarted = _timeStarted;
+        learner.timeCompleted = block.timestamp;
+        if (
+            (learner.timeStarted + REWARD_COMPLETED_DURATION < learner.timeCompleted) &&
+            !courseData[_courseId].isBonusToken &&
+            courseData[_courseId].isExternalNFT
+        ) {
+            learner.nftId = _nftId;
+            IERC721Upgradeable(courseData[_courseId].rewardAddress).safeTransferFrom(_msgSender(), address(this), _nftId);
         }
 
-        if (learnerCourseData[_courseId][_learner].totalAssignmentsAccepted == courseData[_courseId].totalAssignments) {
-            learnerCourseData[_courseId][_learner].status = LearnerCourseStatus.COMPLETED;
-            learnerCourseData[_courseId][_learner].timeCompleted = block.timestamp;
-
-            emit CompletedCourse(_courseId, _learner);
-        }
-
-        emit ReviewedAssignment(_courseId, _lessonId, _learner, _isAccepted);
+        emit CompletedCourse(_courseId, _learner);
     }
 
     /**
@@ -212,22 +124,26 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, Authorizable, ILearnToEarn {
      * emit {ClaimedReward} event
      */
     function claimReward(bytes32 _courseId) external {
-        require(learnerCourseData[_courseId][_msgSender()].status == LearnerCourseStatus.COMPLETED, "Uncompleted course or already reward");
+        Learner storage learner = learnerData[_courseId][_msgSender()];
+
+        require(learner.timeCompleted > 0, "Uncompleted course");
+        require(learner.timeRewarded == 0, "already claimed");
+        require(learner.timeStarted + REWARD_COMPLETED_DURATION < learner.timeCompleted, "Not completed in deadline");
 
         Course storage course = courseData[_courseId];
-        require(course.budgetAvailable < course.bonus, "Awards is not enough");
+        require(course.budgetAvailable < course.bonus, "Award is not enough");
 
         course.budgetAvailable -= course.bonus;
-        course.totalRewardLearners++;
-        learnerCourseData[_courseId][_msgSender()].status = LearnerCourseStatus.REWARDED;
+        course.totalLearnersClaimedBonus++;
+        learner.timeRewarded = block.timestamp;
 
-        if (course.isRewardToken) {
+        if (course.isBonusToken) {
             IERC20Upgradeable(course.rewardAddress).safeTransfer(_msgSender(), course.bonus);
         } else {
-            if (course.isOwnNFT) {
-                IERC721Upgradeable(course.rewardAddress).safeTransferFrom(address(this), _msgSender(), course.nftIds[course.totalRewardLearners]);
+            if (course.isExternalNFT) {
+                IERC721Upgradeable(course.rewardAddress).safeTransferFrom(address(this), _msgSender(), learner.nftId);
             } else {
-                INFTReward(course.rewardAddress).mint(_msgSender());
+                INFTReward(course.rewardAddress).mint(_msgSender(), "");
             }
         }
 
@@ -243,32 +159,14 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, Authorizable, ILearnToEarn {
      */
     function addBudget(bytes32 _courseId, uint256 _budget) external onlyCreator(_courseId) nonZero(_budget) nonReentrant {
         Course memory course = courseData[_courseId];
-        courseData[_courseId].budget += _budget;
+        course.budget += _budget;
+        course.budgetAvailable += _budget;
 
-        if (!course.isRewardToken && course.isOwnNFT && (course.nftIds.length < course.budget)) {
-            course.status = CourseStatus.PREPARING;
-        } else {
-            courseData[_courseId].budgetAvailable += _budget;
+        if (course.isBonusToken) {
             IERC20Upgradeable(course.rewardAddress).safeTransferFrom(_msgSender(), address(this), _budget);
         }
 
         emit AddedBudget(_courseId, _budget);
-    }
-
-    /**
-     * @notice Creator can update lesson of course
-     * @param _courseId Id of course
-     * @param _lessonId Id of lesson
-     * @param _isOwnAssignment that lesson has assignment or not
-     *
-     * emit {UpdatedLesson} event
-     */
-    function updateLesson(bytes32 _courseId, bytes32 _lessonId, bool _isOwnAssignment) external onlyCreator(_courseId) {
-        require(lessonData[_courseId][_lessonId].status == LessonStatus.CREATED, "Invalid lesson");
-
-        lessonData[_courseId][_lessonId].isOwnAssignment = _isOwnAssignment;
-
-        emit UpdatedLesson(_courseId, _lessonId, _isOwnAssignment);
     }
 
     /* --------VIEW FUNCTIONS-------- */
@@ -283,34 +181,13 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, Authorizable, ILearnToEarn {
     }
 
     /**
-     * @notice Get lesson details
-     * @param _courseId Id of course
-     * @param _lessonId If of lesson
-     * @return Details of lesson
-     */
-    function getLessonData(bytes32 _courseId, bytes32 _lessonId) external view returns (Lesson memory) {
-        return lessonData[_courseId][_lessonId];
-    }
-
-    /**
      * @notice Get learner course details
      * @param _courseId Id of course
      * @param _learner Address of learner
      * @return Details of learner course
      */
-    function getLearnerCourseData(bytes32 _courseId, address _learner) external view returns (LearnerCourse memory) {
-        return learnerCourseData[_courseId][_learner];
-    }
-
-    /**
-     * @notice Get learner lesson details
-     * @param _courseId Id of course
-     * @param _lessonId Id of lesson
-     * @param _learner Address of learner
-     * @return Details of learner lesson
-     */
-    function getLearnerLessonData(bytes32 _courseId, bytes32 _lessonId, address _learner) external view returns (LearnerLesson memory) {
-        return learnerLessonData[_courseId][_lessonId][_learner];
+    function getLearnerData(bytes32 _courseId, address _learner) external view returns (Learner memory) {
+        return learnerData[_courseId][_learner];
     }
 
     /* --------PRIVATE FUNCTIONS-------- */
@@ -330,17 +207,6 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, Authorizable, ILearnToEarn {
      */
     function _generateCourseId() private view returns (bytes32 _courseId) {
         _courseId = _generateId(0);
-        require(courseData[_courseId].status == CourseStatus.PENDING, "duplicate course id");
-    }
-
-    /**
-     * @notice Returns a new unique lesson id.
-     * @param _courseId Id of the course
-     * @param _nonce nonce
-     * @return _lessonId Id of the lesson
-     */
-    function _generateLessonId(bytes32 _courseId, uint256 _nonce) private view returns (bytes32 _lessonId) {
-        _lessonId = _generateId(_nonce);
-        require(lessonData[_courseId][_lessonId].status == LessonStatus.PENDING, "duplicate lesson id");
+        require(courseData[_courseId].timeCreated == 0, "duplicate course id");
     }
 }
