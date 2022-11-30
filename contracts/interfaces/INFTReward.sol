@@ -3,6 +3,7 @@ pragma solidity 0.8.16;
 import { IERC721Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 
 interface INFTReward is IERC721Upgradeable {
+    event Minted(address account, uint256 tokenId, string uri);
 
     /**
      * @notice mint a NFT for _to address

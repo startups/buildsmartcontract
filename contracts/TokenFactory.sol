@@ -30,7 +30,7 @@ contract TokenFactory is OwnableUpgradeable, ITokenFactory {
     function initialize(INFTReward _nftRewared) public initializer {
         __Ownable_init();
 
-        require(address(_nftRewared).supportsInterface(type(INFTReward).interfaceId), "invalid NFTReward address");
+        require(address(_nftRewared).supportsInterface(type(INFTReward).interfaceId), "Invalid NFTReward address");
         nftReward = _nftRewared;
     }
 
@@ -68,7 +68,7 @@ contract TokenFactory is OwnableUpgradeable, ITokenFactory {
      * @param _name Name of NFT
      * @param _symbol Symbol of NFT
      * @param _uri Ipfs of NFT
-     * @return nft_ address
+     * @return address(nft_) address of new contract
      * 
      * emit {DeployedNFT} events
      */

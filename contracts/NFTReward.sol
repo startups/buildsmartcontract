@@ -9,7 +9,6 @@ import { INFTReward } from "./interfaces/INFTReward.sol";
  */
 
 contract NFTReward is ERC721URIStorageUpgradeable, INFTReward {
-    event Minted(address account, uint256 tokenId, string uri);
 
     address public learnToEarn;
     uint256 public tokenIds;
@@ -23,7 +22,9 @@ contract NFTReward is ERC721URIStorageUpgradeable, INFTReward {
      * @param _uri ipfs of NFts
      */
     function initialize(address _learnToEarn, string memory _name, string memory _symbol, string memory _uri) initializer public {
+        require(_learnToEarn != address(0));
         __ERC721_init(_name, _symbol);
+        
         learnToEarn = _learnToEarn;
         tokenIds = 0;
         uri = _uri;

@@ -35,11 +35,10 @@ interface ILearnToEarn {
     /**
      * @notice Learner can claim reward after completing the course in deadline and max reward learners
      * @param _courseId If of course
-     * @param _uri Link ipfs metadata of NFT
      *
      * emit {ClaimedReward} event
      */
-    function claimReward(bytes32 _courseId, string memory _uri) external;
+    function claimReward(bytes32 _courseId) external;
 
     /**
      * @notice Add more budget to course

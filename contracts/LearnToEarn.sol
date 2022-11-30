@@ -19,7 +19,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
     // courseId => Course
     mapping(bytes32 => Course) private courseData;
 
-    // courseId => learnerAddress => LearnerCourse
+    // courseId => learnerAddress => Learner
     mapping(bytes32 => mapping(address => Learner)) private learnerData;
 
     /**
@@ -105,7 +105,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         if ((course.budgetAvailable > course.bonus) && (learner.timeCompleted < learner.timeStarted + REWARD_COMPLETED_DURATION)) {
             learner.canClaimReward = true;
             course.budgetAvailable -= course.bonus;
-            
+
             if (!course.canMintNFT) {
                 require(_nftIds.length == course.bonus, "Array nft is not enough");
                 learner.nftIds = _nftIds;
@@ -121,11 +121,10 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
     /**
      * @notice Learner can claim reward after completing the course in deadline and max reward learners
      * @param _courseId If of course
-     * @param _uri Link ipfs metadata of NFT
      *
      * emit {ClaimedReward} event
      */
-    function claimReward(bytes32 _courseId, string memory _uri) external {
+    function claimReward(bytes32 _courseId) external {
         Learner storage learner = learnerData[_courseId][_msgSender()];
 
         require(learner.timeCompleted > 0, "Uncompleted course");
@@ -141,11 +140,11 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         } else {
             if (course.canMintNFT) {
                 for (uint256 i = 0; i < course.bonus; i++) {
-                    INFTReward(course.rewardAddress).mint(_msgSender(), _uri);
+                    INFTReward(course.rewardAddress).mint(_msgSender());
                 }
             } else {
                 for (uint256 i = 0; i < learner.nftIds.length; i++) {
-                    IERC721Upgradeable(courseData[_courseId].rewardAddress).safeTransferFrom(address(this), _msgSender(), learner.nftIds[i]);
+                    IERC721Upgradeable(course.rewardAddress).safeTransferFrom(address(this), _msgSender(), learner.nftIds[i]);
                 }
             }
         }
