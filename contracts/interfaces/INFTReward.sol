@@ -7,17 +7,17 @@ interface INFTReward is IERC721Upgradeable {
     /**
      * @notice mint a NFT for _to address
      * @param _to address of user
-     * @param _uri Token URi of NFT
      * 
      * emit { Minted } events
      */
-    function mint(address _to, string memory _uri) external;
+    function mint(address _to) external;
 
     /**
      * @notice Replace for contructor
      * @param _learnToEarn Address of LearnToEarn contract
      * @param _name Name of NFTs
      * @param _symbol Symbol of NFTs
+     * @param _uri ipfs of NFts
      */
-    function initialize(address _learnToEarn, string memory _name, string memory _symbol) external;
+    function initialize(address _learnToEarn, string memory _name, string memory _symbol, string memory _uri) external;
 }

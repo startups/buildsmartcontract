@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import { ERC165Upgradeable } from "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol";
 import { ERC165CheckerUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
 import { Clones } from "@openzeppelin/contracts/proxy/Clones.sol";
 import { ITokenFactory } from "./interfaces/ITokenFactory.sol";
@@ -12,7 +11,7 @@ import { INFTReward } from "./interfaces/INFTReward.sol";
  *  @title  TokenFactory Contract
  *  @notice This contract using for creating IOU Token
  */
-contract TokenFactory is OwnableUpgradeable, ERC165Upgradeable, ITokenFactory {
+contract TokenFactory is OwnableUpgradeable, ITokenFactory {
     using ERC165CheckerUpgradeable for address;
 
     // Reference to Learn To Earn contract
@@ -49,7 +48,11 @@ contract TokenFactory is OwnableUpgradeable, ERC165Upgradeable, ITokenFactory {
     /**
      * @notice Deploys IOUT with totalSupply equal to project budget
      * @param _totalSupply Token total supply
+     * @param _name Name of token
+     * @param _symbol Symbol of token
      * @return token_ IOU token address
+     * 
+     * emit {DeployedToken} events
      */
     function deployToken(
         uint256 _totalSupply,
@@ -60,12 +63,21 @@ contract TokenFactory is OwnableUpgradeable, ERC165Upgradeable, ITokenFactory {
         emit DeployedToken(token_, _totalSupply);
     }
     
-    function deployNFT(string memory _name, string memory _symbol) external returns (address) {
+    /**
+     * @notice Deploy new contract to mint NFT
+     * @param _name Name of NFT
+     * @param _symbol Symbol of NFT
+     * @param _uri Ipfs of NFT
+     * @return nft_ address
+     * 
+     * emit {DeployedNFT} events
+     */
+    function deployNFT(string memory _name, string memory _symbol, string memory _uri) external returns (address) {
         require(learnToEarn != address(0), "LearnToEarn address is not valid");
         INFTReward nft_ = INFTReward(Clones.clone(address(nftReward)));
-        nft_.initialize(learnToEarn, _name, _symbol);
+        nft_.initialize(learnToEarn, _name, _symbol, _uri);
 
-        emit DeployNFT(address(nft_));
+        emit DeployedNFT(address(nft_));
         return address(nft_);
     }
 
