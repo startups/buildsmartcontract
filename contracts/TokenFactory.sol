@@ -21,7 +21,7 @@ contract TokenFactory is OwnableUpgradeable, ITokenFactory {
      * @dev NFTReward contract interface
      *      Using this contract to deploy new contract NFT for user
      */
-    INFTReward public nftReward;
+    INFTReward public templateNFTReward;
 
     /**
      * @notice Initialize of contract (replace for constructor)
@@ -31,7 +31,7 @@ contract TokenFactory is OwnableUpgradeable, ITokenFactory {
         __Ownable_init();
 
         require(address(_nftRewared).supportsInterface(type(INFTReward).interfaceId), "Invalid NFTReward address");
-        nftReward = _nftRewared;
+        templateNFTReward = _nftRewared;
     }
 
     /**
@@ -75,7 +75,7 @@ contract TokenFactory is OwnableUpgradeable, ITokenFactory {
      */
     function deployNFT(string memory _name, string memory _symbol, string memory _uri) external returns (address) {
         require(learnToEarn != address(0), "LearnToEarn address is not valid");
-        INFTReward nft_ = INFTReward(Clones.clone(address(nftReward)));
+        INFTReward nft_ = INFTReward(Clones.clone(address(templateNFTReward)));
         nft_.initialize(learnToEarn, _name, _symbol, _uri);
 
         emit DeployedNFT(address(nft_));

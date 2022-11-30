@@ -9,10 +9,11 @@ import { INFTReward } from "./interfaces/INFTReward.sol";
  */
 
 contract NFTReward is ERC721URIStorageUpgradeable, INFTReward {
-
     address public learnToEarn;
     uint256 public tokenIds;
     string public uri;
+
+    /* -----------INITILIZER----------- */
 
     /**
      * @notice Replace for contructor
@@ -21,21 +22,16 @@ contract NFTReward is ERC721URIStorageUpgradeable, INFTReward {
      * @param _symbol Symbol of NFTs
      * @param _uri ipfs of NFTs
      */
-    function initialize(address _learnToEarn, string memory _name, string memory _symbol, string memory _uri) initializer public {
+    function initialize(address _learnToEarn, string memory _name, string memory _symbol, string memory _uri) public initializer {
         require(_learnToEarn != address(0));
         __ERC721_init(_name, _symbol);
-        
+
         learnToEarn = _learnToEarn;
         tokenIds = 0;
         uri = _uri;
     }
 
-    /**
-     * @notice Override function `supportsInterface` when using ERC165
-     */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165Upgradeable, ERC721Upgradeable) returns (bool) {
-        return interfaceId == type(INFTReward).interfaceId || super.supportsInterface(interfaceId);
-    }
+    /* -----------EXTERNAL FUNCTIONS----------- */
 
     /**
      * @notice mint a NFT for _to address
@@ -50,5 +46,15 @@ contract NFTReward is ERC721URIStorageUpgradeable, INFTReward {
         _setTokenURI(tokenIds, uri);
 
         emit Minted(_to, tokenIds, uri);
+    }
+
+    /* -----------VIEW FUNCTIONS----------- */
+
+    /**
+     * @notice Override function `supportsInterface` when using ERC165
+     * @dev Returns true if this contract implements the interface defined by `interfaceId`.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165Upgradeable, ERC721Upgradeable) returns (bool) {
+        return interfaceId == type(INFTReward).interfaceId || super.supportsInterface(interfaceId);
     }
 }

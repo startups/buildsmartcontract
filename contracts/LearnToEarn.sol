@@ -38,6 +38,8 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         _;
     }
 
+    /* -----------INITILIZER----------- */
+
     /**
      * @notice Initialize of contract (replace for constructor)
      */
