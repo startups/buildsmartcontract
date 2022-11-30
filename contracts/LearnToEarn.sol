@@ -59,12 +59,12 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      */
     function createCourse(address _rewardAddress, uint256 _budget, uint256 _bonus, bool _isBonusToken) external nonZero(_bonus) nonZero(_budget) nonReentrant {
         require(_rewardAddress != address(0), "Invalid rewardAddress address");
-        require(_budget > _bonus, "Budget is not enough");
+        require(_budget > _bonus, "Invalid budget");
 
         bytes32 _courseId = _generateCourseId();
-        bool _isExternalNFT = false;
+        bool _canMintNFT = false;
         if (!_isBonusToken) {
-            _isExternalNFT = !_rewardAddress.supportsInterface(type(INFTReward).interfaceId);
+            _canMintNFT = _rewardAddress.supportsInterface(type(INFTReward).interfaceId);
         }
 
         courseData[_courseId] = Course({
@@ -76,7 +76,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
             totalLearnersClaimedBonus: 0,
             timeCreated: block.timestamp,
             isBonusToken: _isBonusToken,
-            isExternalNFT: _isExternalNFT
+            canMintNFT: _canMintNFT
         });
 
         if (_isBonusToken) {
@@ -91,23 +91,27 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @param _courseId Id of course
      * @param _learner Address of learner
      * @param _timeStarted Time when learner enrolled in course
-     * @param _nftId List Id of nfts that learner will receive
+     * @param _nftIds List Id of nfts that learner will receive
      */
-    function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256[] memory _nftId) external onlyCreator(_courseId) {
+    function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256[] memory _nftIds) external onlyCreator(_courseId) {
         Learner storage learner = learnerData[_courseId][_learner];
 
         require(learner.timeCompleted == 0, "already completed");
 
         learner.timeStarted = _timeStarted;
         learner.timeCompleted = block.timestamp;
-        if (
-            (learner.timeStarted + REWARD_COMPLETED_DURATION < learner.timeCompleted) &&
-            courseData[_courseId].isExternalNFT
-        ) {
-            require(_nftId.length == courseData[_courseId].bonus, "Array nft is not enough");
-            learner.nftId = _nftId;
-            for (uint256 i = 0; i < _nftId.length; i++) {
-                IERC721Upgradeable(courseData[_courseId].rewardAddress).safeTransferFrom(_msgSender(), address(this), _nftId[i]);
+
+        Course storage course = courseData[_courseId];
+        if ((course.budgetAvailable > course.bonus) && (learner.timeCompleted < learner.timeStarted + REWARD_COMPLETED_DURATION)) {
+            learner.canClaimReward = true;
+            course.budgetAvailable -= course.bonus;
+            
+            if (!course.canMintNFT) {
+                require(_nftIds.length == course.bonus, "Array nft is not enough");
+                learner.nftIds = _nftIds;
+                for (uint256 i = 0; i < _nftIds.length; i++) {
+                    IERC721Upgradeable(course.rewardAddress).safeTransferFrom(_msgSender(), address(this), _nftIds[i]);
+                }
             }
         }
 
@@ -117,33 +121,31 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
     /**
      * @notice Learner can claim reward after completing the course in deadline and max reward learners
      * @param _courseId If of course
+     * @param _uri Link ipfs metadata of NFT
      *
      * emit {ClaimedReward} event
      */
-    function claimReward(bytes32 _courseId) external {
+    function claimReward(bytes32 _courseId, string memory _uri) external {
         Learner storage learner = learnerData[_courseId][_msgSender()];
 
         require(learner.timeCompleted > 0, "Uncompleted course");
         require(learner.timeRewarded == 0, "already claimed");
-        require(learner.timeCompleted < learner.timeStarted + REWARD_COMPLETED_DURATION, "Not completed in deadline");
+        require(learner.canClaimReward, "Not allowed");
 
-        Course storage course = courseData[_courseId];
-        require(course.budgetAvailable >= course.bonus, "Left bonus is not enough");
-
-        course.budgetAvailable -= course.bonus;
-        course.totalLearnersClaimedBonus++;
         learner.timeRewarded = block.timestamp;
+        Course storage course = courseData[_courseId];
+        course.totalLearnersClaimedBonus++;
 
         if (course.isBonusToken) {
             IERC20Upgradeable(course.rewardAddress).safeTransfer(_msgSender(), course.bonus);
         } else {
-            if (course.isExternalNFT) {
-                for (uint256 i = 0; i < learner.nftId.length; i++) {
-                    IERC721Upgradeable(courseData[_courseId].rewardAddress).safeTransferFrom(_msgSender(), address(this), learner.nftId[i]);
+            if (course.canMintNFT) {
+                for (uint256 i = 0; i < course.bonus; i++) {
+                    INFTReward(course.rewardAddress).mint(_msgSender(), _uri);
                 }
             } else {
-                for (uint256 i = 0; i < learner.nftId.length; i++) {
-                    INFTReward(course.rewardAddress).mint(_msgSender(), "");
+                for (uint256 i = 0; i < learner.nftIds.length; i++) {
+                    IERC721Upgradeable(courseData[_courseId].rewardAddress).safeTransferFrom(address(this), _msgSender(), learner.nftIds[i]);
                 }
             }
         }

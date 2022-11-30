@@ -58,12 +58,13 @@ struct Course {
     uint256 totalLearnersClaimedBonus;
     uint256 timeCreated;
     bool isBonusToken;
-    bool isExternalNFT;
+    bool canMintNFT;
 }
 
 struct Learner {
     uint256 timeStarted;
     uint256 timeCompleted;
     uint256 timeRewarded;
-    uint256[] nftId;
+    uint256[] nftIds;
+    bool canClaimReward;
 }
