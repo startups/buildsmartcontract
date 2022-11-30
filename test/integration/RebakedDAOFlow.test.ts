@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
 import { parseUnits } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { ReBakedDAO, ReBakedDAO__factory, TokenFactory, TokenFactory__factory, IOUToken, IOUToken__factory } from "../../typechain-types";
+import { ReBakedDAO, ReBakedDAO__factory, TokenFactory, TokenFactory__factory, IOUToken, IOUToken__factory, NFTReward, NFTReward__factory } from "../../typechain-types";
 import { ContractReceipt, ContractTransaction } from "ethers";
 import { ZERO_ADDRESS, MAX_UINT256, getTimestamp, skipTime, BalanceTracker as BT } from "../utils";
 
@@ -46,8 +46,12 @@ describe("Integration test", () => {
 		const TokenFactory = (await ethers.getContractFactory("TokenFactory")) as TokenFactory__factory;
 		const IOUToken = (await ethers.getContractFactory("IOUToken")) as IOUToken__factory;
 		const ReBakedDAO = (await ethers.getContractFactory("ReBakedDAO")) as ReBakedDAO__factory;
+		const NFTReward_factory = (await ethers.getContractFactory("NFTReward")) as NFTReward__factory;
 
-		tokenFactory = (await upgrades.deployProxy(TokenFactory, [])) as TokenFactory;	
+		const  nftReward: NFTReward = await NFTReward_factory.deploy();
+        await nftReward.deployed();
+
+		tokenFactory = (await upgrades.deployProxy(TokenFactory, [nftReward.address])) as TokenFactory;	
 		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000", tokenName, tokenSymbol);
 		reBakedDAO = (await upgrades.deployProxy(ReBakedDAO, [treasury.address])) as ReBakedDAO;
 		await reBakedDAO.deployed();
