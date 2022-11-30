@@ -16,12 +16,7 @@ interface ILearnToEarn {
      *
      * emit {CreatedCourse} event
      */
-    function createCourse(
-        address _rewardAddress,
-        uint256 _budget,
-        uint256 _bonus,
-        bool _isBonusToken
-    ) external;
+    function createCourse(address _rewardAddress, uint256 _budget, uint256 _bonus, bool _isBonusToken) external;
 
     /**
      * @notice Mark as learner completed course when the user submitted all assignments and accepted by creator
@@ -33,14 +28,6 @@ interface ILearnToEarn {
     function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256[] memory _nftId) external;
 
     /**
-     * @notice Learner can claim reward after completing the course in deadline and max reward learners
-     * @param _courseId If of course
-     *
-     * emit {ClaimedReward} event
-     */
-    function claimReward(bytes32 _courseId) external;
-
-    /**
      * @notice Add more budget to course
      * @param _courseId Id of course
      * @param _budget Budget that added to course
@@ -48,4 +35,12 @@ interface ILearnToEarn {
      * emit {AddedBudget} events
      */
     function addBudget(bytes32 _courseId, uint256 _budget) external;
+
+    /**
+     * @notice Learner can claim reward after completing the course in deadline and max reward learners
+     * @param _courseId If of course
+     *
+     * emit {ClaimedReward} event
+     */
+    function claimReward(bytes32 _courseId) external;
 }

@@ -19,7 +19,7 @@ contract NFTReward is ERC721URIStorageUpgradeable, INFTReward {
      * @param _learnToEarn Address of LearnToEarn contract
      * @param _name Name of NFTs
      * @param _symbol Symbol of NFTs
-     * @param _uri ipfs of NFts
+     * @param _uri ipfs of NFTs
      */
     function initialize(address _learnToEarn, string memory _name, string memory _symbol, string memory _uri) initializer public {
         require(_learnToEarn != address(0));

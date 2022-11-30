@@ -64,6 +64,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         bytes32 _courseId = _generateCourseId();
         bool _canMintNFT = false;
         if (!_isBonusToken) {
+            // * Using ERC165 to check whether input contract is using INFTReward interface and has mint function or not
             _canMintNFT = _rewardAddress.supportsInterface(type(INFTReward).interfaceId);
         }
 
@@ -103,11 +104,12 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
 
         Course storage course = courseData[_courseId];
         if ((course.budgetAvailable > course.bonus) && (learner.timeCompleted < learner.timeStarted + REWARD_COMPLETED_DURATION)) {
-            learner.canClaimReward = true;
             course.budgetAvailable -= course.bonus;
+            learner.canClaimReward = true;
 
             if (!course.canMintNFT) {
-                require(_nftIds.length == course.bonus, "Array nft is not enough");
+                require(_nftIds.length == course.bonus, "Not enough NFTs");
+                
                 learner.nftIds = _nftIds;
                 for (uint256 i = 0; i < _nftIds.length; i++) {
                     IERC721Upgradeable(course.rewardAddress).safeTransferFrom(_msgSender(), address(this), _nftIds[i]);
@@ -117,6 +119,26 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
 
         emit CompletedCourse(_courseId, _learner);
     }
+
+    /**
+     * @notice Add more budget to course
+     * @param _courseId Id of course
+     * @param _budget Budget that added to course
+     *
+     * emit {AddedBudget} events
+     */
+    function addBudget(bytes32 _courseId, uint256 _budget) external onlyCreator(_courseId) nonZero(_budget) nonReentrant {
+        Course memory course = courseData[_courseId];
+        course.budget += _budget;
+        course.budgetAvailable += _budget;
+
+        if (course.isBonusToken) {
+            IERC20Upgradeable(course.rewardAddress).safeTransferFrom(_msgSender(), address(this), _budget);
+        }
+
+        emit AddedBudget(_courseId, _budget);
+    }
+
 
     /**
      * @notice Learner can claim reward after completing the course in deadline and max reward learners
@@ -150,25 +172,6 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         }
 
         emit ClaimedReward(_courseId, _msgSender());
-    }
-
-    /**
-     * @notice Add more budget to course
-     * @param _courseId Id of course
-     * @param _budget Budget that added to course
-     *
-     * emit {AddedBudget} events
-     */
-    function addBudget(bytes32 _courseId, uint256 _budget) external onlyCreator(_courseId) nonZero(_budget) nonReentrant {
-        Course memory course = courseData[_courseId];
-        course.budget += _budget;
-        course.budgetAvailable += _budget;
-
-        if (course.isBonusToken) {
-            IERC20Upgradeable(course.rewardAddress).safeTransferFrom(_msgSender(), address(this), _budget);
-        }
-
-        emit AddedBudget(_courseId, _budget);
     }
 
     /* --------VIEW FUNCTIONS-------- */

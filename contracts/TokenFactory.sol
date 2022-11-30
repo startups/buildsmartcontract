@@ -64,6 +64,7 @@ contract TokenFactory is OwnableUpgradeable, ITokenFactory {
     }
     
     /**
+     * @dev Using Clones library to clone a contract instead of deploying new contract
      * @notice Deploy new contract to mint NFT
      * @param _name Name of NFT
      * @param _symbol Symbol of NFT
@@ -80,5 +81,4 @@ contract TokenFactory is OwnableUpgradeable, ITokenFactory {
         emit DeployedNFT(address(nft_));
         return address(nft_);
     }
-
 }
