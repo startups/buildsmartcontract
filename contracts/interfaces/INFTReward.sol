@@ -11,7 +11,7 @@ interface INFTReward is IERC721Upgradeable {
      * 
      * emit { Minted } events
      */
-    function mint(address _to) external;
+    function mint(address _to) external returns(uint256);
 
     /**
      * @notice Replace for contructor

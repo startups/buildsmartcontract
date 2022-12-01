@@ -39,13 +39,14 @@ contract NFTReward is ERC721URIStorageUpgradeable, INFTReward {
      *
      * emit { Minted } events
      */
-    function mint(address _to) external {
+    function mint(address _to) external returns(uint256) {
         require(_msgSender() == learnToEarn, "Caller is not learnToEarn");
         ++tokenIds;
         _safeMint(_to, tokenIds);
         _setTokenURI(tokenIds, uri);
 
         emit Minted(_to, tokenIds, uri);
+        return tokenIds;
     }
 
     /* -----------VIEW FUNCTIONS----------- */
