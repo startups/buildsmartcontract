@@ -54,14 +54,14 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @notice Create new course
      * @param _rewardAddress Address of token that reward to student after completing course
      * @param _budget Total tokens/NFTs that reward
-     * @param _timeEndBonus end date will finish bonus, 0 if using duration 60 days
      * @param _bonus Bonus when learner completed course
+     * @param _timeEndBonus end date will finish bonus, 0 if using duration 60 days
      * @param _isBonusToken Awards is token (true) or NFT (false)
      *
      * emit {CreatedCourse} event
      */
-    function createCourse(address _rewardAddress, uint256 _budget, uint256 _timeEndBonus, uint256 _bonus, bool _isBonusToken) external nonZero(_bonus) nonZero(_budget) nonReentrant {
-        require(_rewardAddress != address(0), "Invalid rewardAddress address");
+    function createCourse(address _rewardAddress, uint256 _budget, uint256 _bonus, uint256 _timeEndBonus, bool _isBonusToken) external nonZero(_budget) nonZero(_bonus) nonReentrant {
+        require(_rewardAddress != address(0), "Invalid reward address");
         require(_budget > _bonus, "Invalid budget");
 
         bytes32 _courseId = _generateCourseId();
@@ -99,7 +99,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * emit {AddedBudget} events
      */
     function addBudget(bytes32 _courseId, uint256 _budget) external onlyCreator(_courseId) nonZero(_budget) nonReentrant {
-        Course memory course = courseData[_courseId];
+        Course storage course = courseData[_courseId];
         course.budget += _budget;
         course.budgetAvailable += _budget;
 
