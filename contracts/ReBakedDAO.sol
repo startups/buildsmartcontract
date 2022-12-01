@@ -163,13 +163,11 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         uint256 budgetLeft_ = package._finishPackage();
         projectData[_projectId]._finishPackage(budgetLeft_);
 
-        if (_collaborators.length > 0) {
-            uint256 _totalBonusScores;
-            for (uint256 i = 0; i < _collaborators.length; i++) {
-                _totalBonusScores += _scores[i];
-            }
-            require(_totalBonusScores == PCT_PRECISION || _totalBonusScores == 0, "incorrect total bonus scores");
+        uint256 _totalBonusScores;
+        for (uint256 i = 0; i < _collaborators.length; i++) {
+            _totalBonusScores += _scores[i];
         }
+        require(_totalBonusScores == PCT_PRECISION || _totalBonusScores == 0, "incorrect total bonus scores");
 
         for (uint256 i = 0; i < _collaborators.length; i++) {
             _payCollaboratorRewards(_projectId, _packageId, _collaborators[i], _scores[i]);
