@@ -20,9 +20,12 @@ const config: HardhatUserConfig = {
 		},
 		goerli: {
 			url: "https://eth-goerli.g.alchemy.com/v2/yiaZ5Hg5fTRH46ijJywVW1WF5ltv47xI",
-			// gasPrice: 8000000000,
-			accounts: [process.env.GOERLI_DEPLOY_ACCOUNT as string],
+			accounts: [process.env.GOERLI_DEPLOY_ACCOUNT as string]
 		},
+		mumbai: {
+			url: "https://polygon-mumbai.g.alchemy.com/v2/zSybnsuH3h_jqalkVmYv2Xbf-bsc3hlx",
+			accounts: [process.env.MUMBAI_DEPLOY_ACCOUNT as string]
+		}
 	},
 	etherscan: {
 		apiKey: process.env.SCAN_API_KEY,
