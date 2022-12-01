@@ -142,7 +142,7 @@ describe.only("LearnToEarn contract", () => {
 		});
 
 		it("[OK]: Add budget token successfully", async () => {
-			await learnToEarn.connect(creator).addBudget(courseId1, TOKEN_50);
+			await expect(learnToEarn.connect(creator).addBudget(courseId1, TOKEN_50)).to.emit(learnToEarn, "AddedBudget").withArgs(courseId1, TOKEN_50);
 			const course = await learnToEarn.getCourseData(courseId1);
 			expect(course.budget).to.equal(TOKEN_100.add(TOKEN_50));
 			expect(course.budgetAvailable).to.equal(TOKEN_100.add(TOKEN_50));
@@ -150,10 +150,10 @@ describe.only("LearnToEarn contract", () => {
 		});
 
 		it("[OK]: Add budget NFTS successfully", async () => {
-			await learnToEarn.connect(creator).addBudget(courseId2, 50);
+			await expect(learnToEarn.connect(creator).addBudget(courseId2, 40)).to.emit(learnToEarn, "AddedBudget").withArgs(courseId2, 40);
 			const course = await learnToEarn.getCourseData(courseId2);
-			expect(course.budget).to.equal(150);
-			expect(course.budgetAvailable).to.equal(150);
+			expect(course.budget).to.equal(140);
+			expect(course.budgetAvailable).to.equal(140);
 		});
 	});
 });
