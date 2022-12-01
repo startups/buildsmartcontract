@@ -112,17 +112,6 @@ library PackageLibrary {
     }
 
     /**
-     * @notice Sets scores for collaborator bonuses
-     * @param package_ reference to Package struct
-     * @param collaboratorsGetBonus_ max bonus scores (PPM)
-     */
-    function _setBonusScores(Package storage package_, uint256 collaboratorsGetBonus_) internal {
-        require(package_.bonus > 0, "zero bonus budget");
-        require(package_.timeFinished > 0, "package is not finished");
-        package_.collaboratorsGetBonus = collaboratorsGetBonus_;
-    }
-
-    /**
      * @notice Get observer's claimable portion in package
      * @param package_ reference to Package struct
      */
@@ -138,18 +127,7 @@ library PackageLibrary {
      * @param package_ reference to Package struct
      */
     function _claimObserverFee(Package storage package_, uint256 amount_) internal {
-        require(!package_.isActive, "package is not finished/canceled");
         package_.budgetObserversPaid += amount_;
-    }
-
-    /**
-     * @notice Increases package budget paid
-     * @param package_ reference to Package struct
-     * @param amount_ MGP amount
-     */
-    function _claimMgp(Package storage package_, uint256 amount_) internal {
-        require(!package_.isActive, "package not finished/canceled");
-        package_.budgetPaid += amount_;
     }
 
     /**
@@ -162,12 +140,14 @@ library PackageLibrary {
     }
 
     /**
-     * @notice Increases package bonus paid
+     * @notice Pay Reward to budget
      * @param package_ reference to Package struct
-     * @param amount_ Bonus amount
+     * @param mgp_ MGP amount
+     * @param bonus_ Bonus amount
      */
-    function _claimBonus(Package storage package_, uint256 amount_) internal {
-        package_.bonusPaid += amount_;
+    function _payReward(Package storage package_, uint256 mgp_, uint256 bonus_) internal {
+        package_.budgetPaid += mgp_ + bonus_;
+        package_.bonusPaid += bonus_;
         package_.collaboratorsPaidBonus++;
     }
 }

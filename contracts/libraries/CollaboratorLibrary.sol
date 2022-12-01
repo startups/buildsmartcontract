@@ -40,28 +40,6 @@ library CollaboratorLibrary {
     }
 
     /**
-     * @notice Sets scores for collaborator bonuses
-     * @param collaborator_ reference to Collaborator struct
-     * @param bonusScore_ collaborator's bonus score
-     */
-    function _setBonusScore(Collaborator storage collaborator_, uint256 bonusScore_) internal onlyActiveCollaborator(collaborator_) {
-        require(collaborator_.bonusScore == 0, "collaborator bonus already set");
-        require(bonusScore_ > 0, "new bonus score is zero");
-        collaborator_.bonusScore = bonusScore_;
-    }
-
-    /**
-     * @notice Sets MGP time paid flag, checks if approved and already paid
-     * @param collaborator_ reference to Collaborator struct
-     */
-    function _claimMgp(Collaborator storage collaborator_) internal onlyActiveCollaborator(collaborator_) returns (uint256) {
-        require(collaborator_.timeMgpApproved > 0, "mgp is not approved");
-        require(collaborator_.timeMgpPaid == 0, "mgp already paid");
-        collaborator_.timeMgpPaid = block.timestamp;
-        return collaborator_.mgp;
-    }
-
-    /**
      * @notice Pay MGP to collaborator
      * @param collaborator_ collaborator
      */
@@ -71,12 +49,13 @@ library CollaboratorLibrary {
     }
 
     /**
-     * @notice Sets Bonus time paid flag, checks is approved and already paid
-     * @param collaborator_ reference to Collaborator struct
+     * @notice Pay Reward to collaborator
+     * @param collaborator_ collaborator
+     * @param bonus_ Bonus of collaborator
      */
-    function _claimBonus(Collaborator storage collaborator_) internal onlyActiveCollaborator(collaborator_) {
-        require(collaborator_.bonusScore > 0, "bonus score is zero");
-        require(collaborator_.timeBonusPaid == 0, "bonus already paid");
+    function _payReward(Collaborator storage collaborator_, uint256 bonus_) internal onlyActiveCollaborator(collaborator_) {
+        collaborator_.bonus = bonus_;
+        collaborator_.timeMgpPaid = block.timestamp;
         collaborator_.timeBonusPaid = block.timestamp;
     }
 }

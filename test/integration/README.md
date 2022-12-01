@@ -29,13 +29,7 @@ Each flow will run sequence by sequence
 4. Approve **2 collaborators**
 5. Add **2 observers**
 6. Finish **package 1**
-7. Set `Bonus Score` to **Collaborator 1**
-8. **2 collaborators** claim `MGP`
-9. **2 observers** claim `observer fee`
-10. **2 Collaborators** try to claim `MGP` but revert
-11. **Collaborator 1** claim `Bonus Score`
-12. **2 Observers** try to claim `observer fee` but revert
-13. Check balance after flow
+7. Check balance after flow
 
 ### 3. No collaborator, no observer (Project 1, Package 2)
 
@@ -51,9 +45,7 @@ Each flow will run sequence by sequence
 4. Remove **Collaborator 2** with `MGP`
 5. Approve **Collaborator 3**
 6. Finish **package 3**
-7. **Collaborator 1 & Collaborator 2** try to claim `MGP` but revert
-8. **Collaborator 3** claim `MGP`
-9. Check balance after flow
+7. Check balance after flow
 
 ### 5. Self removing (Project 1, Package 4)
 
@@ -62,10 +54,7 @@ Each flow will run sequence by sequence
 3. **Collaborator 1** self removing
 4. Approve **Collaborator 2**
 5. Finish **package 5**
-6. **Collaborator 2** claim `MGP` 
-7. Set `Bonus Score` to **Collaborator 2**
-8. **Collaborator 2** claim `Bonus Score`
-9. Check balance after flow
+6. Check balance after flow
 
 ### 6. Finish project (Project 1)
 
@@ -80,11 +69,7 @@ Each flow will run sequence by sequence
 4. Approve **2 collaborators**
 5. Add **2 observers**
 6. Finish **package 1**
-7. Set `Bonus Score` to **Collaborator 1**
-8. **2 collaborators** claim `MGP` 
-9. **2 observers** claim `observer fee`
-10. **Collaborator 1** claim `Bonus Score`
-11. Check balance after flow
+7. Check balance after flow
 
 ### 8. Cancel package (Project 2 package 2)
 
@@ -93,8 +78,7 @@ Each flow will run sequence by sequence
 3. Approve **3 collaborators**
 3. Add **2 observers**
 4. Cancel **package 2**
-5. **Collaborator 3** try to claim mgp but revert
-6. Check balance after flow
+5. Check balance after flow
 
 ### 9. Finish project (Project 2)
 

@@ -34,7 +34,6 @@ library ObserverLibrary {
      * @param _observer Observer address
      */
     function _claimObserverFee(Observer storage _observer) internal onlyActiveObserver(_observer) {
-        require(_observer.timePaid == 0, "observer already paid");
         _observer.timePaid = block.timestamp;
     }
 }
