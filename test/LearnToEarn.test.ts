@@ -27,7 +27,7 @@ const ONE_DAY = 24 * 60 * 60;
 const tokenName = "Pioneer",
 	tokenSymbol = "PIO";
 
-describe.only("LearnToEarn contract", () => {
+describe("LearnToEarn contract", () => {
 	beforeEach(async () => {
 		[deployer, creator, learner1, learner2, ...accounts] = await ethers.getSigners();
 		const IOUToken = (await ethers.getContractFactory("IOUToken")) as IOUToken__factory;
