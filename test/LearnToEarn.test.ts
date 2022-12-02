@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
 import { parseUnits, formatBytes32String } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { LearnToEarn, LearnToEarn__factory, IOUToken, IOUToken__factory, TokenFactory, TokenFactory__factory, NFTReward, NFTReward__factory } from "../typechain-types";
+import { LearnToEarn, LearnToEarn__factory, IOUToken, IOUToken__factory, TokenFactory, TokenFactory__factory, NFTReward, NFTReward__factory, ERC721Test, ERC721Test__factory } from "../typechain-types";
 import { ZERO_ADDRESS, MAX_UINT256, getTimestamp, BN, skipTime } from "./utils";
 import { Result } from "@ethersproject/abi";
 import { ContractReceipt, ContractTransaction } from "ethers";
@@ -15,6 +15,7 @@ let accounts: SignerWithAddress[];
 let tokenFactory: TokenFactory;
 let learnToEarn: LearnToEarn;
 let nftReward: NFTReward;
+let erc721Test: ERC721Test;
 
 let learner1: SignerWithAddress;
 let learner2: SignerWithAddress;
@@ -26,17 +27,24 @@ const TOKEN_100 = parseUnits("100", 18);
 const ONE_DAY = 24 * 60 * 60;
 const tokenName = "Pioneer",
 	tokenSymbol = "PIO";
+const nftName = "Pioneer Certificate",
+	nftSymbol = "PICE",
+	nftURI = "https://ipfs.io/ipfs/QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ/example";
 
 describe("LearnToEarn contract", () => {
 	beforeEach(async () => {
 		[deployer, creator, learner1, learner2, ...accounts] = await ethers.getSigners();
 		const IOUToken = (await ethers.getContractFactory("IOUToken")) as IOUToken__factory;
 		const NFTReward_factory = (await ethers.getContractFactory("NFTReward")) as NFTReward__factory;
+		const ERC721Test_factory = (await ethers.getContractFactory("ERC721Test")) as ERC721Test__factory;
 		const TokenFactory_factory = (await ethers.getContractFactory("TokenFactory")) as TokenFactory__factory;
 		const LearnToEarn_factory = (await ethers.getContractFactory("LearnToEarn")) as LearnToEarn__factory;
 
 		nftReward = await NFTReward_factory.deploy();
 		await nftReward.deployed();
+
+		erc721Test = await ERC721Test_factory.deploy(nftName, nftSymbol);
+		await erc721Test.deployed();
 
 		iouToken = await IOUToken.deploy(creator.address, "10000000000000000000000", tokenName, tokenSymbol);
 		tokenFactory = (await upgrades.deployProxy(TokenFactory_factory, [nftReward.address])) as TokenFactory;
@@ -75,7 +83,7 @@ describe("LearnToEarn contract", () => {
 			await expect(learnToEarn.connect(creator).createCourse(iouToken.address, TOKEN_100, TOKEN_1, 0, true)).to.revertedWith("ERC20: insufficient allowance");
 		});
 
-		it("[OK]: Create course with bonus is nft successfully", async () => {
+		it("[OK]: Create course with bonus is nft that is deployed by system successfully", async () => {
 			const NEXT_60_DAYS = Date.now() + ONE_DAY * 60;
 			const tx: ContractTransaction = await learnToEarn.connect(creator).createCourse(nftReward.address, 100, 1, NEXT_60_DAYS, false);
 			const receipt: ContractReceipt = await tx.wait();
@@ -93,6 +101,26 @@ describe("LearnToEarn contract", () => {
 			expect(course.timeEndBonus).to.equal(NEXT_60_DAYS);
 			expect(course.isBonusToken).to.false;
 			expect(course.canMintNFT).to.true;
+		});
+
+		it("[OK]: Create course with bonus is external nft contract", async () => {
+			const NEXT_60_DAYS = Date.now() + ONE_DAY * 60;
+			const tx: ContractTransaction = await learnToEarn.connect(creator).createCourse(erc721Test.address, 100, 1, NEXT_60_DAYS, false);
+			const receipt: ContractReceipt = await tx.wait();
+			const args: Result = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
+			const courseId = args[0];
+
+			const course = await learnToEarn.getCourseData(courseId);
+			const timestamp: number = await getTimestamp();
+			expect(course.creator).to.equal(creator.address);
+			expect(course.rewardAddress).to.equal(erc721Test.address);
+			expect(course.budget).to.equal(100);
+			expect(course.budgetAvailable).to.equal(100);
+			expect(course.bonus).to.equal(1);
+			expect(course.timeCreated).to.closeTo(timestamp, 10);
+			expect(course.timeEndBonus).to.equal(NEXT_60_DAYS);
+			expect(course.isBonusToken).to.false;
+			expect(course.canMintNFT).to.false;
 		});
 
 		it("[OK]: Create course with bonus is token successfully", async () => {
@@ -171,7 +199,7 @@ describe("LearnToEarn contract", () => {
 		let timeStart: number;
 		beforeEach(async () => {
 			await tokenFactory.setLearnToEarn(learnToEarn.address);
-			let tx: ContractTransaction = await tokenFactory.deployNFT("Certificate", "Cert", "https://ipfs.io/ipfs/QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ/example");
+			let tx: ContractTransaction = await tokenFactory.deployNFT(nftName, nftSymbol, nftURI);
 			let receipt: ContractReceipt = await tx.wait();
 			let args: Result = receipt.events!.find(ev => ev.event === "DeployedNFT")!.args!;
 			const nftRewardAddress = ethers.utils.getAddress(args[0]);
@@ -188,6 +216,15 @@ describe("LearnToEarn contract", () => {
 			receipt = await tx.wait();
 			args = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
 			courseId2 = args[0];
+
+			tx = await learnToEarn.connect(creator).createCourse(erc721Test.address, 100, 3, NEXT_30_DAYS, false);
+			receipt = await tx.wait();
+			args = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
+			courseId3 = args[0];
+
+			for (let i = 0; i < 6; i++) {
+				await erc721Test.connect(deployer).mintNFT(creator.address, nftURI);
+			}
 
 			timeStart = (await getTimestamp()) + ONE_DAY;
 		});
@@ -207,7 +244,16 @@ describe("LearnToEarn contract", () => {
 			await expect(learnToEarn.connect(creator).completeCourse(courseId1, learner1.address, timeStart, [])).to.revertedWith("already completed");
 		});
 
-		it("[Fail]: NFTs to reward is not enough", async () => {});
+		it("[Fail]: NFTs to reward is not enough", async () => {
+			await skipTime(10 * ONE_DAY);
+			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner1.address, timeStart, [])).to.revertedWith("Not enough NFTs");
+		});
+
+		it("[Fail]: ERC721: caller is not token owner nor approved", async () => {
+			await skipTime(10 * ONE_DAY);
+			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner1.address, timeStart, [1, 6, 7])).to.revertedWith("ERC721: caller is not token owner nor approved");
+			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner1.address, timeStart, [1, 2, 3])).to.revertedWith("ERC721: caller is not token owner nor approved");
+		});
 
 		it("[OK]: Complete course with token awards successfully", async () => {
 			await skipTime(10 * ONE_DAY);
@@ -245,7 +291,7 @@ describe("LearnToEarn contract", () => {
 			expect(await iouToken.balanceOf(learner2.address)).to.equal(0);
 		});
 
-		it("[OK]: Complete course with nft awards successfully", async () => {
+		it("[OK]: Complete course with nft deployed by system awards successfully", async () => {
 			await skipTime(10 * ONE_DAY);
 			let course2 = await learnToEarn.getCourseData(courseId2);
 			await expect(learnToEarn.connect(creator).completeCourse(courseId2, learner1.address, timeStart, []))
@@ -268,6 +314,50 @@ describe("LearnToEarn contract", () => {
 			const nftRewardContract = new ethers.Contract(course2.rewardAddress, NFTRewardJSON.abi, creator);
 			for (let i = 0; i < firstLearner.nftIds.length; i++) {
 				expect(await nftRewardContract.ownerOf(firstLearner.nftIds[i])).to.equal(learner1.address);
+			}
+		});
+
+		it("[OK]: Complete course with external nft awards successfully", async () => {
+			await erc721Test.connect(creator).setApprovalForAll(learnToEarn.address, true);
+			await skipTime(10 * ONE_DAY);
+			let course3 = await learnToEarn.getCourseData(courseId3);
+			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner1.address, timeStart, [1, 4, 6]))
+				.to.emit(learnToEarn, "ClaimedReward")
+				.withArgs(courseId3, learner1.address, course3.bonus)
+				.to.emit(learnToEarn, "CompletedCourse")
+				.withArgs(courseId3, learner1.address);
+
+			course3 = await learnToEarn.getCourseData(courseId3);
+			expect(course3.budgetAvailable).to.equal(97);
+			expect(course3.totalLearnersClaimedBonus).to.equal(1);
+
+			const firstLearner = await learnToEarn.getLearnerData(courseId3, learner1.address);
+			let timestamp = await getTimestamp();
+			expect(firstLearner.timeStarted).to.equal(timeStart);
+			expect(firstLearner.timeCompleted).to.closeTo(timestamp, 10);
+			expect(firstLearner.timeRewarded).to.closeTo(timestamp, 10);
+			expect(firstLearner.nftIds.length).to.equal(course3.bonus);
+
+			for (let i = 0; i < firstLearner.nftIds.length; i++) {
+				expect(await erc721Test.ownerOf(firstLearner.nftIds[i])).to.equal(learner1.address);
+			}
+
+			await skipTime(10 * ONE_DAY);
+
+			await learnToEarn.connect(creator).completeCourse(courseId3, learner2.address, timeStart, [2, 3, 5]);
+			course3 = await learnToEarn.getCourseData(courseId3);
+			expect(course3.budgetAvailable).to.equal(94);
+			expect(course3.totalLearnersClaimedBonus).to.equal(2);
+
+			const secondLearner = await learnToEarn.getLearnerData(courseId3, learner2.address);
+			timestamp = await getTimestamp();
+			expect(secondLearner.timeStarted).to.equal(timeStart);
+			expect(secondLearner.timeCompleted).to.closeTo(timestamp, 10);
+			expect(secondLearner.timeRewarded).to.closeTo(timestamp, 10);
+			expect(secondLearner.nftIds.length).to.equal(course3.bonus);
+
+			for (let i = 0; i < secondLearner.nftIds.length; i++) {
+				expect(await erc721Test.ownerOf(secondLearner.nftIds[i])).to.equal(learner2.address);
 			}
 		});
 	});

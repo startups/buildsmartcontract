@@ -9,8 +9,19 @@ import { INFTReward } from "./interfaces/INFTReward.sol";
  */
 
 contract NFTReward is ERC721URIStorageUpgradeable, INFTReward {
+    /**
+     * @notice Address of LearnToEarn contract
+     */
     address public learnToEarn;
+
+    /**
+     * @notice ID of Minted NFT, increase by 1
+     */
     uint256 public tokenIds;
+
+    /**
+     * notice URI of NFT, NFTs in same contract has the same URI
+     */
     string public uri;
 
     /* -----------INITILIZER----------- */
