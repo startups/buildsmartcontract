@@ -67,7 +67,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         bytes32 _courseId = _generateCourseId();
         bool _canMintNFT = false;
         if (!_isBonusToken) {
-            // * Using ERC165 to check whether input contract is using INFTReward interface and has mint function or not
+            // * Using ERC165 to check whether input contract is using INFTReward interface and has `mint` function or not
             _canMintNFT = _rewardAddress.supportsInterface(type(INFTReward).interfaceId);
         }
 
@@ -120,7 +120,6 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
     function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256[] memory _nftIds) external onlyCreator(_courseId) {
 
         Course storage course = courseData[_courseId];
-
         require(course.timeCreated <= _timeStarted && _timeStarted < block.timestamp, "Invalid time start");
 
         Learner storage learner = learnerData[_courseId][_learner];
@@ -129,7 +128,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         learner.timeStarted = _timeStarted;
         learner.timeCompleted = block.timestamp;
 
-        bool canGetBonus = course.budgetAvailable > course.bonus;
+        bool canGetBonus = course.budgetAvailable >= course.bonus;
         if(course.timeEndBonus > 0) {
             canGetBonus = canGetBonus && (learner.timeCompleted <= course.timeEndBonus);
         } else {
