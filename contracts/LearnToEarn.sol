@@ -113,7 +113,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         course.budget += _budget;
         course.budgetAvailable += _budget;
 
-        if (!course.canMintNFT) {
+        if (!course.isBonusToken && !course.canMintNFT) {
             require(IERC721Upgradeable(course.rewardAddress).balanceOf(_msgSender()) >= course.budgetAvailable, "Balance of creator is not enough");
         }
 
