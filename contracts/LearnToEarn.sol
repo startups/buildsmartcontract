@@ -118,14 +118,17 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @param _nftIds List Id of nfts that learner will receive if bonus is nfts
      */
     function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256[] memory _nftIds) external onlyCreator(_courseId) {
-        Learner storage learner = learnerData[_courseId][_learner];
 
+        Course storage course = courseData[_courseId];
+
+        require(course.timeCreated <= _timeStarted && _timeStarted < block.timestamp, "Invalid time start");
+
+        Learner storage learner = learnerData[_courseId][_learner];
         require(learner.timeCompleted == 0, "already completed");
 
         learner.timeStarted = _timeStarted;
         learner.timeCompleted = block.timestamp;
 
-        Course storage course = courseData[_courseId];
         bool canGetBonus = course.budgetAvailable > course.bonus;
         if(course.timeEndBonus > 0) {
             canGetBonus = canGetBonus && (learner.timeCompleted <= course.timeEndBonus);
