@@ -405,7 +405,6 @@ describe("ReBakedDAO", () => {
 			const currentCollaborator = await reBakedDAO.getCollaboratorData(projectId, packageId1, collaborator1.address);
 			expect(currentCollaborator.mgp).to.equal(TOKEN_10);
 			expect(currentCollaborator.isRemoved).to.be.true;
-			expect(currentCollaborator.bonusScore).to.equal(0);
 			expect(currentCollaborator.timeMgpApproved).to.equal(0);
 
 			let currentPackage = await reBakedDAO.getPackageData(projectId, packageId1);
@@ -418,7 +417,6 @@ describe("ReBakedDAO", () => {
 			const currentCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId1, collaborator2.address);
 			expect(currentCollaborator2.mgp).to.equal(TOKEN_20);
 			expect(currentCollaborator2.isRemoved).to.be.true;
-			expect(currentCollaborator2.bonusScore).to.equal(0);
 			expect(currentCollaborator2.timeMgpApproved).to.equal(0);
 
 			currentPackage = await reBakedDAO.getPackageData(projectId, packageId1);

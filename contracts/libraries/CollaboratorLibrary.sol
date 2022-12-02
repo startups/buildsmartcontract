@@ -56,6 +56,6 @@ library CollaboratorLibrary {
     function _payReward(Collaborator storage collaborator_, uint256 bonus_) internal onlyActiveCollaborator(collaborator_) {
         collaborator_.bonus = bonus_;
         collaborator_.timeMgpPaid = block.timestamp;
-        collaborator_.timeBonusPaid = block.timestamp;
+        if(bonus_ > 0) collaborator_.timeBonusPaid = block.timestamp;
     }
 }

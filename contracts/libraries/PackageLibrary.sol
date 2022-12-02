@@ -146,8 +146,8 @@ library PackageLibrary {
      * @param bonus_ Bonus amount
      */
     function _payReward(Package storage package_, uint256 mgp_, uint256 bonus_) internal {
-        package_.budgetPaid += mgp_ + bonus_;
+        package_.budgetPaid += mgp_;
         package_.bonusPaid += bonus_;
-        package_.collaboratorsPaidBonus++;
+        if(bonus_ > 0) package_.collaboratorsPaidBonus++;
     }
 }
