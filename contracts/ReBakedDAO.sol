@@ -405,7 +405,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         packageData[_projectId][_packageId]._payReward(mgp_, bonus_);
         projectData[_projectId]._pay(_collaborator, mgp_ + bonus_);
 
-        emit PaidCollaboratorRewards(_projectId, _packageId, _collaborator, mgp_ + bonus_);
+        emit PaidCollaboratorRewards(_projectId, _packageId, _collaborator, mgp_, bonus_);
     }
 
     /**
