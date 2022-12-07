@@ -1,6 +1,6 @@
 const { ethers, upgrades, network, run } = require("hardhat");
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { LearnToEarn, LearnToEarn__factory, IOUToken, IOUToken__factory, TokenFactory, TokenFactory__factory, NFTReward, NFTReward__factory, ERC721Test, ERC721Test__factory } from "../typechain-types";
+import { LearnToEarn, LearnToEarn__factory, TokenFactory, TokenFactory__factory, NFTReward__factory, NFTReward } from "../typechain-types";
 import { Table } from "./utils";
 const fs = require("fs");
 
@@ -15,11 +15,11 @@ async function main() {
 
 	console.log("============DEPLOYING CONTRACTS============");
 
-	const nftReward = await NFTReward_factory.deploy();
+	const nftReward: NFTReward = await NFTReward_factory.deploy();
 	await nftReward.deployed();
 	table.add([{ name: "NFTReward", type: "deploy", address: nftReward.address }]);
 
-	const tokenFactory = (await upgrades.deployProxy(TokenFactory_factory, [nftReward.address])) as TokenFactory;
+	const tokenFactory: TokenFactory = (await upgrades.deployProxy(TokenFactory_factory, [nftReward.address])) as TokenFactory;
 	await tokenFactory.deployed();
 	const tokenFactoryVerifyAddress: string = await upgrades.erc1967.getImplementationAddress(tokenFactory.address);
 	table.add([
@@ -27,7 +27,7 @@ async function main() {
 		{ name: "TokenFactory", type: "verify", address: tokenFactoryVerifyAddress },
 	]);
 
-	const learnToEarn = (await upgrades.deployProxy(LearnToEarn_factory, [])) as LearnToEarn;
+	const learnToEarn: LearnToEarn = (await upgrades.deployProxy(LearnToEarn_factory, [])) as LearnToEarn;
 	await learnToEarn.deployed();
 	const learnToEarnVerifyAddress: string = await upgrades.erc1967.getImplementationAddress(learnToEarn.address);
 	table.add([

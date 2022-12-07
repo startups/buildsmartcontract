@@ -13,11 +13,19 @@ interface ILearnToEarn {
      * @param _budget Total tokens/NFTs that reward
      * @param _timeEndBonus end date will finish bonus, 0 if using duration 60 days
      * @param _bonus Bonus when learner completed course
+     * @param _isUsingDuration Using duration for rewarding (true) or using end time (false)
      * @param _isBonusToken Awards is token (true) or NFT (false)
      *
      * emit {CreatedCourse} event
      */
-    function createCourse(address _rewardAddress, uint256 _budget, uint256 _timeEndBonus, uint256 _bonus, bool _isBonusToken) external;
+    function createCourse(
+        address _rewardAddress,
+        uint256 _budget,
+        uint256 _timeEndBonus,
+        uint256 _bonus,
+        bool _isUsingDuration,
+        bool _isBonusToken
+    ) external;
 
     /**
      * @notice Add more budget to course
@@ -35,5 +43,10 @@ interface ILearnToEarn {
      * @param _timeStarted Time when learner enrollred in course
      * @param _nftId List Id of nfts that learner will receive
      */
-    function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256[] memory _nftId) external;
+    function completeCourse(
+        bytes32 _courseId,
+        address _learner,
+        uint256 _timeStarted,
+        uint256[] memory _nftId
+    ) external;
 }

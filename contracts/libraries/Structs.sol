@@ -60,6 +60,7 @@ struct Course {
     uint256 timeEndBonus;
     bool isBonusToken;
     bool canMintNFT;
+    bool isUsingDuration;
 }
 
 struct Learner {

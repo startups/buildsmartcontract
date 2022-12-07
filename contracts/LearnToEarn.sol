@@ -14,8 +14,6 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using ERC165CheckerUpgradeable for address;
 
-    uint256 public constant REWARD_COMPLETED_DURATION = 60 days;
-
     // courseId => Course
     mapping(bytes32 => Course) private courseData;
 
@@ -56,6 +54,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @param _budget Total tokens/NFTs that reward
      * @param _bonus Bonus when learner completed course
      * @param _timeEndBonus end date will finish bonus, 0 if using duration 60 days
+     * @param _isUsingDuration Using duration for rewarding (true) or using end time (false)
      * @param _isBonusToken Awards is token (true) or NFT (false)
      *
      * emit {CreatedCourse} event
@@ -65,6 +64,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         uint256 _budget,
         uint256 _bonus,
         uint256 _timeEndBonus,
+        bool _isUsingDuration,
         bool _isBonusToken
     ) external nonZero(_budget) nonZero(_bonus) nonReentrant {
         require(_rewardAddress != address(0), "Invalid reward address");
@@ -90,6 +90,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
             totalLearnersClaimedBonus: 0,
             timeCreated: block.timestamp,
             timeEndBonus: _timeEndBonus,
+            isUsingDuration: _isUsingDuration,
             isBonusToken: _isBonusToken,
             canMintNFT: _canMintNFT
         });
@@ -131,7 +132,12 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @param _timeStarted Time when learner enrolled in course
      * @param _nftIds List Id of nfts that learner will receive if bonus is nfts
      */
-    function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256[] memory _nftIds) external onlyCreator(_courseId) {
+    function completeCourse(
+        bytes32 _courseId,
+        address _learner,
+        uint256 _timeStarted,
+        uint256[] memory _nftIds
+    ) external onlyCreator(_courseId) {
         Course storage course = courseData[_courseId];
         require(course.timeCreated <= _timeStarted && _timeStarted < block.timestamp, "Invalid time start");
 
@@ -142,10 +148,10 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         learner.timeCompleted = block.timestamp;
 
         bool canGetBonus = course.budgetAvailable >= course.bonus;
-        if (course.timeEndBonus > 0) {
-            canGetBonus = canGetBonus && (learner.timeCompleted <= course.timeEndBonus);
+        if (course.isUsingDuration) {
+            canGetBonus = canGetBonus && (learner.timeCompleted <= learner.timeStarted + course.timeEndBonus);
         } else {
-            canGetBonus = canGetBonus && (learner.timeCompleted <= learner.timeStarted + REWARD_COMPLETED_DURATION);
+            canGetBonus = canGetBonus && (learner.timeCompleted <= course.timeEndBonus);
         }
 
         if (canGetBonus) {
