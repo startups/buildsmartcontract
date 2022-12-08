@@ -20,20 +20,21 @@ library PackageLibrary {
      * @param budget_ MGP budget
      * @param feeObserversBudget_ Observers fee budget
      * @param bonus_ Bonus budget
+     * @param collaboratorsLimit_ Limit on number of collaborators
      */
     function _createPackage(
         Package storage package_,
         uint256 budget_,
         uint256 feeObserversBudget_,
         uint256 bonus_,
-        uint256 maxCollaborators_
+        uint256 collaboratorsLimit_
     ) internal {
-        require(0 < maxCollaborators_ && maxCollaborators_ <= MAX_COLLABORATORS, "incorrect max colalborators");
+        require(0 < collaboratorsLimit_ && collaboratorsLimit_ <= MAX_COLLABORATORS, "incorrect max colalborators");
         package_.budget = budget_;
         package_.budgetObservers = feeObserversBudget_;
         package_.bonus = bonus_;
         package_.budgetAllocated = 0;
-        package_.maxCollaborators = maxCollaborators_;
+        package_.collaboratorsLimit = collaboratorsLimit_;
         package_.timeCreated = block.timestamp;
         package_.isActive = true;
     }
@@ -48,7 +49,7 @@ library PackageLibrary {
     }
 
     /**
-     * @notice Adds observers to package
+     * @notice Adds observer to package
      * @param package_ reference to Package struct
      */
     function _addObserver(Package storage package_) internal onlyActivePackage(package_) {
@@ -57,11 +58,30 @@ library PackageLibrary {
     }
 
     /**
-     * @notice Removes observers from package
+     * @notice Adds observers to package
+     * @param package_ reference to Package struct
+     * @param count_ number of observers
+     */
+    function _addObservers(Package storage package_, uint256 count_) internal onlyActivePackage(package_) {
+        require(package_.totalObservers + count_ <= MAX_OBSERVERS, "Max observers reached");
+        package_.totalObservers += count_;
+    }
+
+    /**
+     * @notice Removes observer from package
      * @param package_ reference to Package struct
      */
     function _removeObserver(Package storage package_) internal onlyActivePackage(package_) {
         package_.totalObservers--;
+    }
+
+    /**
+     * @notice Removes observers from package
+     * @param package_ reference to Package struct
+     * @param count_ number of observers
+     */
+    function _removeObservers(Package storage package_, uint256 count_) internal onlyActivePackage(package_) {
+        package_.totalObservers -= count_;
     }
 
     /**
@@ -70,7 +90,7 @@ library PackageLibrary {
      */
     function _allocateBudget(Package storage package_, uint256 amount_) internal onlyActivePackage(package_) {
         require(package_.budget >= package_.budgetAllocated + amount_, "not enough package budget left");
-        require(package_.totalCollaborators < package_.maxCollaborators, "Max collaborators reached");
+        require(package_.totalCollaborators < package_.collaboratorsLimit, "collaborators limit reached");
         package_.budgetAllocated += amount_;
         package_.totalCollaborators++;
     }

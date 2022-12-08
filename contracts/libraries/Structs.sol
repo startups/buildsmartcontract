@@ -27,7 +27,7 @@ struct Package {
     uint256 timeFinished;
     uint256 totalObservers;
     uint256 totalCollaborators;
-    uint256 maxCollaborators;
+    uint256 collaboratorsLimit;
     uint256 approvedCollaborators;
     uint256 timeCanceled;
     bool isActive;

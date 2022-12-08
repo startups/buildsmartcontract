@@ -18,7 +18,6 @@ library ObserverLibrary {
     function _addObserver(Observer storage _observer) internal {
         require(_observer.timeCreated == 0, "observer already added");
         _observer.timeCreated = block.timestamp;
-        _observer.isRemoved = false;
     }
 
     /**

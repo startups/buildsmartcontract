@@ -96,7 +96,7 @@ describe("Integration test", () => {
 		});
 
 		it("Add package 1", async () => {
-			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId1, TOKEN_100, TOKEN_10, TOKEN_40, 3));
+			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId1, TOKEN_100, TOKEN_10, TOKEN_40, 3, []));
 			receipt = await tx.wait();
 			packageId1 = receipt.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
 			const project1 = await reBakedDAO.getProjectData(projectId1);
@@ -108,7 +108,7 @@ describe("Integration test", () => {
 			expect(package1.budget).to.equal(TOKEN_100);
 			expect(package1.bonus).to.equal(TOKEN_10);
 			expect(package1.budgetObservers).to.equal(TOKEN_40);
-			expect(package1.maxCollaborators).to.equal(3);
+			expect(package1.collaboratorsLimit).to.equal(3);
 			expect(package1.isActive).to.be.true;
 			expect(package1.timeCreated).to.closeTo(currentTime, 10);
 		});
@@ -213,7 +213,7 @@ describe("Integration test", () => {
 		let packageId2: string;
 
 		it("Add package 2", async () => {
-			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId1, TOKEN_50, TOKEN_20, TOKEN_30, 5));
+			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId1, TOKEN_50, TOKEN_20, TOKEN_30, 5, []));
 			receipt = await tx.wait();
 			packageId2 = receipt.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
 			const project1 = await reBakedDAO.getProjectData(projectId1);
@@ -229,10 +229,10 @@ describe("Integration test", () => {
 			expect(package2.budget).to.equal(TOKEN_50);
 			expect(package2.bonus).to.equal(TOKEN_20);
 			expect(package2.budgetObservers).to.equal(TOKEN_30);
-			expect(package2.maxCollaborators).to.equal(5);
+			expect(package2.collaboratorsLimit).to.equal(5);
 			expect(package2.isActive).to.be.true;
 			expect(package2.timeCreated).to.closeTo(currentTime, 10);
-			expect(package2.maxCollaborators).to.equal(5);
+			expect(package2.collaboratorsLimit).to.equal(5);
 		});
 
 		it("Finish package 2", async () => {
@@ -277,7 +277,7 @@ describe("Integration test", () => {
 		let packageId3: string;
 
 		it("Add package 3", async () => {
-			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId1, TOKEN_50, TOKEN_20, TOKEN_30, 5));
+			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId1, TOKEN_50, TOKEN_20, TOKEN_30, 5, []));
 			receipt = await tx.wait();
 			packageId3 = receipt.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
 			const project1 = await reBakedDAO.getProjectData(projectId1);
@@ -289,7 +289,7 @@ describe("Integration test", () => {
 			expect(package3.budget).to.equal(TOKEN_50);
 			expect(package3.bonus).to.equal(TOKEN_20);
 			expect(package3.budgetObservers).to.equal(TOKEN_30);
-			expect(package3.maxCollaborators).to.equal(5);
+			expect(package3.collaboratorsLimit).to.equal(5);
 			expect(package3.isActive).to.be.true;
 			expect(package3.timeCreated).to.closeTo(currentTime, 10);
 		});
@@ -395,7 +395,7 @@ describe("Integration test", () => {
 	describe("Self removing (Project 1, Package 4)", () => {
 		let packageId4: string;
 		it("Add package 4", async () => {
-			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId1, TOKEN_100, TOKEN_30, TOKEN_50, 4));
+			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId1, TOKEN_100, TOKEN_30, TOKEN_50, 4, []));
 			receipt = await tx.wait();
 			packageId4 = receipt.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
 			const project1 = await reBakedDAO.getProjectData(projectId1);
@@ -407,7 +407,7 @@ describe("Integration test", () => {
 			expect(package4.budget).to.equal(TOKEN_100);
 			expect(package4.bonus).to.equal(TOKEN_30);
 			expect(package4.budgetObservers).to.equal(TOKEN_50);
-			expect(package4.maxCollaborators).to.equal(4);
+			expect(package4.collaboratorsLimit).to.equal(4);
 			expect(package4.isActive).to.be.true;
 			expect(package4.timeCreated).to.closeTo(currentTime, 10);
 		});
@@ -529,7 +529,7 @@ describe("Integration test", () => {
 		});
 
 		it("Add package 1", async () => {
-			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId2, TOKEN_100, TOKEN_50, TOKEN_50, 4));
+			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId2, TOKEN_100, TOKEN_50, TOKEN_50, 4, []));
 			receipt = await tx.wait();
 			packageId1 = receipt.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
 			const project2 = await reBakedDAO.getProjectData(projectId2);
@@ -541,7 +541,7 @@ describe("Integration test", () => {
 			expect(package1.budget).to.equal(TOKEN_100);
 			expect(package1.bonus).to.equal(TOKEN_50);
 			expect(package1.budgetObservers).to.equal(TOKEN_50);
-			expect(package1.maxCollaborators).to.equal(4);
+			expect(package1.collaboratorsLimit).to.equal(4);
 			expect(package1.isActive).to.be.true;
 			expect(package1.timeCreated).to.closeTo(currentTime, 10);
 		});
@@ -633,7 +633,7 @@ describe("Integration test", () => {
 		let packageId2: string;
 
 		it("Add package 2", async () => {
-			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId2, TOKEN_100, TOKEN_30, TOKEN_50, 4));
+			tx = await BT.updateFee(reBakedDAO.connect(initiator).createPackage(projectId2, TOKEN_100, TOKEN_30, TOKEN_50, 4, []));
 			receipt = await tx.wait();
 			packageId2 = receipt.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
 			const project2 = await reBakedDAO.getProjectData(projectId2);
@@ -645,7 +645,7 @@ describe("Integration test", () => {
 			expect(package2.budget).to.equal(TOKEN_100);
 			expect(package2.bonus).to.equal(TOKEN_30);
 			expect(package2.budgetObservers).to.equal(TOKEN_50);
-			expect(package2.maxCollaborators).to.equal(4);
+			expect(package2.collaboratorsLimit).to.equal(4);
 			expect(package2.isActive).to.be.true;
 			expect(package2.timeCreated).to.closeTo(currentTime, 10);
 		});

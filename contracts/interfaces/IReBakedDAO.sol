@@ -9,7 +9,9 @@ interface IReBakedDAO {
     event FinishedProject(bytes32 indexed projectId);
     event CreatedPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 budget, uint256 bonus);
     event AddedObserver(bytes32 indexed projectId, bytes32[] packageIds, address indexed observer);
+    event AddedObservers(bytes32 indexed projectId, bytes32 indexed packageId, address[] observers);
     event RemovedObserver(bytes32 indexed projectId, bytes32[] packageIds, address indexed observer);
+    event RemovedObservers(bytes32 indexed projectId, bytes32 indexed packageId, address[] observers);
     event AddedCollaborator(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 mgp);
     event ApprovedCollaborator(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator);
     event RemovedCollaborator(bytes32 indexed projectId_, bytes32 indexed packageId_, address collaborator_);
@@ -50,7 +52,8 @@ interface IReBakedDAO {
      * @param _budget MGP budget
      * @param _bonus Bonus budget
      * @param _observerBudget Observer budget
-     * @param _maxCollaborators maximum collaborators
+     * @param _collaboratorsLimit maximum collaborators
+     * @param _observers List of observers
      * Emit {CreatedPackage}
      */
     function createPackage(
@@ -58,7 +61,8 @@ interface IReBakedDAO {
         uint256 _budget,
         uint256 _bonus,
         uint256 _observerBudget,
-        uint256 _maxCollaborators
+        uint256 _collaboratorsLimit,
+        address[] memory _observers
     ) external;
 
     /**
@@ -141,6 +145,15 @@ interface IReBakedDAO {
     function addObserver(bytes32 _projectId, bytes32[] memory _packageIds, address _observer) external;
 
     /**
+     * @notice Adds observers to package
+     * @param _projectId Id of the project
+     * @param _packageId Id of the package
+     * @param _observers observers' address
+     * Emit {AddedObserver}
+     */
+    function addObservers(bytes32 _projectId, bytes32 _packageId, address[] memory _observers) external;
+
+    /**
      * @notice Removes observer from packages
      * @param _projectId Id of the project
      * @param _packageIds packages' ids
@@ -148,4 +161,14 @@ interface IReBakedDAO {
      * Emit {RemovedObserver}
      */
     function removeObserver(bytes32 _projectId, bytes32[] memory _packageIds, address _observer) external;
+
+    /**
+     * @notice Removes observers from package
+     * @param _projectId Id of the project
+     * @param _packageId package id
+     * @param _observers observers' address
+     * Emit {RemovedObserver}
+     */
+    function removeObservers(bytes32 _projectId, bytes32 _packageId, address[] memory _observers) external;
+
 }
