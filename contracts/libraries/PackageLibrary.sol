@@ -29,7 +29,7 @@ library PackageLibrary {
         uint256 bonus_,
         uint256 collaboratorsLimit_
     ) internal {
-        require(0 < collaboratorsLimit_ && collaboratorsLimit_ <= MAX_COLLABORATORS, "incorrect max colalborators");
+        require(0 < collaboratorsLimit_ && collaboratorsLimit_ <= MAX_COLLABORATORS, "incorrect collaborators limit");
         package_.budget = budget_;
         package_.budgetObservers = feeObserversBudget_;
         package_.bonus = bonus_;
@@ -106,13 +106,12 @@ library PackageLibrary {
     /**
      * @notice Remove collaborator from package
      * @param package_ Package want to cancel
-     * @param mgp_ MGP to pay
+     * @param mgp_ MGP amount
      */
-    function _removeCollaborator(
-        Package storage package_,
-        uint256 mgp_
-    ) internal onlyActivePackage(package_) {
-        package_.budgetAllocated -= mgp_;
+    function _removeCollaborator(Package storage package_, bool paidMgp_, uint256 mgp_) internal onlyActivePackage(package_) {
+        if (!paidMgp_) {
+            package_.budgetAllocated -= mgp_;
+        }
         package_.totalCollaborators--;
     }
 
@@ -146,7 +145,7 @@ library PackageLibrary {
      * @notice Increases package's observers budget paid
      * @param package_ reference to Package struct
      */
-    function _claimObserverFee(Package storage package_, uint256 amount_) internal {
+    function _payObserverFee(Package storage package_, uint256 amount_) internal {
         package_.budgetObserversPaid += amount_;
     }
 
@@ -165,9 +164,13 @@ library PackageLibrary {
      * @param mgp_ MGP amount
      * @param bonus_ Bonus amount
      */
-    function _payReward(Package storage package_, uint256 mgp_, uint256 bonus_) internal {
+    function _payReward(
+        Package storage package_,
+        uint256 mgp_,
+        uint256 bonus_
+    ) internal {
         package_.budgetPaid += mgp_;
         package_.bonusPaid += bonus_;
-        if(bonus_ > 0) package_.collaboratorsPaidBonus++;
+        if (bonus_ > 0) package_.collaboratorsPaidBonus++;
     }
 }

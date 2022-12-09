@@ -32,7 +32,7 @@ library ObserverLibrary {
      * @notice Observer claim fee
      * @param _observer Observer address
      */
-    function _claimObserverFee(Observer storage _observer) internal onlyActiveObserver(_observer) {
+    function _payObserverFee(Observer storage _observer) internal onlyActiveObserver(_observer) {
         _observer.timePaid = block.timestamp;
     }
 }

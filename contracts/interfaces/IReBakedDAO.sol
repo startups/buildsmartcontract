@@ -7,7 +7,7 @@ interface IReBakedDAO {
     event StartedProject(bytes32 indexed projectId);
     event ApprovedProject(bytes32 indexed projectId);
     event FinishedProject(bytes32 indexed projectId);
-    event CreatedPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 budget, uint256 bonus);
+    event CreatedPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 budget, uint256 bonus, uint256 observerBudget);
     event AddedObserver(bytes32 indexed projectId, bytes32[] packageIds, address indexed observer);
     event AddedObservers(bytes32 indexed projectId, bytes32 indexed packageId, address[] observers);
     event RemovedObserver(bytes32 indexed projectId, bytes32[] packageIds, address indexed observer);

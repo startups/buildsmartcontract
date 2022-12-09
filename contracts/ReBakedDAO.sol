@@ -137,11 +137,11 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         package._createPackage(_budget, _observerBudget, _bonus, _collaboratorsLimit);
         IERC20Upgradeable(project.token).safeTransferFrom(_msgSender(), treasury, (total * 5) / 100);
 
-        emit CreatedPackage(_projectId, _packageId, _budget, _bonus);
-        
         if (_observers.length > 0) {
             _addObservers(_projectId, _packageId, _observers);
         }
+
+        emit CreatedPackage(_projectId, _packageId, _budget, _bonus, _observerBudget);
     }
 
     /**
@@ -169,11 +169,16 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         uint256 budgetLeft_ = package._finishPackage();
         projectData[_projectId]._finishPackage(budgetLeft_);
 
-        uint256 _totalBonusScores;
-        for (uint256 i = 0; i < _collaborators.length; i++) {
-            _totalBonusScores += _scores[i];
+        if (package.bonus > 0) {
+            uint256 _totalBonusScores = 0;
+            for (uint256 i = 0; i < _collaborators.length; i++) {
+                _totalBonusScores += _scores[i];
+                if (_scores[i] > 0) {
+                    package.collaboratorsGetBonus++;
+                }
+            }
+            require(_totalBonusScores == PCT_PRECISION, "incorrect total bonus scores");
         }
-        require(_totalBonusScores == PCT_PRECISION || _totalBonusScores == 0, "incorrect total bonus scores");
 
         for (uint256 i = 0; i < _collaborators.length; i++) {
             _payCollaboratorRewards(_projectId, _packageId, _collaborators[i], _scores[i]);
@@ -280,8 +285,8 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
             _payMgp(_projectId, _packageId, _collaborator);
         }
 
-        packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp);
         collaborator._removeCollaborator();
+        packageData[_projectId][_packageId]._removeCollaborator(_shouldPayMgp, collaborator.mgp);
 
         emit RemovedCollaborator(_projectId, _packageId, _collaborator);
     }
@@ -293,11 +298,11 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * Emit {RemovedCollaborator}
      */
     function selfRemove(bytes32 _projectId, bytes32 _packageId) external {
-        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_msgSender()];
         require(!approvedUser[_projectId][_packageId][_msgSender()], "collaborator approved already!");
 
+        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_msgSender()];
         collaborator._removeCollaborator();
-        packageData[_projectId][_packageId]._removeCollaborator(collaborator.mgp);
+        packageData[_projectId][_packageId]._removeCollaborator(false, collaborator.mgp);
 
         emit RemovedCollaborator(_projectId, _packageId, _msgSender());
     }
@@ -434,25 +439,15 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _projectId Id of the project
      * @param _packageId Id of the package
      * @param _collaborator Collaborator address
-     * @param _bonusScore Bonus score of collaborator
      */
     function getCollaboratorRewards(
         bytes32 _projectId,
         bytes32 _packageId,
-        address _collaborator,
-        uint256 _bonusScore
+        address _collaborator
     ) public view returns (uint256, uint256) {
-        Package storage package = packageData[_projectId][_packageId];
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
 
-        uint256 mgpClaimable = (collaborator.timeMgpPaid == 0) ? collaborator.mgp : 0;
-        uint256 bonusClaimable = 0;
-        if (_bonusScore > 0 && collaborator.timeCreated > 0 && collaborator.timeBonusPaid == 0) {
-            bonusClaimable = (package.collaboratorsPaidBonus + 1 == package.collaboratorsGetBonus)
-                ? (package.bonus - package.bonusPaid)
-                : (_bonusScore * package.bonus) / PCT_PRECISION;
-        }
-        return (mgpClaimable, bonusClaimable);
+        return (collaborator.mgp, collaborator.bonus);
     }
 
     /**
@@ -503,12 +498,18 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         address _collaborator,
         uint256 _score
     ) private {
-        (uint256 mgp_, uint256 bonus_) = getCollaboratorRewards(_projectId, _packageId, _collaborator, _score);
-        collaboratorData[_projectId][_packageId][_collaborator]._payReward(bonus_);
-        packageData[_projectId][_packageId]._payReward(mgp_, bonus_);
-        projectData[_projectId]._pay(_collaborator, mgp_ + bonus_);
+        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
+        Package storage package = packageData[_projectId][_packageId];
 
-        emit PaidCollaboratorRewards(_projectId, _packageId, _collaborator, mgp_, bonus_);
+        uint256 bonus_ = (package.collaboratorsPaidBonus + 1 == package.collaboratorsGetBonus)
+                    ? (package.bonus - package.bonusPaid)
+                    : (package.bonus * _score) / PCT_PRECISION;
+
+        collaboratorData[_projectId][_packageId][_collaborator]._payReward(bonus_);
+        packageData[_projectId][_packageId]._payReward(collaborator.mgp, bonus_);
+        projectData[_projectId]._pay(_collaborator, collaborator.mgp + bonus_);
+
+        emit PaidCollaboratorRewards(_projectId, _packageId, _collaborator, collaborator.mgp, bonus_);
     }
 
     /**
@@ -544,10 +545,10 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         bytes32 _packageId,
         address _observer
     ) private {
-        observerData[_projectId][_packageId][_observer]._claimObserverFee();
+        observerData[_projectId][_packageId][_observer]._payObserverFee();
 
         uint256 amount_ = packageData[_projectId][_packageId]._getObserverFee();
-        packageData[_projectId][_packageId]._claimObserverFee(amount_);
+        packageData[_projectId][_packageId]._payObserverFee(amount_);
         projectData[_projectId]._pay(_observer, amount_);
 
         emit PaidObserverFee(_projectId, _packageId, _observer, amount_);
