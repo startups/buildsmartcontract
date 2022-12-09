@@ -337,7 +337,7 @@ describe("Integration test", () => {
 
 			const package3 = await reBakedDAO.getPackageData(projectId1, packageId3);
 			expect(package3.budgetPaid).to.equal(TOKEN_5);
-			expect(package3.budgetAllocated).to.equal(TOKEN_10.add(TOKEN_5));
+			expect(package3.budgetAllocated).to.equal(TOKEN_20);
 
 			const project1 = await reBakedDAO.getProjectData(projectId1);
 			expect(project1.budgetPaid).to.equal(TOKEN_50.add(TOKEN_30));
@@ -356,7 +356,7 @@ describe("Integration test", () => {
 		});
 
 		it("Finish package 3", async () => {
-			await BT.updateFee(reBakedDAO.connect(initiator).finishPackage(projectId1, packageId3, [collaborator3.address], [], [0]));
+			await BT.updateFee(reBakedDAO.connect(initiator).finishPackage(projectId1, packageId3, [collaborator3.address], [], [1e6]));
 			const package3 = await reBakedDAO.getPackageData(projectId1, packageId3);
 			const currentTime = await getTimestamp();
 			expect(package3.isActive).to.be.false;
@@ -364,7 +364,7 @@ describe("Integration test", () => {
 
 			const TOKEN_110 = parseUnits("110", 18);
 			const project1 = await reBakedDAO.getProjectData(projectId1);
-			expect(project1.budgetAllocated).to.equal(TOKEN_110);
+			expect(project1.budgetAllocated).to.equal(TOKEN_110.add(TOKEN_5));
 			expect(project1.totalFinishedPackages).to.equal(3);
 		});
 
@@ -388,7 +388,7 @@ describe("Integration test", () => {
 			expect(treasuryDiff[iouToken.address].delta).to.equal(TOKEN_5);
 			expect(collaborator1Diff[iouToken.address].delta).to.equal(0);
 			expect(collaborator2Diff[iouToken.address].delta).to.equal(TOKEN_5);
-			expect(collaborator3Diff[iouToken.address].delta).to.equal(TOKEN_10.add(TOKEN_5));
+			expect(collaborator3Diff[iouToken.address].delta).to.equal(TOKEN_30.add(TOKEN_5));
 		});
 	});
 
@@ -399,7 +399,7 @@ describe("Integration test", () => {
 			receipt = await tx.wait();
 			packageId4 = receipt.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
 			const project1 = await reBakedDAO.getProjectData(projectId1);
-			expect(project1.budgetAllocated).to.equal(parseUnits("290", 18));
+			expect(project1.budgetAllocated).to.equal(parseUnits("295", 18));
 			expect(project1.totalPackages).to.equal(4);
 
 			const package4 = await reBakedDAO.getPackageData(projectId1, packageId4);
@@ -461,9 +461,9 @@ describe("Integration test", () => {
 			expect(package4.isActive).to.be.false;
 			expect(package4.timeFinished).to.closeTo(currentTime, 10);
 
-			const TOKEN_190 = parseUnits("150", 18);
+			const TOKEN_150 = parseUnits("150", 18);
 			const project1 = await reBakedDAO.getProjectData(projectId1);
-			expect(project1.budgetAllocated).to.equal(TOKEN_190);
+			expect(project1.budgetAllocated).to.equal(TOKEN_150.add(TOKEN_5));
 			expect(project1.totalFinishedPackages).to.equal(4);
 		});
 
@@ -492,7 +492,7 @@ describe("Integration test", () => {
 	describe("Finish project (Project 1)", () => {
 		it("Finish project 1", async () => {
 			await BT.expect(reBakedDAO.connect(initiator).finishProject(projectId1))
-				.to.changeTokenBalances(iouToken, [reBakedDAO.address, initiator.address], [parseUnits("-850", 18), parseUnits("850", 18)])
+				.to.changeTokenBalances(iouToken, [reBakedDAO.address, initiator.address], [parseUnits("-845", 18), parseUnits("845", 18)])
 				.to.emit(reBakedDAO, "FinishedProject")
 				.withArgs(projectId1);
 		});
@@ -509,7 +509,7 @@ describe("Integration test", () => {
 
 			const initiatorDiff = initiatorBT.diff("flow5", flowName);
 
-			expect(initiatorDiff[iouToken.address].delta).to.equal(parseUnits("850", 18));
+			expect(initiatorDiff[iouToken.address].delta).to.equal(parseUnits("845", 18));
 		});
 	});
 

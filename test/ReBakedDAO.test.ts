@@ -22,8 +22,7 @@ const TOKEN_40 = parseUnits("40", 18);
 const TOKEN_50 = parseUnits("50", 18);
 const TOKEN_100 = parseUnits("100", 18);
 const TOKEN_1000 = parseUnits("1000", 18);
-const tokenName = "Pioneer",
-	tokenSymbol = "PIO";
+const tokenName = "Pioneer", tokenSymbol = "PIO";
 
 let tx: ContractTransaction;
 let receipt: ContractReceipt;
@@ -248,7 +247,7 @@ describe("ReBakedDAO", () => {
 			const addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId, packageId1, collaborator2.address);
 			expect(addedCollaborator2.mgp).to.equal(TOKEN_20);
 			currentPackage = await reBakedDAO.getPackageData(projectId, packageId1);
-			expect(currentPackage.budgetAllocated).to.equal(TOKEN_30);
+			expect(currentPackage.budgetAllocated).to.equal(TOKEN_40);
 			expect(currentPackage.totalCollaborators).to.equal(2);
 		});
 	});
@@ -870,15 +869,15 @@ describe("ReBakedDAO", () => {
 			reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator2.address);
 
 			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId1, [collaborator1.address, collaborator2.address], [observer1.address], [2 * 1e5, 8 * 1e5]);
-			let [mgp, bonus] = await reBakedDAO.getCollaboratorRewards(projectId, packageId1, collaborator1.address, 2 * 1e5);
+			let [mgp, bonus] = await reBakedDAO.getCollaboratorRewards(projectId, packageId1, collaborator1.address);
+			expect(mgp).to.equal(TOKEN_20);
+			expect(bonus).to.equal(parseEther("2"));
+
+			[mgp, bonus] = await reBakedDAO.getCollaboratorRewards(projectId, formatBytes32String("test"), collaborator1.address);
 			expect(mgp).to.equal(0);
 			expect(bonus).to.equal(0);
 
-			[mgp, bonus] = await reBakedDAO.getCollaboratorRewards(projectId, formatBytes32String("test"), collaborator1.address, 2 * 1e5);
-			expect(mgp).to.equal(0);
-			expect(bonus).to.equal(0);
-
-			[mgp, bonus] = await reBakedDAO.getCollaboratorRewards(projectId, packageId1, accounts[9].address, 2 * 1e5);
+			[mgp, bonus] = await reBakedDAO.getCollaboratorRewards(projectId, packageId1, accounts[9].address);
 			expect(mgp).to.equal(0);
 			expect(bonus).to.equal(0);
 		});

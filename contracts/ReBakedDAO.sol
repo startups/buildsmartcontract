@@ -169,9 +169,9 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         uint256 budgetLeft_ = package._finishPackage();
         projectData[_projectId]._finishPackage(budgetLeft_);
 
-        if (package.bonus > 0) {
+        if (package.bonus > 0 && _collaborators.length > 0) {
             uint256 _totalBonusScores = 0;
-            for (uint256 i = 0; i < _collaborators.length; i++) {
+            for (uint256 i = 0; i < _scores.length; i++) {
                 _totalBonusScores += _scores[i];
                 if (_scores[i] > 0) {
                     package.collaboratorsGetBonus++;
