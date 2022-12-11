@@ -46,7 +46,7 @@ library ProjectLibrary {
      * allocates budget and increase total number of packages
      * @param project_ reference to Project struct
      * @param totalBudget_ total budget MGP + Bonus
-     * @param count_ total count of packages
+     * @param count_ new packages count
      */
     function _reservePackagesBudget(
         Project storage project_,
