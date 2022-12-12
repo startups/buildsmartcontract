@@ -32,6 +32,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @notice Throws if called by any account other than the course creator
      */
     modifier onlyCreator(bytes32 _courseId) {
+        //slither-disable-next-line incorrect-equality
         require(courseData[_courseId].creator == _msgSender(), "caller is not course creator");
         _;
     }
@@ -53,7 +54,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @param _rewardAddress Address of token that reward to student after completing course
      * @param _budget Total tokens/NFTs that reward
      * @param _bonus Bonus when learner completed course
-     * @param _timeEndBonus end date will finish bonus or duration to receive bonus after enrolling in course 
+     * @param _timeEndBonus end date will finish bonus or duration to receive bonus after enrolling in course
      * @param _isUsingDuration Using duration for rewarding (true) or using end time (false)
      * @param _isBonusToken Awards is token (true) or NFT (false)
      *
@@ -114,12 +115,12 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         course.budget += _budget;
         course.budgetAvailable += _budget;
 
-        if (!course.isBonusToken && !course.canMintNFT) {
-            require(IERC721Upgradeable(course.rewardAddress).balanceOf(_msgSender()) >= course.budgetAvailable, "Balance of creator is not enough");
-        }
-
         if (course.isBonusToken) {
             IERC20Upgradeable(course.rewardAddress).safeTransferFrom(_msgSender(), address(this), _budget);
+        } else {
+            if (!course.canMintNFT) {
+                require(IERC721Upgradeable(course.rewardAddress).balanceOf(_msgSender()) >= course.budgetAvailable, "Balance of creator is not enough");
+            }
         }
 
         emit AddedBudget(_courseId, _budget);
@@ -130,14 +131,12 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @param _courseId Id of course
      * @param _learner Address of learner
      * @param _timeStarted Time when learner enrolled in course (miliseconds)
-     * @param _nftIds List Id of nfts that learner will receive if bonus is nfts
+     * @param _nftIds List Id of nfts that learner will receive if bonus is nfts\
+     *
+     * emit {ClaimedReward} events if learner can receive rewards
+     * emit {CompletedCourse} events
      */
-    function completeCourse(
-        bytes32 _courseId,
-        address _learner,
-        uint256 _timeStarted,
-        uint256[] memory _nftIds
-    ) external onlyCreator(_courseId) {
+    function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256[] memory _nftIds) external onlyCreator(_courseId) {
         Course storage course = courseData[_courseId];
         require(course.timeCreated <= _timeStarted && _timeStarted < block.timestamp, "Invalid time start");
 
@@ -185,11 +184,13 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
     /**
      * @notice Creator can withdraw tokens bonus after time bonus ended
      * @param _courseId Id of the course
+     *
+     * emit {WithdrawnBudget} events
      */
     function withdrawBudget(bytes32 _courseId) external onlyCreator(_courseId) {
         Course storage course = courseData[_courseId];
         require(!course.isUsingDuration && course.isBonusToken, "Invalid action");
-        require(block.timestamp <= course.timeEndBonus, "Time bonus has not ended");
+        require(block.timestamp > course.timeEndBonus, "Time bonus has not ended");
         require(course.budgetAvailable > 0, "Out of budget");
 
         uint256 _amount = course.budgetAvailable;

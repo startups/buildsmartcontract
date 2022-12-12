@@ -34,7 +34,7 @@ async function main() {
 
 	console.log("============SAVE CONTRACTS ADDRESS============");
 	// Add non deployed contract to table
-	table.add([{ name: "TokenFactory", type: "deploy", address: contractAddresses.NFTReward_deploy }]);
+	table.add([{ name: "NFTReward", type: "deploy", address: contractAddresses.NFTReward_deploy }]);
 	await table.save("deployed", `upgraded_${network.name}_${Date.now()}.json`);
 
 	console.log("============VERIFY CONTRACTS============");

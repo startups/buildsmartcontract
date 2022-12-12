@@ -445,7 +445,7 @@ describe("LearnToEarn contract", () => {
 		});
 
 		it("[Fail]: Withdraw but time bonus has not ended", async () => {
-			await skipTime(ONE_DAY * 30 + 1);
+			await skipTime(ONE_DAY * 10 - 1);
 			await expect(learnToEarn.connect(creator).withdrawBudget(courseId2)).to.revertedWith("Time bonus has not ended");
 		});
 
@@ -454,6 +454,7 @@ describe("LearnToEarn contract", () => {
 			await skipTime(ONE_DAY * 10);
 			await learnToEarn.connect(creator).completeCourse(courseId2, learner1.address, timeStart, []);
 			await learnToEarn.connect(creator).completeCourse(courseId2, learner2.address, timeStart, []);
+			await skipTime(ONE_DAY * 20 + 1);
 			await expect(learnToEarn.connect(creator).withdrawBudget(courseId2)).to.revertedWith("Out of budget");
 		});
 
@@ -462,6 +463,7 @@ describe("LearnToEarn contract", () => {
 			await skipTime(ONE_DAY * 10);
 
 			await learnToEarn.connect(creator).completeCourse(courseId2, learner1.address, timeStart, []);
+			await skipTime(ONE_DAY * 20 + 1);
 
 			await expect(learnToEarn.connect(creator).withdrawBudget(courseId2))
 				.to.emit(learnToEarn, "WithdrawnBudget")
