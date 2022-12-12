@@ -53,7 +53,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @param _rewardAddress Address of token that reward to student after completing course
      * @param _budget Total tokens/NFTs that reward
      * @param _bonus Bonus when learner completed course
-     * @param _timeEndBonus end date will finish bonus, 0 if using duration 60 days
+     * @param _timeEndBonus end date will finish bonus or duration to receive bonus after enrolling in course 
      * @param _isUsingDuration Using duration for rewarding (true) or using end time (false)
      * @param _isBonusToken Awards is token (true) or NFT (false)
      *
@@ -68,7 +68,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         bool _isBonusToken
     ) external nonZero(_budget) nonZero(_bonus) nonReentrant {
         require(_rewardAddress != address(0), "Invalid reward address");
-        require(_budget > _bonus, "Invalid budget");
+        require(_budget >= _bonus, "Invalid budget");
 
         bytes32 _courseId = _generateCourseId();
         bool _canMintNFT = false;
@@ -129,7 +129,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @notice Mark learner completed course and transfer bonus to learner
      * @param _courseId Id of course
      * @param _learner Address of learner
-     * @param _timeStarted Time when learner enrolled in course
+     * @param _timeStarted Time when learner enrolled in course (miliseconds)
      * @param _nftIds List Id of nfts that learner will receive if bonus is nfts
      */
     function completeCourse(
@@ -180,6 +180,24 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         }
 
         emit CompletedCourse(_courseId, _learner);
+    }
+
+    /**
+     * @notice Creator can withdraw tokens bonus after time bonus ended
+     * @param _courseId Id of the course
+     */
+    function withdrawBudget(bytes32 _courseId) external onlyCreator(_courseId) {
+        Course storage course = courseData[_courseId];
+        require(!course.isUsingDuration && course.isBonusToken, "Invalid action");
+        require(block.timestamp <= course.timeEndBonus, "Time bonus has not ended");
+        require(course.budgetAvailable > 0, "Out of budget");
+
+        uint256 _amount = course.budgetAvailable;
+
+        course.budgetAvailable = 0;
+        IERC20Upgradeable(course.rewardAddress).safeTransfer(course.creator, _amount);
+
+        emit WithdrawnBudget(_courseId, course.creator, _amount);
     }
 
     /* --------VIEW FUNCTIONS-------- */

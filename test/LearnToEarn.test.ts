@@ -92,7 +92,7 @@ describe("LearnToEarn contract", () => {
 			const NEXT_60_DAYS = Date.now() + ONE_DAY * 60;
 			const tx: ContractTransaction = await learnToEarn.connect(creator).createCourse(nftReward.address, 100, 1, NEXT_60_DAYS, false, false);
 			const receipt: ContractReceipt = await tx.wait();
-			const args: Result = receipt.events!.find((ev) => ev.event === "CreatedCourse")!.args!;
+			const args: Result = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
 			const courseId = args[0];
 
 			const course = await learnToEarn.getCourseData(courseId);
@@ -116,7 +116,7 @@ describe("LearnToEarn contract", () => {
 			const NEXT_60_DAYS = Date.now() + ONE_DAY * 60;
 			const tx: ContractTransaction = await learnToEarn.connect(creator).createCourse(erc721Test.address, 5, 1, NEXT_60_DAYS, false, false);
 			const receipt: ContractReceipt = await tx.wait();
-			const args: Result = receipt.events!.find((ev) => ev.event === "CreatedCourse")!.args!;
+			const args: Result = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
 			const courseId = args[0];
 
 			const course = await learnToEarn.getCourseData(courseId);
@@ -137,7 +137,7 @@ describe("LearnToEarn contract", () => {
 
 			const tx: ContractTransaction = await learnToEarn.connect(creator).createCourse(iouToken.address, TOKEN_100, TOKEN_1, ONE_DAY * 60, true, true);
 			const receipt: ContractReceipt = await tx.wait();
-			const args: Result = receipt.events!.find((ev) => ev.event === "CreatedCourse")!.args!;
+			const args: Result = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
 			const courseId = args[0];
 
 			const course = await learnToEarn.getCourseData(courseId);
@@ -164,7 +164,7 @@ describe("LearnToEarn contract", () => {
 
 			let tx: ContractTransaction = await learnToEarn.connect(creator).createCourse(iouToken.address, TOKEN_100, TOKEN_1, ONE_DAY * 60, true, true);
 			let receipt: ContractReceipt = await tx.wait();
-			let args: Result = receipt.events!.find((ev) => ev.event === "CreatedCourse")!.args!;
+			let args: Result = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
 			courseId1 = args[0];
 
 			for (let i = 0; i < 6; i++) {
@@ -174,12 +174,12 @@ describe("LearnToEarn contract", () => {
 			const NEXT_60_DAYS = Date.now() + ONE_DAY * 60;
 			tx = await learnToEarn.connect(creator).createCourse(erc721Test.address, 5, 1, NEXT_60_DAYS, false, false);
 			receipt = await tx.wait();
-			args = receipt.events!.find((ev) => ev.event === "CreatedCourse")!.args!;
+			args = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
 			courseId2 = args[0];
 
 			tx = await learnToEarn.connect(creator).createCourse(nftReward.address, 100, 1, NEXT_60_DAYS, false, false);
 			receipt = await tx.wait();
-			args = receipt.events!.find((ev) => ev.event === "CreatedCourse")!.args!;
+			args = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
 			courseId3 = args[0];
 		});
 
@@ -196,7 +196,9 @@ describe("LearnToEarn contract", () => {
 		});
 
 		it("[OK]: Add budget token successfully", async () => {
-			await expect(learnToEarn.connect(creator).addBudget(courseId1, TOKEN_50)).to.emit(learnToEarn, "AddedBudget").withArgs(courseId1, TOKEN_50);
+			await expect(learnToEarn.connect(creator).addBudget(courseId1, TOKEN_50))
+				.to.emit(learnToEarn, "AddedBudget")
+				.withArgs(courseId1, TOKEN_50);
 			const course = await learnToEarn.getCourseData(courseId1);
 			expect(course.budget).to.equal(TOKEN_100.add(TOKEN_50));
 			expect(course.budgetAvailable).to.equal(TOKEN_100.add(TOKEN_50));
@@ -208,12 +210,16 @@ describe("LearnToEarn contract", () => {
 				await erc721Test.connect(deployer).mintNFT(creator.address, nftURI);
 			}
 
-			await expect(learnToEarn.connect(creator).addBudget(courseId2, 15)).to.emit(learnToEarn, "AddedBudget").withArgs(courseId2, 15);
+			await expect(learnToEarn.connect(creator).addBudget(courseId2, 15))
+				.to.emit(learnToEarn, "AddedBudget")
+				.withArgs(courseId2, 15);
 			const course2 = await learnToEarn.getCourseData(courseId2);
 			expect(course2.budget).to.equal(20);
 			expect(course2.budgetAvailable).to.equal(20);
 
-			await expect(learnToEarn.connect(creator).addBudget(courseId3, 15)).to.emit(learnToEarn, "AddedBudget").withArgs(courseId3, 15);
+			await expect(learnToEarn.connect(creator).addBudget(courseId3, 15))
+				.to.emit(learnToEarn, "AddedBudget")
+				.withArgs(courseId3, 15);
 			const course3 = await learnToEarn.getCourseData(courseId3);
 			expect(course3.budget).to.equal(115);
 			expect(course3.budgetAvailable).to.equal(115);
@@ -229,20 +235,20 @@ describe("LearnToEarn contract", () => {
 			await tokenFactory.setLearnToEarn(learnToEarn.address);
 			let tx: ContractTransaction = await tokenFactory.deployNFT(nftName, nftSymbol, nftURI);
 			let receipt: ContractReceipt = await tx.wait();
-			let args: Result = receipt.events!.find((ev) => ev.event === "DeployedNFT")!.args!;
+			let args: Result = receipt.events!.find(ev => ev.event === "DeployedNFT")!.args!;
 			const nftRewardAddress = ethers.utils.getAddress(args[0]);
 
 			await iouToken.connect(creator).approve(learnToEarn.address, MAX_UINT256);
 
 			tx = await learnToEarn.connect(creator).createCourse(iouToken.address, TOKEN_100, TOKEN_1, ONE_DAY * 60, true, true);
 			receipt = await tx.wait();
-			args = receipt.events!.find((ev) => ev.event === "CreatedCourse")!.args!;
+			args = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
 			courseId1 = args[0];
 
 			const NEXT_30_DAYS = (await getTimestamp()) + ONE_DAY * 30;
 			tx = await learnToEarn.connect(creator).createCourse(nftRewardAddress, 100, 2, NEXT_30_DAYS, false, false);
 			receipt = await tx.wait();
-			args = receipt.events!.find((ev) => ev.event === "CreatedCourse")!.args!;
+			args = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
 			courseId2 = args[0];
 
 			for (let i = 0; i < 20; i++) {
@@ -251,7 +257,7 @@ describe("LearnToEarn contract", () => {
 
 			tx = await learnToEarn.connect(creator).createCourse(erc721Test.address, 20, 3, NEXT_30_DAYS, false, false);
 			receipt = await tx.wait();
-			args = receipt.events!.find((ev) => ev.event === "CreatedCourse")!.args!;
+			args = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
 			courseId3 = args[0];
 
 			timeStart = (await getTimestamp()) + ONE_DAY;
@@ -387,6 +393,83 @@ describe("LearnToEarn contract", () => {
 			for (let i = 0; i < secondLearner.nftIds.length; i++) {
 				expect(await erc721Test.ownerOf(secondLearner.nftIds[i])).to.equal(learner2.address);
 			}
+		});
+	});
+
+	describe("Testing `withdrawBudget` function", () => {
+		let courseId1: string;
+		let courseId2: string;
+		let courseId3: string;
+		let timeStart: number;
+		beforeEach(async () => {
+			await tokenFactory.setLearnToEarn(learnToEarn.address);
+			let tx: ContractTransaction = await tokenFactory.deployNFT(nftName, nftSymbol, nftURI);
+			let receipt: ContractReceipt = await tx.wait();
+			let args: Result = receipt.events!.find(ev => ev.event === "DeployedNFT")!.args!;
+
+			await iouToken.connect(creator).approve(learnToEarn.address, MAX_UINT256);
+
+			tx = await learnToEarn.connect(creator).createCourse(iouToken.address, TOKEN_100, TOKEN_1, ONE_DAY * 60, true, true);
+			receipt = await tx.wait();
+			args = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
+			courseId1 = args[0];
+
+			const NEXT_30_DAYS = (await getTimestamp()) + ONE_DAY * 30;
+			tx = await learnToEarn.connect(creator).createCourse(iouToken.address, TOKEN_1.mul(2), TOKEN_1, NEXT_30_DAYS, false, true);
+			receipt = await tx.wait();
+			args = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
+			courseId2 = args[0];
+
+			for (let i = 0; i < 20; i++) {
+				await erc721Test.connect(deployer).mintNFT(creator.address, nftURI);
+			}
+
+			tx = await learnToEarn.connect(creator).createCourse(erc721Test.address, 20, 3, NEXT_30_DAYS, false, false);
+			receipt = await tx.wait();
+			args = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
+			courseId3 = args[0];
+
+			timeStart = (await getTimestamp()) + ONE_DAY;
+		});
+
+		it("[Fail]: Caller is not the creator of course", async () => {
+			await expect(learnToEarn.connect(learner1).withdrawBudget(courseId1)).to.revertedWith("caller is not course creator");
+		});
+
+		it("[Fail]: Withdraw a duration course", async () => {
+			await expect(learnToEarn.connect(creator).withdrawBudget(courseId1)).to.revertedWith("Invalid action");
+		});
+
+		it("[Fail]: Withdraw a course that bonus is nft", async () => {
+			await expect(learnToEarn.connect(creator).withdrawBudget(courseId3)).to.revertedWith("Invalid action");
+		});
+
+		it("[Fail]: Withdraw but time bonus has not ended", async () => {
+			await skipTime(ONE_DAY * 30 + 1);
+			await expect(learnToEarn.connect(creator).withdrawBudget(courseId2)).to.revertedWith("Time bonus has not ended");
+		});
+
+		it("[Fail]: Withdraw but out of budget", async () => {
+			timeStart = (await getTimestamp()) + ONE_DAY;
+			await skipTime(ONE_DAY * 10);
+			await learnToEarn.connect(creator).completeCourse(courseId2, learner1.address, timeStart, []);
+			await learnToEarn.connect(creator).completeCourse(courseId2, learner2.address, timeStart, []);
+			await expect(learnToEarn.connect(creator).withdrawBudget(courseId2)).to.revertedWith("Out of budget");
+		});
+
+		it("[OK]: Withdraw successfully", async () => {
+			timeStart = (await getTimestamp()) + ONE_DAY;
+			await skipTime(ONE_DAY * 10);
+
+			await learnToEarn.connect(creator).completeCourse(courseId2, learner1.address, timeStart, []);
+
+			await expect(learnToEarn.connect(creator).withdrawBudget(courseId2))
+				.to.emit(learnToEarn, "WithdrawnBudget")
+				.withArgs(courseId2, creator.address, TOKEN_1)
+				.to.changeTokenBalances(iouToken, [learnToEarn.address, creator.address], [`-${TOKEN_1}`, TOKEN_1]);
+
+			const course = await learnToEarn.getCourseData(courseId2);
+			expect(course.budgetAvailable).to.equal(0);
 		});
 	});
 });
