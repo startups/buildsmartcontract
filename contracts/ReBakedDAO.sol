@@ -107,8 +107,8 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * Emit {FinishedProject}
      */
     function finishProject(bytes32 _projectId) external onlyInitiator(_projectId) nonReentrant {
-        projectData[_projectId]._finishProject();
-        emit FinishedProject(_projectId);
+        uint256 budgetLeft_ = projectData[_projectId]._finishProject();
+        emit FinishedProject(_projectId, budgetLeft_);
     }
 
     /**

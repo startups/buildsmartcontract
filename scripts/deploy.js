@@ -52,14 +52,14 @@ async function main() {
   // );
   // await reBakedDAO.deployed();
 
-  // Deploying
-  const reBakedDAO = await upgrades.deployProxy(ReBakedDAO, [
-    "0xD90A5DB9EbFeb22e374Cd44830250B297085d5c3"
-  ]);
-  await reBakedDAO.deployed();
+  // // Deploying
+  // const reBakedDAO = await upgrades.deployProxy(ReBakedDAO, [
+  //   "0xD90A5DB9EbFeb22e374Cd44830250B297085d5c3"
+  // ]);
+  // await reBakedDAO.deployed();
 
-  // // Upgrading
-  // const reBakedDAO = await upgrades.upgradeProxy("0x0E25e9c5cA3Ab885D16F2EB4B0c5bCE0322B6b16", ReBakedDAO);
+  // Upgrading
+  const reBakedDAO = await upgrades.upgradeProxy("0x0E25e9c5cA3Ab885D16F2EB4B0c5bCE0322B6b16", ReBakedDAO);
 
   console.log("ReBakedDAO               deployed to:", reBakedDAO.address);
 
