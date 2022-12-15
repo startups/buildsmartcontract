@@ -121,7 +121,6 @@ describe("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY * 14);
 			await expect(learnToEarn.connect(creator).completeCourse(courseId1, learner1.address, timeStarted, []))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId1, learner1.address, TOKEN_1.mul(10))
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId1, learner1.address)
 				.to.changeTokenBalances(iouToken, [learnToEarn.address, learner1.address], [`-${TOKEN_1.mul(10)}`, TOKEN_1.mul(10)]);
@@ -138,7 +137,6 @@ describe("Integration test LearnToEarn contract", () => {
 
 			await expect(learnToEarn.connect(creator).completeCourse(courseId1, learner2.address, timeStarted, []))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId1, learner2.address, TOKEN_1.mul(10))
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId1, learner2.address)
 				.to.changeTokenBalances(iouToken, [learnToEarn.address, learner2.address], [`-${TOKEN_1.mul(10)}`, TOKEN_1.mul(10)]);
@@ -169,7 +167,6 @@ describe("Integration test LearnToEarn contract", () => {
 			const timeStarted = await getTimestamp();
 			await expect(learnToEarn.connect(creator).completeCourse(courseId1, learner3.address, timeStarted, []))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId1, learner3.address, TOKEN_1.mul(10))
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId1, learner3.address)
 				.to.changeTokenBalances(iouToken, [learnToEarn.address, learner3.address], [`-${TOKEN_1.mul(10)}`, TOKEN_1.mul(10)]);
@@ -239,7 +236,6 @@ describe("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY * 14);
 			await expect(learnToEarn.connect(creator).completeCourse(courseId2, learner1.address, timeStarted, []))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId2, learner1.address, TOKEN_1.mul(10))
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId2, learner1.address)
 				.to.changeTokenBalances(iouToken, [learnToEarn.address, learner1.address], [`-${TOKEN_1.mul(10)}`, TOKEN_1.mul(10)]);
@@ -256,7 +252,6 @@ describe("Integration test LearnToEarn contract", () => {
 
 			await expect(learnToEarn.connect(creator).completeCourse(courseId2, learner2.address, timeStarted, []))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId2, learner2.address, TOKEN_1.mul(10))
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId2, learner2.address)
 				.to.changeTokenBalances(iouToken, [learnToEarn.address, learner2.address], [`-${TOKEN_1.mul(10)}`, TOKEN_1.mul(10)]);
@@ -357,7 +352,6 @@ describe("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY * 14);
 			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner1.address, timeStarted, [1, 3]))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId3, learner1.address, 2)
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId3, learner1.address);
 
@@ -377,7 +371,6 @@ describe("Integration test LearnToEarn contract", () => {
 
 			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner2.address, timeStarted, [2, 4]))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId3, learner2.address, 2)
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId3, learner2.address);
 
@@ -517,7 +510,6 @@ describe("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY * 14);
 			await expect(learnToEarn.connect(creator).completeCourse(courseId4, learner1.address, timeStarted, [1, 3]))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId4, learner1.address, 2)
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId4, learner1.address);
 
@@ -538,7 +530,6 @@ describe("Integration test LearnToEarn contract", () => {
 
 			await expect(learnToEarn.connect(creator).completeCourse(courseId4, learner2.address, timeStarted, [1, 3]))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId4, learner2.address, 2)
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId4, learner2.address);
 
@@ -581,7 +572,6 @@ describe("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY * 14);
 			await expect(learnToEarn.connect(creator).completeCourse(courseId4, learner4.address, timeStarted, [1, 3]))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId4, learner4.address, 2)
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId4, learner4.address);
 
@@ -656,7 +646,6 @@ describe("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY * 14);
 			await expect(learnToEarn.connect(creator).completeCourse(courseId5, learner1.address, timeStarted, []))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId5, learner1.address, TOKEN_1.mul(10))
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId5, learner1.address)
 				.to.changeTokenBalances(iouToken, [learnToEarn.address, learner1.address], [`-${TOKEN_1.mul(10)}`, TOKEN_1.mul(10)]);
@@ -673,7 +662,6 @@ describe("Integration test LearnToEarn contract", () => {
 
 			await expect(learnToEarn.connect(creator).completeCourse(courseId5, learner2.address, timeStarted, []))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId5, learner2.address, TOKEN_1.mul(10))
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId5, learner2.address)
 				.to.changeTokenBalances(iouToken, [learnToEarn.address, learner2.address], [`-${TOKEN_1.mul(10)}`, TOKEN_1.mul(10)]);

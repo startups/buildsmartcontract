@@ -5,7 +5,7 @@ interface ILearnToEarn {
     event CreatedCourse(bytes32 indexed courseId, address creator, address token, uint256 bonus);
     event AddedBudget(bytes32 indexed courseId, uint256 budget);
     event CompletedCourse(bytes32 indexed courseId, address learner);
-    event ClaimedReward(bytes32 indexed courseId, address learner, uint256 bonus);
+    event ClaimedReward(bytes32 indexed courseId, address indexed learner, address indexed rewardAddress, uint256 bonus, uint256[] nftIds);
     event WithdrawnBudget(bytes32 indexed courseId, address indexed creator, uint256 amount);
 
     /**

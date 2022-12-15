@@ -175,7 +175,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
                     }
                 }
             }
-            emit ClaimedReward(_courseId, _learner, course.bonus);
+            emit ClaimedReward(_courseId, _learner, course.rewardAddress, course.bonus, learner.nftIds);
         }
 
         emit CompletedCourse(_courseId, _learner);

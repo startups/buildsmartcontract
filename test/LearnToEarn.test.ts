@@ -292,9 +292,10 @@ describe("LearnToEarn contract", () => {
 		it("[OK]: Complete course with token awards successfully", async () => {
 			await skipTime(10 * ONE_DAY);
 			let course1 = await learnToEarn.getCourseData(courseId1);
+			let learner = await learnToEarn.getLearnerData(courseId1, learner1.address);
 			await expect(learnToEarn.connect(creator).completeCourse(courseId1, learner1.address, timeStart, []))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId1, learner1.address, course1.bonus)
+				.withArgs(courseId1, learner1.address, course1.rewardAddress, course1.bonus, learner.nftIds)
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId1, learner1.address)
 				.to.changeTokenBalances(iouToken, [learnToEarn.address, learner1.address], [BN(-course1.bonus), course1.bonus]);
@@ -330,7 +331,6 @@ describe("LearnToEarn contract", () => {
 			let course2 = await learnToEarn.getCourseData(courseId2);
 			await expect(learnToEarn.connect(creator).completeCourse(courseId2, learner1.address, timeStart, []))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId2, learner1.address, course2.bonus)
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId2, learner1.address);
 
@@ -357,7 +357,6 @@ describe("LearnToEarn contract", () => {
 			let course3 = await learnToEarn.getCourseData(courseId3);
 			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner1.address, timeStart, [1, 4, 6]))
 				.to.emit(learnToEarn, "ClaimedReward")
-				.withArgs(courseId3, learner1.address, course3.bonus)
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId3, learner1.address);
 
