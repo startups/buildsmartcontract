@@ -498,7 +498,7 @@ describe("Integration test", () => {
 			await BT.expect(reBakedDAO.connect(initiator).finishProject(projectId1))
 				.to.changeTokenBalances(iouToken, [reBakedDAO.address, initiator.address], [parseUnits("-845", 18), parseUnits("845", 18)])
 				.to.emit(reBakedDAO, "FinishedProject")
-				.withArgs(projectId1);
+				.withArgs(projectId1, "845000000000000000000");
 		});
 
 		it("Check balance after flow", async () => {
@@ -768,7 +768,7 @@ describe("Integration test", () => {
 		it("Finish project 1", async () => {
 			await BT.expect(reBakedDAO.connect(initiator).finishProject(projectId2))
 				.to.emit(reBakedDAO, "FinishedProject")
-				.withArgs(projectId2);
+				.withArgs(projectId2, "690000000000000000000");
 		});
 
 		it("Check balance after flow", async () => {
