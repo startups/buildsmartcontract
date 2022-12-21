@@ -27,7 +27,7 @@ struct Package {
     uint256 timeFinished;
     uint256 totalObservers;
     uint256 totalCollaborators;
-    uint256 maxCollaborators;
+    uint256 collaboratorsLimit;
     uint256 approvedCollaborators;
     uint256 timeCanceled;
     bool isActive;
@@ -35,11 +35,11 @@ struct Package {
 
 struct Collaborator {
     uint256 mgp;
+    uint256 bonus;
     uint256 timeCreated;
     uint256 timeMgpApproved;
     uint256 timeMgpPaid;
     uint256 timeBonusPaid;
-    uint256 bonusScore;
     bool isRemoved;
 }
 

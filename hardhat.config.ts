@@ -33,6 +33,10 @@ const config: HardhatUserConfig = {
 			accounts: [process.env.BSC_DEPLOY_ACCOUNT!],
 			chainId: 97,
 		},
+		mumbai: {
+			url: "https://polygon-mumbai.g.alchemy.com/v2/zSybnsuH3h_jqalkVmYv2Xbf-bsc3hlx",
+			accounts: [process.env.MUMBAI_DEPLOY_ACCOUNT as string]
+		}
 	},
 	etherscan: {
 		apiKey: {
