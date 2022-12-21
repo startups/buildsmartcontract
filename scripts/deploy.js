@@ -53,15 +53,13 @@ async function main() {
   // await reBakedDAO.deployed();
 
   // Deploying
-  // const reBakedDAO = await upgrades.deployProxy(ReBakedDAO, [
-  //   "0xD90A5DB9EbFeb22e374Cd44830250B297085d5c3",
-  //   // tokenFactory.address
-  //   "0xAFd644393F817607E6C56a5FD9a968446e1C6699"
-  // ]);
-  // await reBakedDAO.deployed();
+  const reBakedDAO = await upgrades.deployProxy(ReBakedDAO, [
+    "0xD90A5DB9EbFeb22e374Cd44830250B297085d5c3"
+  ]);
+  await reBakedDAO.deployed();
 
-  // Upgrading
-  const reBakedDAO = await upgrades.upgradeProxy("0x4D8879c650720Df2f2148E66eF09855A097eF6d1", ReBakedDAO);
+  // // Upgrading
+  // const reBakedDAO = await upgrades.upgradeProxy("0x42472dB3d10d5AA6dE423F876CA555f803eF8ADD", ReBakedDAO);
 
   console.log("ReBakedDAO               deployed to:", reBakedDAO.address);
 

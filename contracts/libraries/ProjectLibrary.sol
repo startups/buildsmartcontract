@@ -31,7 +31,7 @@ library ProjectLibrary {
      * unallocated budget returned to initiator or burned (in case of IOUToken)
      * @param project_ reference to Project struct
      */
-    function _finishProject(Project storage project_) internal {
+    function _finishProject(Project storage project_) internal returns (uint256) {
         require(project_.timeFinished == 0, "already finished project");
         require(project_.totalPackages == project_.totalFinishedPackages, "unfinished packages left");
         project_.timeFinished = block.timestamp;
@@ -39,6 +39,7 @@ library ProjectLibrary {
         if (budgetLeft_ > 0) {
             IERC20Upgradeable(project_.token).safeTransfer(project_.initiator, budgetLeft_);
         }
+        return budgetLeft_;
     }
 
     /**
