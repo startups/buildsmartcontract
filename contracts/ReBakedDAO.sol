@@ -87,11 +87,9 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
 
     /**
      * @dev Creates project proposal
-     * @param token_ project token address, zero addres if project has not token yet
-     * (IOUToken will be deployed on project approval)
+     * @param token_ project token address
      * @param budget_ total budget (has to be approved on token contract if project has its own token)
      *
-     * @dev (`token_` == ZERO_ADDRESS) ? project has no token yet : `IOUToken` will be deployed on project approval
      * Emit {CreatedProject}
      */
     function createProject(address token_, uint256 budget_) external nonZero(budget_) nonReentrant {

@@ -20,7 +20,18 @@ const config: HardhatUserConfig = {
 		},
 		goerli: {
 			url: "https://eth-goerli.g.alchemy.com/v2/yiaZ5Hg5fTRH46ijJywVW1WF5ltv47xI",
-			accounts: [process.env.GOERLI_DEPLOY_ACCOUNT as string]
+			accounts: [process.env.GOERLI_DEPLOY_ACCOUNT!],
+			chainId: 5,
+		},
+		polygonMumbai: {
+			url: "https://matic-mumbai.chainstacklabs.com",
+			accounts: [process.env.POLYGON_DEPLOY_ACCOUNT!],
+			chainId: 80001,
+		},
+		bscTestnet: {
+			url: "https://data-seed-prebsc-1-s3.binance.org:8545/",
+			accounts: [process.env.BSC_DEPLOY_ACCOUNT!],
+			chainId: 97,
 		},
 		mumbai: {
 			url: "https://polygon-mumbai.g.alchemy.com/v2/zSybnsuH3h_jqalkVmYv2Xbf-bsc3hlx",
@@ -28,7 +39,11 @@ const config: HardhatUserConfig = {
 		}
 	},
 	etherscan: {
-		apiKey: process.env.SCAN_API_KEY,
+		apiKey: {
+			goerli: process.env.GOERLI_SCAN_API_KEY!,
+			polygonMumbai: process.env.POLYGON_TEST_API_KEY!,
+			bscTestnet: process.env.BSC_TEST_API_KEY!,
+		},
 	},
 	solidity: {
 		compilers: [
