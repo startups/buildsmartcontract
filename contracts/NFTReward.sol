@@ -38,7 +38,6 @@ contract NFTReward is ERC721URIStorageUpgradeable, INFTReward {
         __ERC721_init(_name, _symbol);
 
         learnToEarn = _learnToEarn;
-        tokenIds = 0;
         uri = _uri;
     }
 
