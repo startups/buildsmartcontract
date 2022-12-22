@@ -129,7 +129,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
     ) external onlyInitiator(_projectId) nonZero(_budget) nonReentrant {
         Project storage project = projectData[_projectId];
         uint256 total = _budget + _bonus + _observerBudget;
-        project._reservePackagesBudget(total, 1);
+        project._reservePackagesBudget(total);
         bytes32 _packageId = _generatePackageId(_projectId, 0);
         Package storage package = packageData[_projectId][_packageId];
         package._createPackage(_budget, _observerBudget, _bonus, _collaboratorsLimit);

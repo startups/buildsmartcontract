@@ -46,17 +46,15 @@ library ProjectLibrary {
      * allocates budget and increase total number of packages
      * @param project_ reference to Project struct
      * @param totalBudget_ total budget MGP + Bonus
-     * @param count_ new packages count
      */
     function _reservePackagesBudget(
         Project storage project_,
-        uint256 totalBudget_,
-        uint256 count_
+        uint256 totalBudget_
     ) internal {
         require(project_.timeFinished == 0, "project is finished");
         require(project_.budget >= project_.budgetAllocated + totalBudget_, "not enough project budget left");
         project_.budgetAllocated += totalBudget_;
-        project_.totalPackages += count_;
+        project_.totalPackages += 1;
     }
 
     /**
