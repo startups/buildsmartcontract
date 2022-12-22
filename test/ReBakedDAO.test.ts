@@ -620,7 +620,7 @@ describe("ReBakedDAO", () => {
 			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator2.address);
 			await reBakedDAO.connect(initiator).finishPackage(projectId, packageId1, [collaborator1.address, collaborator2.address], [], [3 * 1e5, 7 * 1e5]);
 
-			await expect(reBakedDAO.connect(initiator).finishProject(projectId)).to.emit(reBakedDAO, "FinishedProject").withArgs(projectId);
+			expect(reBakedDAO.connect(initiator).finishProject(projectId)).to.emit(reBakedDAO, "FinishedProject").withArgs(projectId, "970000000000000000000");
 			const timestamp = await getTimestamp();
 			const currentProject = await reBakedDAO.getProjectData(projectId);
 
