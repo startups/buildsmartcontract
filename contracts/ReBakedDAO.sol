@@ -209,7 +209,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
 
         package._cancelPackage();
 
-        for (uint256 i = 0; i < _collaborators.length; i++) _payMgp(_projectId, _packageId, _collaborators[i]);
+        for (uint256 i = 0; i < _collaborators.length; i++) _payCollaboratorRewards(_projectId, _packageId, _collaborators[i], 0);
 
         for (uint256 i = 0; i < _observers.length; i++) _payObserverFee(_projectId, _packageId, _observers[i]);
 
@@ -280,7 +280,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
 
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
         if (_shouldPayMgp) {
-            _payMgp(_projectId, _packageId, _collaborator);
+            _payCollaboratorRewards(_projectId, _packageId, _collaborator, 0);
         }
 
         collaborator._removeCollaborator();
@@ -499,11 +499,15 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
         Package storage package = packageData[_projectId][_packageId];
 
-        uint256 bonus_ = (package.collaboratorsPaidBonus + 1 == package.collaboratorsGetBonus)
+        uint256 bonus_;
+        if (package.bonus > 0 && _score > 0) {
+            bonus_ = (package.collaboratorsPaidBonus + 1 == package.collaboratorsGetBonus)
                     ? (package.bonus - package.bonusPaid)
                     : (package.bonus * _score) / PCT_PRECISION;
+        }
 
-        collaboratorData[_projectId][_packageId][_collaborator]._payReward(bonus_);
+        collaboratorData[_projectId][_packageId][_collaborator]._payMgp();
+        collaboratorData[_projectId][_packageId][_collaborator]._payBonus(bonus_);
         packageData[_projectId][_packageId]._payReward(collaborator.mgp, bonus_);
         projectData[_projectId]._pay(_collaborator, collaborator.mgp + bonus_);
 
@@ -517,19 +521,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _collaborator collaborator address
      * Emit {PaidMgp}
      */
-    function _payMgp(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address _collaborator
-    ) private {
-        Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
-
-        collaborator._payMgp();
-        packageData[_projectId][_packageId]._payMgp(collaborator.mgp);
-        projectData[_projectId]._pay(_collaborator, collaborator.mgp);
-
-        emit PaidMgp(_projectId, _packageId, _collaborator, collaborator.mgp);
-    }
+    
 
     /**
      * @notice Pay fee to observer

@@ -149,14 +149,6 @@ library PackageLibrary {
         package_.budgetObserversPaid += amount_;
     }
 
-    /**
-     * @notice Pay MGP to budget
-     * @param package_ reference to Package struct
-     * @param amount_ MGP amount
-     */
-    function _payMgp(Package storage package_, uint256 amount_) internal {
-        package_.budgetPaid += amount_;
-    }
 
     /**
      * @notice Pay Reward to budget
@@ -170,7 +162,9 @@ library PackageLibrary {
         uint256 bonus_
     ) internal {
         package_.budgetPaid += mgp_;
-        package_.bonusPaid += bonus_;
-        if (bonus_ > 0) package_.collaboratorsPaidBonus++;
+        if (bonus_ > 0) {
+            package_.bonusPaid += bonus_;
+            package_.collaboratorsPaidBonus++;
+        }
     }
 }

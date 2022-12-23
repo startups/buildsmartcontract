@@ -3,7 +3,6 @@ pragma solidity 0.8.16;
 import { Collaborator } from "./Structs.sol";
 
 library CollaboratorLibrary {
-
     /**
 	@notice Throws if there is no such collaborator
 	*/
@@ -53,9 +52,9 @@ library CollaboratorLibrary {
      * @param collaborator_ collaborator
      * @param bonus_ Bonus of collaborator
      */
-    function _payReward(Collaborator storage collaborator_, uint256 bonus_) internal onlyActiveCollaborator(collaborator_) {
+    function _payBonus(Collaborator storage collaborator_, uint256 bonus_) internal onlyActiveCollaborator(collaborator_) {
+        if (bonus_ == 0) return;
         collaborator_.bonus = bonus_;
-        collaborator_.timeMgpPaid = block.timestamp;
-        if(bonus_ > 0) collaborator_.timeBonusPaid = block.timestamp;
+        collaborator_.timeBonusPaid = block.timestamp;
     }
 }
