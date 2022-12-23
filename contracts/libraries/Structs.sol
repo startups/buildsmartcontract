@@ -48,24 +48,3 @@ struct Observer {
     uint256 timePaid;
     bool isRemoved;
 }
-
-struct Course {
-    address creator;
-    address rewardAddress;
-    uint256 budget;
-    uint256 budgetAvailable;
-    uint256 bonus;
-    uint256 totalLearnersClaimedBonus;
-    uint256 timeCreated;
-    uint256 timeEndBonus;
-    bool isBonusToken;
-    bool canMintNFT;
-    bool isUsingDuration;
-}
-
-struct Learner {
-    uint256 timeStarted;
-    uint256 timeCompleted;
-    uint256 timeRewarded;
-    uint256[] nftIds;
-}

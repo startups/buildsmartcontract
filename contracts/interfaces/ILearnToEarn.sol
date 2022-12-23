@@ -1,6 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 
+struct Course {
+    address creator;
+    address rewardAddress;
+    uint256 budget;
+    uint256 budgetAvailable;
+    uint256 bonus;
+    uint256 totalLearnersClaimedBonus;
+    uint256 timeCreated;
+    uint256 timeEndBonus;
+    bool isBonusToken;
+    bool canMintNFT;
+    bool isUsingDuration;
+}
+
+struct Learner {
+    uint256 timeStarted;
+    uint256 timeCompleted;
+    uint256 timeRewarded;
+    uint256[] nftIds;
+}
+
+
 interface ILearnToEarn {
     event CreatedCourse(bytes32 indexed courseId, address creator, address token, uint256 bonus);
     event AddedBudget(bytes32 indexed courseId, uint256 budget);

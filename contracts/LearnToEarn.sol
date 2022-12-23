@@ -6,9 +6,8 @@ import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/O
 import { IERC20Upgradeable, SafeERC20Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import { IERC721Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import { ERC165CheckerUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
-import { ILearnToEarn } from "./interfaces/ILearnToEarn.sol";
+import { ILearnToEarn,  Course, Learner } from "./interfaces/ILearnToEarn.sol";
 import { INFTReward } from "./interfaces/INFTReward.sol";
-import { Course, Learner } from "./libraries/Structs.sol";
 
 contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnToEarn {
     using SafeERC20Upgradeable for IERC20Upgradeable;
