@@ -170,12 +170,11 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         if (package.bonus > 0 && _collaborators.length > 0) {
             uint256 _totalBonusScores = 0;
             for (uint256 i = 0; i < _scores.length; i++) {
+                require(_scores[i] > 0, "Invalid score");
                 _totalBonusScores += _scores[i];
-                if (_scores[i] > 0) {
-                    package.collaboratorsGetBonus++;
-                }
             }
             require(_totalBonusScores == PCT_PRECISION, "incorrect total bonus scores");
+            package.collaboratorsGetBonus = _scores.length;
         }
 
         for (uint256 i = 0; i < _collaborators.length; i++) {

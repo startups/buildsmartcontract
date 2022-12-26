@@ -412,7 +412,7 @@ describe("ReBakedDAO", () => {
 		});
 	});
 
-	describe("Testing `finishPackage` function", async () => {
+	describe.only("Testing `finishPackage` function", async () => {
 		beforeEach(async () => {
 			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
 			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, TOKEN_1000);
@@ -478,12 +478,21 @@ describe("ReBakedDAO", () => {
 			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId1, [collaborator2.address], [], [1e6])).to.revertedWith("no such collaborator");
 		});
 
-		it("[OK]: Finish package successfully", async () => {
+		it("[Fail]: Invalid score", async () => {
 			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId1, collaborator2.address, TOKEN_10);
 			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator1.address);
 			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator2.address);
 
 			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId1, [collaborator1.address, collaborator2.address], [], [1e6, 0]))
+				.to.revertedWith("Invalid score");
+		})
+
+		it("[OK]: Finish package successfully", async () => {
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId1, collaborator2.address, TOKEN_10);
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator1.address);
+			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator2.address);
+
+			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId1, [collaborator1.address, collaborator2.address], [], [5 * 1e5, 5 * 1e5]))
 				.to.emit(reBakedDAO, "FinishedPackage")
 				.withArgs(projectId, packageId1, parseUnits("120", 18));
 
