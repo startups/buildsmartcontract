@@ -33,7 +33,6 @@ library PackageLibrary {
         package_.budget = budget_;
         package_.budgetObservers = feeObserversBudget_;
         package_.bonus = bonus_;
-        package_.budgetAllocated = 0;
         package_.collaboratorsLimit = collaboratorsLimit_;
         package_.timeCreated = block.timestamp;
         package_.isActive = true;
@@ -53,7 +52,7 @@ library PackageLibrary {
      * @param package_ reference to Package struct
      */
     function _addObserver(Package storage package_) internal onlyActivePackage(package_) {
-        require(package_.totalObservers < MAX_OBSERVERS, "Max observers reached");
+        require(package_.totalObservers < MAX_OBSERVERS, "max observers reached");
         package_.totalObservers++;
     }
 
@@ -63,7 +62,7 @@ library PackageLibrary {
      * @param count_ number of observers
      */
     function _addObservers(Package storage package_, uint256 count_) internal onlyActivePackage(package_) {
-        require(package_.totalObservers + count_ <= MAX_OBSERVERS, "Max observers reached");
+        require(package_.totalObservers + count_ <= MAX_OBSERVERS, "max observers reached");
         package_.totalObservers += count_;
     }
 

@@ -365,9 +365,9 @@ describe("ReBakedDAO", () => {
 			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId1, collaborator1.address, true)).to.revertedWith("collaborator approved already!");
 		});
 
-		it("[Fail]: Remove collaborator but collaborator has been claim mgp", async () => {
+		it("[Fail]: Remove collaborator but collaborator has claimed reward", async () => {
 			await reBakedDAO.connect(initiator).cancelPackage(projectId, packageId1, [collaborator1.address, collaborator2.address], []);
-			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId1, collaborator1.address, true)).to.revertedWith("mgp already paid");
+			await expect(reBakedDAO.connect(initiator).removeCollaborator(projectId, packageId1, collaborator1.address, true)).to.revertedWith("reward already paid");
 		});
 
 		it("[OK]: Remove collaborator successfully", async () => {
@@ -500,7 +500,7 @@ describe("ReBakedDAO", () => {
 
 		it("[Fail]: Finish package but invalid collaborators list", async () => {
 			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator1.address);
-			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId1, [collaborator1.address], [], [])).to.revertedWith("arrays length mismatch");
+			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId1, [collaborator1.address], [], [])).to.revertedWith("arrays' length mismatch");
 		});
 
 		it("[Fail]: Incorrect total bonus scores", async () => {
@@ -518,7 +518,7 @@ describe("ReBakedDAO", () => {
 			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator1.address);
 			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator2.address);
 
-			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId1, [collaborator1.address, collaborator2.address], [], [1e6, 0])).to.revertedWith("Invalid score");
+			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId1, [collaborator1.address, collaborator2.address], [], [1e6, 0])).to.revertedWith("invalid bonus score");
 		});
 
 		it("[OK]: Finish package successfully", async () => {
@@ -776,7 +776,7 @@ describe("ReBakedDAO", () => {
 			for (let i = 4; i < 14; i++) {
 				await reBakedDAO.connect(initiator).addObserver(projectId, [packageId1], accounts[i].address);
 			}
-			await expect(reBakedDAO.connect(initiator).addObserver(projectId, [packageId1], accounts[15].address)).to.revertedWith("Max observers reached");
+			await expect(reBakedDAO.connect(initiator).addObserver(projectId, [packageId1], accounts[15].address)).to.revertedWith("max observers reached");
 		});
 
 		it("[Fail]: Add observer but revert with empty packageIds array!", async () => {
@@ -842,7 +842,7 @@ describe("ReBakedDAO", () => {
 		});
 
 		it("[Fail]: Revert with observer's address is zero", async () => {
-			await expect(reBakedDAO.connect(initiator).addObservers(projectId, packageId1, [ZERO_ADDRESS])).to.revertedWith("observer's address is zero");
+			await expect(reBakedDAO.connect(initiator).addObservers(projectId, packageId1, [ZERO_ADDRESS])).to.revertedWith("zero observer's address!");
 		});
 
 		it("[OK]: Add observers successfully", async () => {
@@ -904,7 +904,7 @@ describe("ReBakedDAO", () => {
 		});
 	});
 
-	describe.only("removeObservers", () => {
+	describe("removeObservers", () => {
 		beforeEach(async () => {
 			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
 			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, TOKEN_1000);

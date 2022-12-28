@@ -136,6 +136,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         IERC20Upgradeable(project.token).safeTransferFrom(_msgSender(), treasury, (total * 5) / 100);
 
         if (_observers.length > 0) {
+            require(_observerBudget > 0, "invalid observers budget");
             _addObservers(_projectId, _packageId, _observers);
         }
 
@@ -161,8 +162,8 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
     ) external onlyInitiator(_projectId) {
         Package storage package = packageData[_projectId][_packageId];
         require(_collaborators.length == package.totalCollaborators, "invalid collaborators list");
+        require(_collaborators.length == _scores.length, "arrays' length mismatch");
         require(_observers.length == package.totalObservers, "invalid observers list");
-        require(_collaborators.length == _scores.length, "arrays length mismatch");
 
         uint256 budgetLeft_ = package._finishPackage();
         projectData[_projectId]._finishPackage(budgetLeft_);
@@ -170,11 +171,10 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         if (package.bonus > 0 && _collaborators.length > 0) {
             uint256 _totalBonusScores = 0;
             for (uint256 i = 0; i < _scores.length; i++) {
-                require(_scores[i] > 0, "Invalid score");
+                require(_scores[i] > 0, "invalid bonus score");
                 _totalBonusScores += _scores[i];
             }
             require(_totalBonusScores == PCT_PRECISION, "incorrect total bonus scores");
-            package.collaboratorsGetBonus = _scores.length;
         }
 
         for (uint256 i = 0; i < _collaborators.length; i++) {
@@ -334,7 +334,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         require(_observers.length > 0, "empty observers array!");
 
         for (uint256 i = 0; i < _observers.length; i++) {
-            require(_observers[i] != address(0), "observer's address is zero");
+            require(_observers[i] != address(0), "zero observer's address!");
             observerData[_projectId][_packageId][_observers[i]]._addObserver();
         }
         packageData[_projectId][_packageId]._addObservers(_observers.length);
@@ -501,28 +501,18 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         Package storage package = packageData[_projectId][_packageId];
 
         uint256 bonus_;
-        if (package.bonus > 0 && _score > 0) {
-            bonus_ = (package.collaboratorsPaidBonus + 1 == package.collaboratorsGetBonus)
+        if (package.bonus > 0) {
+            bonus_ = (package.collaboratorsPaidBonus + 1 == package.totalCollaborators)
                     ? (package.bonus - package.bonusPaid)
                     : (package.bonus * _score) / PCT_PRECISION;
         }
 
-        collaboratorData[_projectId][_packageId][_collaborator]._payMgp();
-        collaboratorData[_projectId][_packageId][_collaborator]._payBonus(bonus_);
+        collaboratorData[_projectId][_packageId][_collaborator]._payReward(bonus_);
         packageData[_projectId][_packageId]._payReward(collaborator.mgp, bonus_);
         projectData[_projectId]._pay(_collaborator, collaborator.mgp + bonus_);
 
         emit PaidCollaboratorRewards(_projectId, _packageId, _collaborator, collaborator.mgp, bonus_);
     }
-
-    /**
-     * @notice Pay MGP to collaborator
-     * @param _projectId Id of the project
-     * @param _packageId Id of the package
-     * @param _collaborator collaborator address
-     * Emit {PaidMgp}
-     */
-    
 
     /**
      * @notice Pay fee to observer
