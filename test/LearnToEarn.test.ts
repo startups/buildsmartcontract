@@ -435,10 +435,6 @@ describe("LearnToEarn contract", () => {
 			await expect(learnToEarn.connect(learner1).withdrawBudget(courseId1)).to.revertedWith("caller is not course creator");
 		});
 
-		it("[Fail]: Withdraw a duration course", async () => {
-			await expect(learnToEarn.connect(creator).withdrawBudget(courseId1)).to.revertedWith("Invalid action");
-		});
-
 		it("[Fail]: Withdraw a course that bonus is nft", async () => {
 			await expect(learnToEarn.connect(creator).withdrawBudget(courseId3)).to.revertedWith("Invalid action");
 		});

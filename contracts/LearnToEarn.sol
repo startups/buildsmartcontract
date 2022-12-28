@@ -6,7 +6,7 @@ import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/O
 import { IERC20Upgradeable, SafeERC20Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import { IERC721Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import { ERC165CheckerUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
-import { ILearnToEarn,  Course, Learner } from "./interfaces/ILearnToEarn.sol";
+import { ILearnToEarn, Course, Learner } from "./interfaces/ILearnToEarn.sol";
 import { INFTReward } from "./interfaces/INFTReward.sol";
 
 contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnToEarn {
@@ -69,6 +69,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
     ) external nonZero(_budget) nonZero(_bonus) nonReentrant {
         require(_rewardAddress != address(0), "Invalid reward address");
         require(_budget >= _bonus, "Invalid budget");
+        require((_isUsingDuration && _timeEndBonus > 0) || (_timeEndBonus > block.timestamp), "Invalid time end bonus");
 
         bytes32 _courseId = _generateCourseId();
         bool _canMintNFT = false;
@@ -130,7 +131,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @param _courseId Id of course
      * @param _learner Address of learner
      * @param _timeStarted Time when learner enrolled in course (miliseconds)
-     * @param _nftIds List Id of nfts that learner will receive if bonus is nfts\
+     * @param _nftIds List Id of nfts that learner will receive if bonus is nfts
      *
      * emit {ClaimedReward} events if learner can receive rewards
      * emit {CompletedCourse} events
@@ -145,14 +146,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         learner.timeStarted = _timeStarted;
         learner.timeCompleted = block.timestamp;
 
-        bool canGetBonus = course.budgetAvailable >= course.bonus;
-        if (course.isUsingDuration) {
-            canGetBonus = canGetBonus && (learner.timeCompleted <= learner.timeStarted + course.timeEndBonus);
-        } else {
-            canGetBonus = canGetBonus && (learner.timeCompleted <= course.timeEndBonus);
-        }
-
-        if (canGetBonus) {
+        if (canGetBonus(_courseId, _learner)) {
             course.budgetAvailable -= course.bonus;
             course.totalLearnersClaimedBonus++;
 
@@ -188,9 +182,9 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      */
     function withdrawBudget(bytes32 _courseId) external onlyCreator(_courseId) {
         Course storage course = courseData[_courseId];
-        require(!course.isUsingDuration && course.isBonusToken, "Invalid action");
-        require(block.timestamp > course.timeEndBonus, "Time bonus has not ended");
+        require(course.isBonusToken, "Invalid action");
         require(course.budgetAvailable > 0, "Out of budget");
+        require(course.isUsingDuration || block.timestamp > course.timeEndBonus, "Time bonus has not ended");
 
         uint256 _amount = course.budgetAvailable;
 
@@ -201,6 +195,19 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
     }
 
     /* --------VIEW FUNCTIONS-------- */
+
+    /**
+     * @notice Check whether a learner can get bonus
+     */
+    function canGetBonus(bytes32 _courseId, address _learner) public view returns (bool) {
+        if (courseData[_courseId].budgetAvailable < courseData[_courseId].bonus || (learnerData[_courseId][_learner].timeRewarded > 0)) return false;
+
+        if (courseData[_courseId].isUsingDuration) {
+            return learnerData[_courseId][_learner].timeCompleted <= learnerData[_courseId][_learner].timeStarted + courseData[_courseId].timeEndBonus;
+        }
+
+        return learnerData[_courseId][_learner].timeCompleted <= courseData[_courseId].timeEndBonus;
+    }
 
     /**
      * @notice Get course details

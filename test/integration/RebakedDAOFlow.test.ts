@@ -49,10 +49,10 @@ describe("Integration test", () => {
 		const ReBakedDAO = (await ethers.getContractFactory("ReBakedDAO")) as ReBakedDAO__factory;
 		const NFTReward_factory = (await ethers.getContractFactory("NFTReward")) as NFTReward__factory;
 
-		const  nftReward: NFTReward = await NFTReward_factory.deploy();
-        await nftReward.deployed();
+		const nftReward: NFTReward = await NFTReward_factory.deploy();
+		await nftReward.deployed();
 
-		tokenFactory = (await upgrades.deployProxy(TokenFactory, [nftReward.address])) as TokenFactory;	
+		tokenFactory = (await upgrades.deployProxy(TokenFactory, [nftReward.address])) as TokenFactory;
 		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000", tokenName, tokenSymbol);
 		reBakedDAO = (await upgrades.deployProxy(ReBakedDAO, [treasury.address])) as ReBakedDAO;
 		await reBakedDAO.deployed();
@@ -174,7 +174,7 @@ describe("Integration test", () => {
 		});
 
 		it("Finish package 1", async () => {
-			await BT.expect(reBakedDAO.connect(initiator).finishPackage(projectId1, packageId1, [collaborator1.address, collaborator2.address], [observer1.address, observer2.address], [1e6, 0])).to.emit(reBakedDAO, "FinishedPackage");
+			await BT.expect(reBakedDAO.connect(initiator).finishPackage(projectId1, packageId1, [collaborator1.address, collaborator2.address], [observer1.address, observer2.address], [9 * 1e5, 1e5])).to.emit(reBakedDAO, "FinishedPackage");
 
 			const package1 = await reBakedDAO.getPackageData(projectId1, packageId1);
 			const currentTime = await getTimestamp();
@@ -206,8 +206,8 @@ describe("Integration test", () => {
 
 			expect(initiatorDiff[iouToken.address].delta).to.equal(parseUnits("-1007.5", 18));
 			expect(treasuryDiff[iouToken.address].delta).to.equal(parseUnits("7.5", 18));
-			expect(collaborator1Diff[iouToken.address].delta).to.equal(TOKEN_20);
-			expect(collaborator2Diff[iouToken.address].delta).to.equal(TOKEN_10.add(TOKEN_5));
+			expect(collaborator1Diff[iouToken.address].delta).to.equal(TOKEN_20.sub(TOKEN_5.div(5)));
+			expect(collaborator2Diff[iouToken.address].delta).to.equal(TOKEN_10.add(TOKEN_5.div(5).mul(6)));
 			expect(observer1BTDiff[iouToken.address].delta).to.equal(TOKEN_20);
 			expect(observer2BTDiff[iouToken.address].delta).to.equal(TOKEN_20);
 		});
@@ -331,8 +331,7 @@ describe("Integration test", () => {
 				.to.changeTokenBalances(iouToken, [reBakedDAO.address, collaborator2.address], [`-${addedCollaborator2.mgp}`, addedCollaborator2.mgp])
 				.to.emit(reBakedDAO, "RemovedCollaborator")
 				.withArgs(projectId1, packageId3, collaborator2.address)
-				.to.emit(reBakedDAO, "PaidMgp")
-				.withArgs(projectId1, packageId3, collaborator2.address, addedCollaborator2.mgp);
+				.to.emit(reBakedDAO, "PaidCollaboratorRewards")
 
 			addedCollaborator2 = await reBakedDAO.getCollaboratorData(projectId1, packageId3, collaborator2.address);
 			const currentTime = await getTimestamp();
@@ -597,7 +596,7 @@ describe("Integration test", () => {
 		});
 
 		it("Finish package 1", async () => {
-			await BT.updateFee(reBakedDAO.connect(initiator).finishPackage(projectId2, packageId1, [collaborator1.address, collaborator2.address], [observer1.address, observer2.address], [1e6, 0]));
+			await BT.updateFee(reBakedDAO.connect(initiator).finishPackage(projectId2, packageId1, [collaborator1.address, collaborator2.address], [observer1.address, observer2.address], [9 * 1e5, 1e5]));
 
 			const package1 = await reBakedDAO.getPackageData(projectId2, packageId1);
 			const currentTime = await getTimestamp();
@@ -626,8 +625,8 @@ describe("Integration test", () => {
 			const observer1Diff = observer1BT.diff("flow5", flowName);
 			const observer2Diff = observer2BT.diff("flow5", flowName);
 
-			expect(collaborator1Diff[project2.token].delta).to.equal(TOKEN_50.add(TOKEN_30));
-			expect(collaborator2Diff[project2.token].delta).to.equal(TOKEN_40);
+			expect(collaborator1Diff[project2.token].delta).to.equal(TOKEN_50.add(TOKEN_5.mul(5)));
+			expect(collaborator2Diff[project2.token].delta).to.equal(TOKEN_40.add(TOKEN_5));
 			expect(observer1Diff[project2.token].delta).to.equal(TOKEN_20.add(TOKEN_5));
 			expect(observer2Diff[project2.token].delta).to.equal(TOKEN_20.add(TOKEN_5));
 		});

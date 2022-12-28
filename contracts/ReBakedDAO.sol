@@ -316,6 +316,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         bytes32[] memory _packageIds,
         address _observer
     ) external onlyInitiator(_projectId) {
+        require(_packageIds.length > 0, "empty packageIds array!");
         for (uint256 i = 0; i < _packageIds.length; i++) {
             require(_observer != address(0), "observer's address is zero");
             observerData[_projectId][_packageIds[i]][_observer]._addObserver();
@@ -368,6 +369,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         bytes32[] memory _packageIds,
         address _observer
     ) external onlyInitiator(_projectId) {
+        require(_packageIds.length > 0, "empty packageIds array!");
         for (uint256 i = 0; i < _packageIds.length; i++) {
             observerData[_projectId][_packageIds[i]][_observer]._removeObserver();
             packageData[_projectId][_packageIds[i]]._removeObserver();

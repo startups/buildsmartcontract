@@ -182,9 +182,6 @@ describe("Integration test LearnToEarn contract", () => {
 			expect(courseLearner3.timeRewarded).to.closeTo(timestamp, 10);
 		});
 
-		it("Creator withdraw budget but reverted", async () => {
-			await expect(learnToEarn.connect(creator).withdrawBudget(courseId1)).to.revertedWith("Invalid action");
-		});
 
 		it("Check balance after flow", async () => {
 			const flowName = "flow2";
