@@ -17,7 +17,6 @@ interface IReBakedDAO {
     event RemovedCollaborator(bytes32 indexed projectId_, bytes32 indexed packageId_, address collaborator_);
     event FinishedPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 indexed budgetLeft);
     event CanceledPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 indexed revertedBudget);
-    event PaidMgp(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 amount);
     event PaidObserverFee(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 amount);
     event PaidCollaboratorRewards(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 mgp, uint256 bonus);
 

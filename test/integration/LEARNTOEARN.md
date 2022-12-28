@@ -30,8 +30,7 @@ Each flow will run sequence by sequence
 2. **Learner 1, 2** complete and receive bonus
 3. **Creator** add new budget to course
 4. **Learner 3** complete and receive bonus
-5. **Creator** withdraw budget but reverted
-6. Check balance after flow
+5. Check balance after flow
 
 ### 3. Create new course with existed token and specific date bonus (Course 2)
 1. Create **course 2** with existed token and time bonus to next 45 days
