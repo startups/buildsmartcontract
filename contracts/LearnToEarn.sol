@@ -144,9 +144,11 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         require(learner.timeCompleted == 0, "already completed");
 
         learner.timeStarted = _timeStarted;
+        bool canLearnerGetBonus = canGetBonus(_courseId, _learner);
+
         learner.timeCompleted = block.timestamp;
 
-        if (canGetBonus(_courseId, _learner)) {
+        if (canLearnerGetBonus) {
             course.budgetAvailable -= course.bonus;
             course.totalLearnersClaimedBonus++;
 
@@ -202,13 +204,13 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @param _learner Address of the learner
      */
     function canGetBonus(bytes32 _courseId, address _learner) public view returns (bool) {
+        uint256 timeCompleted = block.timestamp;
         if (courseData[_courseId].budgetAvailable < courseData[_courseId].bonus || (learnerData[_courseId][_learner].timeCompleted > 0)) return false;
 
         if (courseData[_courseId].isUsingDuration) {
-            return learnerData[_courseId][_learner].timeCompleted <= learnerData[_courseId][_learner].timeStarted + courseData[_courseId].timeEndBonus;
+            return timeCompleted <= learnerData[_courseId][_learner].timeStarted + courseData[_courseId].timeEndBonus;
         }
-
-        return learnerData[_courseId][_learner].timeCompleted <= courseData[_courseId].timeEndBonus;
+        return timeCompleted <= courseData[_courseId].timeEndBonus;
     }
 
     /**
