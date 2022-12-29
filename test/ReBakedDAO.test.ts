@@ -447,7 +447,7 @@ describe("ReBakedDAO", () => {
 		});
 	});
 
-	describe("Testing `finishPackage` function", async () => {
+	describe.only("Testing `finishPackage` function", async () => {
 		beforeEach(async () => {
 			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
 			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, TOKEN_1000);
@@ -542,7 +542,9 @@ describe("ReBakedDAO", () => {
 
 			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId2, [collaborator1.address], [], [1e6]))
 				.to.emit(reBakedDAO, "FinishedPackage")
-				.withArgs(projectId, packageId2, 0);
+				.withArgs(projectId, packageId2, 0)
+				.to.emit(reBakedDAO, "PaidCollaboratorRewards")
+				.withArgs(projectId, packageId2, collaborator1.address, TOKEN_10, "0");
 			currentPackage = await reBakedDAO.getPackageData(projectId, packageId2);
 			timestamp = await getTimestamp();
 			expect(currentPackage.timeFinished).to.closeTo(timestamp, 10);
@@ -676,7 +678,7 @@ describe("ReBakedDAO", () => {
 			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
 			const tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, TOKEN_1000);
 			const receipt = await tx.wait();
-			const args = receipt.events!.find(ev => ev.event === "CreatedProject")!.args!;
+			const args = receipt.events!.find((ev: any) => ev.event === "CreatedProject")!.args!;
 			const projectId = args[0];
 
 			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 5, []);
@@ -704,7 +706,7 @@ describe("ReBakedDAO", () => {
 			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
 			const tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, TOKEN_1000);
 			const receipt = await tx.wait();
-			const args = receipt.events!.find(ev => ev.event === "CreatedProject")!.args!;
+			const args = receipt.events!.find((ev: any) => ev.event === "CreatedProject")!.args!;
 			const projectId = args[0];
 
 			const packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_1000, 0, 0, 5, []);
