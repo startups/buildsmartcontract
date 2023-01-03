@@ -486,7 +486,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         Package storage package = packageData[_projectId][_packageId];
 
         uint256 bonus_;
-        if (package.bonus > 0) {
+        if (package.bonus > 0 && _score > 0) {
             bonus_ = (package.collaboratorsPaidBonus + 1 == package.totalCollaborators)
                     ? (package.bonus - package.bonusPaid)
                     : (package.bonus * _score) / PCT_PRECISION;

@@ -36,6 +36,15 @@ const config: HardhatUserConfig = {
 		mumbai: {
 			url: "https://polygon-mumbai.g.alchemy.com/v2/zSybnsuH3h_jqalkVmYv2Xbf-bsc3hlx",
 			accounts: [process.env.MUMBAI_DEPLOY_ACCOUNT as string]
+		},
+		auroraTestnet: {
+			url: "https://testnet.aurora.dev",
+			accounts: [process.env.AURORA_TESTNET_DEPLOY_ACCOUNT!]
+		},
+		arbitrumGoerli: {
+			// url: "https://arb-goerli.g.alchemy.com/v2/HvsY1VKZgg_YEJHv_o9GAjjaLmmEO8Xl",
+			url: "https://goerli-rollup.arbitrum.io/rpc",
+			accounts: [process.env.ARBITRUM_GOERLI_DEPLOY_ACCOUNT!]
 		}
 	},
 	etherscan: {
@@ -43,7 +52,20 @@ const config: HardhatUserConfig = {
 			goerli: process.env.GOERLI_SCAN_API_KEY!,
 			polygonMumbai: process.env.POLYGON_TEST_API_KEY!,
 			bscTestnet: process.env.BSC_TEST_API_KEY!,
+			auroraTestnet: process.env.AURORA_TEST_API_KEY!,
+			arbitrumGoerli: "FTZHM5RTPBMCT6WWQCVHHXCFKIKCVDJQKZ"
 		},
+		customChains: [
+			{
+				network: "arbitrumGoerli",
+				chainId: 421613,
+				urls: {
+					// apiURL: "https://arb-goerli.g.alchemy.com/v2/HvsY1VKZgg_YEJHv_o9GAjjaLmmEO8Xl",
+					apiURL: "https://goerli-rollup.arbitrum.io/rpc",
+					browserURL: "https://goerli.arbiscan.io/"
+				}
+			}
+		]
 	},
 	solidity: {
 		compilers: [
