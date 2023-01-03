@@ -160,9 +160,9 @@ describe("Integration test", () => {
 		});
 
 		it("Add 2 observers", async () => {
-			await BT.expect(reBakedDAO.connect(initiator).addObserver(projectId1, [packageId1], observer1.address)).to.emit(reBakedDAO, "AddedObserver");
+			await BT.expect(reBakedDAO.connect(initiator).addObservers(projectId1, packageId1, [observer1.address, observer2.address])).to.emit(reBakedDAO, "AddedObservers");
 
-			await BT.expect(reBakedDAO.connect(initiator).addObserver(projectId1, [packageId1], observer2.address)).to.emit(reBakedDAO, "AddedObserver");
+			// await BT.expect(reBakedDAO.connect(initiator).addObservers(projectId1, packageId1, [observer2.address])).to.emit(reBakedDAO, "AddedObserver");
 			const currentTime = await getTimestamp();
 			let addedObserver1 = await reBakedDAO.getObserverData(projectId1, packageId1, observer1.address);
 			let addedObserver2 = await reBakedDAO.getObserverData(projectId1, packageId1, observer2.address);
@@ -582,8 +582,7 @@ describe("Integration test", () => {
 		});
 
 		it("Add 2 observers", async () => {
-			await BT.updateFee(reBakedDAO.connect(initiator).addObserver(projectId2, [packageId1], observer1.address));
-			await BT.updateFee(reBakedDAO.connect(initiator).addObserver(projectId2, [packageId1], observer2.address));
+			await BT.updateFee(reBakedDAO.connect(initiator).addObservers(projectId2, packageId1, [observer1.address, observer2.address]));
 
 			const currentTime = await getTimestamp();
 			let addedObserver1 = await reBakedDAO.getObserverData(projectId2, packageId1, observer1.address);
@@ -693,8 +692,7 @@ describe("Integration test", () => {
 		});
 
 		it("Add 2 observers", async () => {
-			await BT.updateFee(reBakedDAO.connect(initiator).addObserver(projectId2, [packageId2], observer1.address));
-			await BT.updateFee(reBakedDAO.connect(initiator).addObserver(projectId2, [packageId2], observer2.address));
+			await BT.updateFee(reBakedDAO.connect(initiator).addObservers(projectId2, packageId2, [observer1.address, observer2.address]));
 
 			const currentTime = await getTimestamp();
 			let addedObserver1 = await reBakedDAO.getObserverData(projectId2, packageId2, observer1.address);

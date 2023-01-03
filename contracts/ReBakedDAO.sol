@@ -304,28 +304,6 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         emit RemovedCollaborator(_projectId, _packageId, _msgSender());
     }
 
-    /**
-     * @notice Adds observer to packages
-     * @param _projectId Id of the project
-     * @param _packageIds Ids of the packages
-     * @param _observer observer address
-     * Emit {AddedObserver}
-     */
-    function addObserver(
-        bytes32 _projectId,
-        bytes32[] memory _packageIds,
-        address _observer
-    ) external onlyInitiator(_projectId) {
-        require(_packageIds.length > 0, "empty packageIds array!");
-        for (uint256 i = 0; i < _packageIds.length; i++) {
-            require(_observer != address(0), "observer's address is zero");
-            observerData[_projectId][_packageIds[i]][_observer]._addObserver();
-            packageData[_projectId][_packageIds[i]]._addObserver();
-        }
-
-        emit AddedObserver(_projectId, _packageIds, _observer);
-    }
-
     function _addObservers(
         bytes32 _projectId,
         bytes32 _packageId,
@@ -346,7 +324,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @notice Adds observer to packages
      * @param _projectId Id of the project
      * @param _packageId Id of the package
-     * @param _observers observers' address
+     * @param _observers observers' addresses
      * Emit {AddedObservers}
      */
     function addObservers(
@@ -360,29 +338,8 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
     /**
      * @notice Removes observer from packages
      * @param _projectId Id of the project
-     * @param _packageIds packages' ids
-     * @param _observer observer address
-     * Emit {RemovedObserver}
-     */
-    function removeObserver(
-        bytes32 _projectId,
-        bytes32[] memory _packageIds,
-        address _observer
-    ) external onlyInitiator(_projectId) {
-        require(_packageIds.length > 0, "empty packageIds array!");
-        for (uint256 i = 0; i < _packageIds.length; i++) {
-            observerData[_projectId][_packageIds[i]][_observer]._removeObserver();
-            packageData[_projectId][_packageIds[i]]._removeObserver();
-        }
-
-        emit RemovedObserver(_projectId, _packageIds, _observer);
-    }
-
-    /**
-     * @notice Removes observer from packages
-     * @param _projectId Id of the project
      * @param _packageId package id
-     * @param _observers observers' address
+     * @param _observers observers' addresses
      * Emit {RemovedObservers}
      */
     function removeObservers(
@@ -398,6 +355,34 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         packageData[_projectId][_packageId]._removeObservers(_observers.length);
 
         emit RemovedObservers(_projectId, _packageId, _observers);
+    }
+
+    function updateObservers(
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address[] memory _observersIn,
+        address[] memory _observersOut
+    ) external onlyInitiator(_projectId) {
+        require(_observersIn.length > 0 || _observersOut.length > 0, "empty observers arrays!");
+
+        if (_observersIn.length > 0) {
+            for (uint256 i = 0; i < _observersIn.length; i++) {
+                observerData[_projectId][_packageId][_observersIn[i]]._addObserver();
+            }
+            packageData[_projectId][_packageId]._addObservers(_observersIn.length);
+
+            emit AddedObservers(_projectId, _packageId, _observersIn);
+        }
+
+        if (_observersOut.length > 0) {
+            for (uint256 i = 0; i < _observersOut.length; i++) {
+                observerData[_projectId][_packageId][_observersOut[i]]._removeObserver();
+            }
+
+            packageData[_projectId][_packageId]._removeObservers(_observersOut.length);
+
+            emit RemovedObservers(_projectId, _packageId, _observersOut);
+        }
     }
 
     /* --------VIEW FUNCTIONS-------- */
@@ -501,7 +486,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         Package storage package = packageData[_projectId][_packageId];
 
         uint256 bonus_;
-        if (package.bonus > 0) {
+        if (package.bonus > 0 && _score > 0) {
             bonus_ = (package.collaboratorsPaidBonus + 1 == package.totalCollaborators)
                     ? (package.bonus - package.bonusPaid)
                     : (package.bonus * _score) / PCT_PRECISION;

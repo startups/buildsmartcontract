@@ -8,9 +8,7 @@ interface IReBakedDAO {
     event ApprovedProject(bytes32 indexed projectId);
     event FinishedProject(bytes32 indexed projectId, uint256 budgetLeft);
     event CreatedPackage(bytes32 indexed projectId, bytes32 indexed packageId, uint256 budget, uint256 bonus, uint256 observerBudget);
-    event AddedObserver(bytes32 indexed projectId, bytes32[] packageIds, address indexed observer);
     event AddedObservers(bytes32 indexed projectId, bytes32 indexed packageId, address[] observers);
-    event RemovedObserver(bytes32 indexed projectId, bytes32[] packageIds, address indexed observer);
     event RemovedObservers(bytes32 indexed projectId, bytes32 indexed packageId, address[] observers);
     event AddedCollaborator(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator, uint256 mgp);
     event ApprovedCollaborator(bytes32 indexed projectId, bytes32 indexed packageId, address collaborator);
@@ -135,39 +133,36 @@ interface IReBakedDAO {
     function selfRemove(bytes32 _projectId, bytes32 _packageId) external;
 
     /**
-     * @notice Adds observer to packages
-     * @param _projectId Id of the project
-     * @param _packageIds Id of the package
-     * @param _observer observer address
-     * Emit {AddedObserver}
-     */
-    function addObserver(bytes32 _projectId, bytes32[] memory _packageIds, address _observer) external;
-
-    /**
      * @notice Adds observers to package
      * @param _projectId Id of the project
      * @param _packageId Id of the package
-     * @param _observers observers' address
-     * Emit {AddedObserver}
+     * @param _observers observers' addresses
+     * Emit {AddedObservers}
      */
     function addObservers(bytes32 _projectId, bytes32 _packageId, address[] memory _observers) external;
-
-    /**
-     * @notice Removes observer from packages
-     * @param _projectId Id of the project
-     * @param _packageIds packages' ids
-     * @param _observer observer address
-     * Emit {RemovedObserver}
-     */
-    function removeObserver(bytes32 _projectId, bytes32[] memory _packageIds, address _observer) external;
 
     /**
      * @notice Removes observers from package
      * @param _projectId Id of the project
      * @param _packageId package id
-     * @param _observers observers' address
-     * Emit {RemovedObserver}
+     * @param _observers observers' addresses
+     * Emit {RemovedObservers}
      */
     function removeObservers(bytes32 _projectId, bytes32 _packageId, address[] memory _observers) external;
+
+    /**
+     * @notice Adds, removes observers from package
+     * @param _projectId Id of the project
+     * @param _packageId package id
+     * @param _observersIn observers' addresses to be added
+     * @param _observersOut observers' addresses to be removed
+     * Emit {AddedObservers} {RemovedObservers}
+     */
+    function updateObservers(
+        bytes32 _projectId,
+        bytes32 _packageId,
+        address[] memory _observersIn,
+        address[] memory _observersOut
+    ) external;
 
 }
