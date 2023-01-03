@@ -616,9 +616,32 @@ describe("ReBakedDAO", () => {
 			expect(currentPackage.timeCanceled).to.closeTo(timestamp, 10);
 			expect(currentPackage.isActive).to.be.false;
 
-			const currentProject = await reBakedDAO.getProjectData(projectId);
+			let currentProject = await reBakedDAO.getProjectData(projectId);
 			expect(currentProject.totalPackages).to.equal(0);
 			expect(currentProject.budgetAllocated).to.equal(parseUnits("60", 18));
+
+			const packageTx2: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_40, TOKEN_30, 1, []);
+			const packageReceipt2: ContractReceipt = await packageTx2.wait();
+			packageId2 = packageReceipt2.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId2, collaborator2.address, TOKEN_20);
+
+			await expect(
+				reBakedDAO.connect(initiator).cancelPackage(projectId, packageId2, [collaborator2.address], [])
+			).to.emit(reBakedDAO, "CanceledPackage")
+				.withArgs(projectId, packageId2, parseUnits("150", 18));
+
+			const currentPackage2 = await reBakedDAO.getPackageData(projectId, packageId2);
+			const timestamp2 = await getTimestamp();
+			expect(currentPackage2.timeCanceled).to.closeTo(timestamp2, 10);
+			expect(currentPackage2.isActive).to.be.false;
+			expect(currentPackage2.budgetPaid).to.eq(TOKEN_20);
+			expect(currentPackage2.bonusPaid).to.eq("0");
+			expect(currentPackage2.budgetObserversPaid).to.eq("0");
+
+			currentProject = await reBakedDAO.getProjectData(projectId);
+			expect(currentProject.totalPackages).to.equal(0);
+			expect(currentProject.budgetAllocated).to.equal(parseUnits("80", 18));
+			expect(currentProject.budgetPaid).to.equal(parseUnits("80", 18));
 		});
 	});
 
