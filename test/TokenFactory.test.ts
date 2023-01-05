@@ -75,8 +75,17 @@ describe("Testing TokenFactory contract", () => {
 
 	describe("Testing `deployToken` function", () => {
 		it("[OK]: Deploy new token successfully", async () => {
-			await expect(tokenFactory.connect(accounts[0]).deployToken(TOKEN_10, "IOU", "IOU"))
-				.to.emit(tokenFactory, 'DeployedToken')
+			let tx = await tokenFactory.connect(accounts[0]).deployToken(TOKEN_10, "IOU", "IOU");
+			let receipt = await tx.wait();
+
+			let deployTokenEvent = receipt.events
+				?.filter((ev: any) => ev.event === "DeployedToken").shift();
+			
+			expect(deployTokenEvent).to.have.property('event');
+			
+			expect(deployTokenEvent?.event).to.eq("DeployedToken");
+			expect(deployTokenEvent?.args?.token).to.be.properAddress;
+			expect(deployTokenEvent?.args?.totalSupply).to.eq(TOKEN_10);
 		});
 	});
 	
