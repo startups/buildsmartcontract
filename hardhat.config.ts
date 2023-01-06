@@ -35,7 +35,7 @@ const config: HardhatUserConfig = {
 		},
 		mumbai: {
 			url: "https://polygon-mumbai.g.alchemy.com/v2/zSybnsuH3h_jqalkVmYv2Xbf-bsc3hlx",
-			accounts: [process.env.MUMBAI_DEPLOY_ACCOUNT as string]
+			accounts: [process.env.MUMBAI_DEPLOY_ACCOUNT!]
 		},
 		auroraTestnet: {
 			url: "https://testnet.aurora.dev",
