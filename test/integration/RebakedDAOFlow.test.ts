@@ -705,10 +705,24 @@ describe("Integration test", () => {
 		});
 
 		it("Cancel package 2", async () => {
-			await BT.expect(reBakedDAO.connect(initiator).cancelPackage(projectId2, packageId2, [collaborator1.address, collaborator2.address, collaborator3.address], [observer1.address, observer2.address])).to.emit(
-				reBakedDAO,
-				"CanceledPackage"
-			);
+			await BT.expect(reBakedDAO.connect(initiator).cancelPackage(
+					projectId2,
+					packageId2,
+					[collaborator1.address, collaborator2.address, collaborator3.address],
+					[observer1.address, observer2.address],
+					true
+				)).to.emit(reBakedDAO, "CanceledPackage")
+						.withArgs(projectId2, packageId2, TOKEN_40)
+					.to.emit(reBakedDAO, "PaidCollaboratorRewards")
+						.withArgs(projectId2, packageId2, collaborator1.address, TOKEN_30, "0")
+					.to.emit(reBakedDAO, "PaidCollaboratorRewards")
+						.withArgs(projectId2, packageId2, collaborator2.address, TOKEN_30, "0")
+					.to.emit(reBakedDAO, "PaidCollaboratorRewards")
+						.withArgs(projectId2, packageId2, collaborator3.address, TOKEN_30, "0")
+					.to.emit(reBakedDAO, "PaidObserverFee")
+						.withArgs(projectId2, packageId2, observer1.address, TOKEN_20.add(TOKEN_5))
+					.to.emit(reBakedDAO, "PaidObserverFee")
+						.withArgs(projectId2, packageId2, observer2.address, TOKEN_20.add(TOKEN_5));
 
 			const package2 = await reBakedDAO.getPackageData(projectId2, packageId2);
 			const currentTime = await getTimestamp();
