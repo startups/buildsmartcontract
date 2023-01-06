@@ -92,7 +92,8 @@ interface IReBakedDAO {
         bytes32 _projectId,
         bytes32 _packageId,
         address[] memory _collaborators,
-        address[] memory _observers
+        address[] memory _observers,
+        bool _workStarted
     ) external;
 
     /**

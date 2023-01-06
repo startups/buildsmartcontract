@@ -200,7 +200,8 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         bytes32 _projectId,
         bytes32 _packageId,
         address[] memory _collaborators,
-        address[] memory _observers
+        address[] memory _observers,
+        bool _workStarted
     ) external onlyInitiator(_projectId) {
         Package storage package = packageData[_projectId][_packageId];
         require(_collaborators.length == package.totalCollaborators, "invalid collaborators length");
@@ -208,12 +209,13 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
 
         package._cancelPackage();
 
-        for (uint256 i = 0; i < _collaborators.length; i++) _payCollaboratorRewards(_projectId, _packageId, _collaborators[i], 0);
-
-        for (uint256 i = 0; i < _observers.length; i++) _payObserverFee(_projectId, _packageId, _observers[i]);
+        if (_workStarted) {
+            for (uint256 i = 0; i < _collaborators.length; i++) _payCollaboratorRewards(_projectId, _packageId, _collaborators[i], 0);
+            for (uint256 i = 0; i < _observers.length; i++) _payObserverFee(_projectId, _packageId, _observers[i]);
+        }
 
         uint256 budgetToBeReverted_ = (package.budget - package.budgetPaid) + package.bonus;
-        if (package.totalObservers == 0) budgetToBeReverted_ += package.budgetObservers;
+        if (!_workStarted || package.totalObservers == 0) budgetToBeReverted_ += package.budgetObservers;
         projectData[_projectId]._revertPackageBudget(budgetToBeReverted_);
 
         emit CanceledPackage(_projectId, _packageId, budgetToBeReverted_);
