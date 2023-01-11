@@ -120,6 +120,7 @@ library PackageLibrary {
      * @param package_ reference to Package struct
      */
     function _finishPackage(Package storage package_) internal onlyActivePackage(package_) returns (uint256 budgetLeft_) {
+        require(package_.totalCollaborators > 0, "package has zero collaborators!");
         require(package_.totalCollaborators == package_.approvedCollaborators, "unapproved collaborators left");
         budgetLeft_ = package_.budget - package_.budgetAllocated;
         if (package_.totalObservers == 0) budgetLeft_ += package_.budgetObservers;

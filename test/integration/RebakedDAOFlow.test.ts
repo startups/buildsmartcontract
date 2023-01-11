@@ -240,6 +240,7 @@ describe("Integration test", () => {
 		});
 
 		it("Finish package 2", async () => {
+			reBakedDAO.connect(initiator).addCollaborator(projectId1, packageId2, collaborator1.address, TOKEN_10);
 			await BT.updateFee(reBakedDAO.connect(initiator).finishPackage(projectId1, packageId2, [], [], []));
 			const package2 = await reBakedDAO.getPackageData(projectId1, packageId2);
 			const currentTime = await getTimestamp();
@@ -710,7 +711,7 @@ describe("Integration test", () => {
 					packageId2,
 					[collaborator1.address, collaborator2.address, collaborator3.address],
 					[observer1.address, observer2.address],
-					true
+					[true, true, true]
 				)).to.emit(reBakedDAO, "CanceledPackage")
 						.withArgs(projectId2, packageId2, TOKEN_40)
 					.to.emit(reBakedDAO, "PaidCollaboratorRewards")

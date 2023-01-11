@@ -201,18 +201,22 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         bytes32 _packageId,
         address[] memory _collaborators,
         address[] memory _observers,
-        bool _workStarted
+        bool[] memory _collabStartedWork
     ) external onlyInitiator(_projectId) {
         Package storage package = packageData[_projectId][_packageId];
         require(_collaborators.length == package.totalCollaborators, "invalid collaborators length");
+        require(_collaborators.length == _collabStartedWork.length, "arrays length mismatch");
         require(_observers.length == package.totalObservers, "invalid observers length");
 
         package._cancelPackage();
 
-        if (_workStarted) {
-            for (uint256 i = 0; i < _collaborators.length; i++) _payCollaboratorRewards(_projectId, _packageId, _collaborators[i], 0);
-            for (uint256 i = 0; i < _observers.length; i++) _payObserverFee(_projectId, _packageId, _observers[i]);
-        }
+        for (uint256 i = 0; i < _collaborators.length; i++) {
+            if (_collabStartedWork[i] == true) {
+                _payCollaboratorRewards(_projectId, _packageId, _collaborators[i], 0);
+            }
+        }    
+
+        for (uint256 i = 0; i < _observers.length; i++) _payObserverFee(_projectId, _packageId, _observers[i]);
 
         uint256 budgetToBeReverted_ = (package.budget - package.budgetPaid) + package.bonus;
         budgetToBeReverted_ += (package.budgetObservers - package.budgetObserversPaid);
