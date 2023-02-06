@@ -10,6 +10,7 @@ struct Course {
     uint256 totalLearnersClaimedBonus;
     uint256 timeCreated;
     uint256 timeEndBonus;
+    uint256 timeRemoved;
     bool isBonusToken;
     bool canMintNFT;
     bool isUsingDuration;
@@ -29,6 +30,7 @@ interface ILearnToEarn {
     event CompletedCourse(bytes32 indexed courseId, address learner);
     event ClaimedReward(bytes32 indexed courseId, address indexed learner, address indexed rewardAddress, uint256 bonus, uint256[] nftIds);
     event WithdrawnBudget(bytes32 indexed courseId, address indexed creator, uint256 amount);
+    event RemovedCourse(bytes32 indexed courseId, address indexed creator);
 
     /**
      * @notice Create new course
