@@ -80,8 +80,8 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
     ) external nonZero(_budget) nonZero(_bonus) nonReentrant {
         require(_rewardAddress != address(0), "Invalid reward address");
         require(_budget >= _bonus, "Invalid budget");
-        // * it takes about 13-14 seconds to create new block in Ethereum, 2.5s in polygon,...
-        require(_timeStart + 14 >= block.timestamp, "Invalid time start");
+        if(_timeStart != 0) require(_timeStart >= block.timestamp, "Invalid time start");
+        else _timeStart = block.timestamp;
 
         bool isValidTimeEndBonus = _isUsingDuration ? (_timeEndBonus > 0) : (_timeEndBonus == 0 || _timeEndBonus > _timeStart);
         require(isValidTimeEndBonus, "Invalid time end bonus");
