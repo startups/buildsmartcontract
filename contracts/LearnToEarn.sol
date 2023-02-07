@@ -36,6 +36,15 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         _;
     }
 
+    /**
+     * @notice Throws if course has been removed
+     */
+    modifier activeCourse(bytes32 _courseId) {
+        //slither-disable-next-line incorrect-equality
+        require(courseData[_courseId].timeRemoved == 0, "Course has been removed");
+        _;
+    }
+
     /* -----------INITILIZER----------- */
 
     /**
@@ -111,9 +120,8 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      *
      * emit {AddedBudget} events
      */
-    function addBudget(bytes32 _courseId, uint256 _budget) external onlyCreator(_courseId) nonZero(_budget) nonReentrant {
+    function addBudget(bytes32 _courseId, uint256 _budget) external onlyCreator(_courseId) nonZero(_budget) activeCourse(_courseId) nonReentrant {
         Course storage course = courseData[_courseId];
-        require(course.timeRemoved == 0, "Course has been removed");
 
         course.budget += _budget;
         course.budgetAvailable += _budget;
@@ -139,9 +147,8 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * emit {ClaimedReward} events if learner can receive rewards
      * emit {CompletedCourse} events
      */
-    function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256[] memory _nftIds) external onlyCreator(_courseId) {
+    function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256[] memory _nftIds) external onlyCreator(_courseId) activeCourse(_courseId) {
         Course storage course = courseData[_courseId];
-        require(course.timeRemoved == 0, "Course has been removed");
         require(course.timeCreated <= _timeStarted && _timeStarted < block.timestamp, "Invalid time start");
 
         Learner storage learner = learnerData[_courseId][_learner];
@@ -186,9 +193,8 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      *
      * emit {WithdrawnBudget} events
      */
-    function withdrawBudget(bytes32 _courseId) external onlyCreator(_courseId) {
+    function withdrawBudget(bytes32 _courseId) external onlyCreator(_courseId) activeCourse(_courseId) {
         Course storage course = courseData[_courseId];
-        require(course.timeRemoved == 0, "Course has been removed");
         require(course.isBonusToken, "Invalid action");
         require(course.budgetAvailable > 0, "Out of budget");
         require(course.isUsingDuration || block.timestamp > course.timeEndBonus, "Time bonus has not ended");
@@ -208,9 +214,8 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * 
      * emit {RemovedCourse} events
      */
-    function removeCourse(bytes32 _courseId) external onlyCreator(_courseId) {
+    function removeCourse(bytes32 _courseId) external onlyCreator(_courseId) activeCourse(_courseId) {
         Course storage course = courseData[_courseId];
-        require(course.timeRemoved == 0, "Course has been removed");
         course.timeRemoved = block.timestamp;
 
         uint256 _amount = course.budgetAvailable;
