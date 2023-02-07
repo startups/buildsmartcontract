@@ -53,6 +53,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @param _rewardAddress Address of token that reward to student after completing course
      * @param _budget Total tokens/NFTs that reward
      * @param _bonus Bonus when learner completed course
+     * @param _timeStart Start time of course
      * @param _timeEndBonus end date will finish bonus or duration to receive bonus after enrolling in course
      * @param _isUsingDuration Using duration for rewarding (true) or using end time (false)
      * @param _isBonusToken Awards is token (true) or NFT (false)
@@ -63,13 +64,18 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         address _rewardAddress,
         uint256 _budget,
         uint256 _bonus,
+        uint256 _timeStart,
         uint256 _timeEndBonus,
         bool _isUsingDuration,
         bool _isBonusToken
     ) external nonZero(_budget) nonZero(_bonus) nonReentrant {
         require(_rewardAddress != address(0), "Invalid reward address");
         require(_budget >= _bonus, "Invalid budget");
-        require((_isUsingDuration && _timeEndBonus > 0) || (_timeEndBonus > block.timestamp), "Invalid time end bonus");
+        // * it takes about 13-14 seconds to create new block in Ethereum, 2.5s in polygon,...
+        require(_timeStart + 14 >= block.timestamp, "Invalid time start");
+
+        bool isValidTimeEndBonus = _isUsingDuration ? (_timeEndBonus > 0) : (_timeEndBonus == 0 || _timeEndBonus > _timeStart);
+        require(isValidTimeEndBonus, "Invalid time end bonus");
 
         bytes32 _courseId = _generateCourseId();
         bool _canMintNFT = false;
@@ -89,7 +95,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
             budgetAvailable: _budget,
             bonus: _bonus,
             totalLearnersClaimedBonus: 0,
-            timeCreated: block.timestamp,
+            timeCreated: _timeStart,
             timeEndBonus: _timeEndBonus,
             isUsingDuration: _isUsingDuration,
             isBonusToken: _isBonusToken,
@@ -186,7 +192,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         Course storage course = courseData[_courseId];
         require(course.isBonusToken, "Invalid action");
         require(course.budgetAvailable > 0, "Out of budget");
-        require(course.isUsingDuration || block.timestamp > course.timeEndBonus, "Time bonus has not ended");
+        require(course.isUsingDuration || (course.timeEndBonus != 0 && block.timestamp > course.timeEndBonus), "Time bonus has not ended");
 
         uint256 _amount = course.budgetAvailable;
 
@@ -210,7 +216,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         if (courseData[_courseId].isUsingDuration) {
             return timeCompleted <= learnerData[_courseId][_learner].timeStarted + courseData[_courseId].timeEndBonus;
         }
-        return timeCompleted <= courseData[_courseId].timeEndBonus;
+        return courseData[_courseId].timeEndBonus == 0 || timeCompleted <= courseData[_courseId].timeEndBonus;
     }
 
     /**
