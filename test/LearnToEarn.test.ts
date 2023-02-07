@@ -644,6 +644,6 @@ describe("LearnToEarn contract", () => {
 			timeStart = (await getTimestamp()) + ONE_DAY;
 			await skipTime(ONE_DAY * 10);
 			expect(await learnToEarn.canGetBonus(courseId3, accounts[0].address)).to.be.true;
-		})
+		});
 	});
 });
