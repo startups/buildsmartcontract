@@ -85,7 +85,7 @@
             "label": "templateNFTReward",
             "offset": 0,
             "slot": "102",
-            "type": "t_contract(INFTReward)8072",
+            "type": "t_contract(INFTReward)8306",
             "contract": "TokenFactory",
             "src": "contracts/TokenFactory.sol:24"
           }
@@ -107,7 +107,7 @@
             "label": "bool",
             "numberOfBytes": "1"
           },
-          "t_contract(INFTReward)8072": {
+          "t_contract(INFTReward)8306": {
             "label": "contract INFTReward",
             "numberOfBytes": "20"
           },
@@ -809,431 +809,6 @@
         }
       }
     },
-    "93640e6e63e4dcdcfbe4123f6d077498fca08bea34283022e27df3dd1b0598ed": {
-      "address": "0x9521C243379bDd1703EE9D7DDE7ce7F2Dc94317C",
-      "txHash": "0xe6283ab74afd270d3d3043a5fa753bd2a77ae7cd74a543f0212fae31401ee4e0",
-      "layout": {
-        "storage": [
-          {
-            "label": "_initialized",
-            "offset": 0,
-            "slot": "0",
-            "type": "t_uint8",
-            "contract": "Initializable",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
-            "retypedFrom": "bool"
-          },
-          {
-            "label": "_initializing",
-            "offset": 1,
-            "slot": "0",
-            "type": "t_bool",
-            "contract": "Initializable",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
-          },
-          {
-            "label": "__gap",
-            "offset": 0,
-            "slot": "1",
-            "type": "t_array(t_uint256)50_storage",
-            "contract": "ContextUpgradeable",
-            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
-          },
-          {
-            "label": "_owner",
-            "offset": 0,
-            "slot": "51",
-            "type": "t_address",
-            "contract": "OwnableUpgradeable",
-            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
-          },
-          {
-            "label": "__gap",
-            "offset": 0,
-            "slot": "52",
-            "type": "t_array(t_uint256)49_storage",
-            "contract": "OwnableUpgradeable",
-            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
-          },
-          {
-            "label": "_status",
-            "offset": 0,
-            "slot": "101",
-            "type": "t_uint256",
-            "contract": "ReentrancyGuardUpgradeable",
-            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
-          },
-          {
-            "label": "__gap",
-            "offset": 0,
-            "slot": "102",
-            "type": "t_array(t_uint256)49_storage",
-            "contract": "ReentrancyGuardUpgradeable",
-            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:74"
-          },
-          {
-            "label": "treasury",
-            "offset": 0,
-            "slot": "151",
-            "type": "t_address",
-            "contract": "ReBakedDAO",
-            "src": "contracts/ReBakedDAO.sol:27"
-          },
-          {
-            "label": "projectData",
-            "offset": 0,
-            "slot": "152",
-            "type": "t_mapping(t_bytes32,t_struct(Project)3903_storage)",
-            "contract": "ReBakedDAO",
-            "src": "contracts/ReBakedDAO.sol:30"
-          },
-          {
-            "label": "packageData",
-            "offset": 0,
-            "slot": "153",
-            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_struct(Package)3936_storage))",
-            "contract": "ReBakedDAO",
-            "src": "contracts/ReBakedDAO.sol:33"
-          },
-          {
-            "label": "approvedUser",
-            "offset": 0,
-            "slot": "154",
-            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_bool)))",
-            "contract": "ReBakedDAO",
-            "src": "contracts/ReBakedDAO.sol:36"
-          },
-          {
-            "label": "collaboratorData",
-            "offset": 0,
-            "slot": "155",
-            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Collaborator)3951_storage)))",
-            "contract": "ReBakedDAO",
-            "src": "contracts/ReBakedDAO.sol:39"
-          },
-          {
-            "label": "observerData",
-            "offset": 0,
-            "slot": "156",
-            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Observer)3958_storage)))",
-            "contract": "ReBakedDAO",
-            "src": "contracts/ReBakedDAO.sol:42"
-          }
-        ],
-        "types": {
-          "t_address": {
-            "label": "address",
-            "numberOfBytes": "20"
-          },
-          "t_array(t_uint256)49_storage": {
-            "label": "uint256[49]",
-            "numberOfBytes": "1568"
-          },
-          "t_array(t_uint256)50_storage": {
-            "label": "uint256[50]",
-            "numberOfBytes": "1600"
-          },
-          "t_bool": {
-            "label": "bool",
-            "numberOfBytes": "1"
-          },
-          "t_bytes32": {
-            "label": "bytes32",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_address,t_bool)": {
-            "label": "mapping(address => bool)",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_address,t_struct(Collaborator)3951_storage)": {
-            "label": "mapping(address => struct Collaborator)",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_address,t_struct(Observer)3958_storage)": {
-            "label": "mapping(address => struct Observer)",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_mapping(t_address,t_bool))": {
-            "label": "mapping(bytes32 => mapping(address => bool))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Collaborator)3951_storage))": {
-            "label": "mapping(bytes32 => mapping(address => struct Collaborator))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Observer)3958_storage))": {
-            "label": "mapping(bytes32 => mapping(address => struct Observer))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_bool)))": {
-            "label": "mapping(bytes32 => mapping(bytes32 => mapping(address => bool)))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Collaborator)3951_storage)))": {
-            "label": "mapping(bytes32 => mapping(bytes32 => mapping(address => struct Collaborator)))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Observer)3958_storage)))": {
-            "label": "mapping(bytes32 => mapping(bytes32 => mapping(address => struct Observer)))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_struct(Package)3936_storage))": {
-            "label": "mapping(bytes32 => mapping(bytes32 => struct Package))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_struct(Package)3936_storage)": {
-            "label": "mapping(bytes32 => struct Package)",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_struct(Project)3903_storage)": {
-            "label": "mapping(bytes32 => struct Project)",
-            "numberOfBytes": "32"
-          },
-          "t_struct(Collaborator)3951_storage": {
-            "label": "struct Collaborator",
-            "members": [
-              {
-                "label": "mgp",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "0"
-              },
-              {
-                "label": "bonus",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "1"
-              },
-              {
-                "label": "timeCreated",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "2"
-              },
-              {
-                "label": "timeMgpApproved",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "3"
-              },
-              {
-                "label": "timeMgpPaid",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "4"
-              },
-              {
-                "label": "timeBonusPaid",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "5"
-              },
-              {
-                "label": "isRemoved",
-                "type": "t_bool",
-                "offset": 0,
-                "slot": "6"
-              }
-            ],
-            "numberOfBytes": "224"
-          },
-          "t_struct(Observer)3958_storage": {
-            "label": "struct Observer",
-            "members": [
-              {
-                "label": "timeCreated",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "0"
-              },
-              {
-                "label": "timePaid",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "1"
-              },
-              {
-                "label": "isRemoved",
-                "type": "t_bool",
-                "offset": 0,
-                "slot": "2"
-              }
-            ],
-            "numberOfBytes": "96"
-          },
-          "t_struct(Package)3936_storage": {
-            "label": "struct Package",
-            "members": [
-              {
-                "label": "budget",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "0"
-              },
-              {
-                "label": "budgetAllocated",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "1"
-              },
-              {
-                "label": "budgetPaid",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "2"
-              },
-              {
-                "label": "budgetObservers",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "3"
-              },
-              {
-                "label": "budgetObserversPaid",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "4"
-              },
-              {
-                "label": "bonus",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "5"
-              },
-              {
-                "label": "bonusPaid",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "6"
-              },
-              {
-                "label": "collaboratorsPaidBonus",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "7"
-              },
-              {
-                "label": "timeCreated",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "8"
-              },
-              {
-                "label": "timeFinished",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "9"
-              },
-              {
-                "label": "totalObservers",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "10"
-              },
-              {
-                "label": "totalCollaborators",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "11"
-              },
-              {
-                "label": "collaboratorsLimit",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "12"
-              },
-              {
-                "label": "approvedCollaborators",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "13"
-              },
-              {
-                "label": "timeCanceled",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "14"
-              },
-              {
-                "label": "isActive",
-                "type": "t_bool",
-                "offset": 0,
-                "slot": "15"
-              }
-            ],
-            "numberOfBytes": "512"
-          },
-          "t_struct(Project)3903_storage": {
-            "label": "struct Project",
-            "members": [
-              {
-                "label": "initiator",
-                "type": "t_address",
-                "offset": 0,
-                "slot": "0"
-              },
-              {
-                "label": "token",
-                "type": "t_address",
-                "offset": 0,
-                "slot": "1"
-              },
-              {
-                "label": "budget",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "2"
-              },
-              {
-                "label": "budgetAllocated",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "3"
-              },
-              {
-                "label": "budgetPaid",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "4"
-              },
-              {
-                "label": "timeCreated",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "5"
-              },
-              {
-                "label": "timeFinished",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "6"
-              },
-              {
-                "label": "totalPackages",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "7"
-              },
-              {
-                "label": "totalFinishedPackages",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "8"
-              }
-            ],
-            "numberOfBytes": "288"
-          },
-          "t_uint256": {
-            "label": "uint256",
-            "numberOfBytes": "32"
-          },
-          "t_uint8": {
-            "label": "uint8",
-            "numberOfBytes": "1"
-          }
-        }
-      }
-    },
     "e40d75c6205aed1a49c8a604c5034566cf1515e98be9c41d2d2ab989712021cd": {
       "address": "0x533C156Df1e379296B8dfeB5003C4929e29B48a3",
       "txHash": "0x5010cc2a6f5603a00b76dc8a3e7f458cc5a0d88724f6b71d70875d02acdae5ef",
@@ -1659,9 +1234,9 @@
         }
       }
     },
-    "a8f9b17dd3176643b2666291b6b308078446f2b0d02749741dec34c255d01edf": {
-      "address": "0x8EbD96B8edCEdd1a0848Cd735e8E45B67f3AE9D8",
-      "txHash": "0xa9a6e51234188fa1244005ee0aeb8b55c0eb568a5fd8a7fe775f2a88a23529c9",
+    "93640e6e63e4dcdcfbe4123f6d077498fca08bea34283022e27df3dd1b0598ed": {
+      "address": "0x3D7B83Cf8042139Ec54b6B6F5789D2046a8E4bE4",
+      "txHash": "0x0f42a500f30996241e663ebff1bbace2cdcf7c2a55c7fc8bdcb4a8ccc031ea35",
       "layout": {
         "storage": [
           {
@@ -1682,33 +1257,9 @@
             "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
           },
           {
-            "label": "__gap",
-            "offset": 0,
-            "slot": "1",
-            "type": "t_array(t_uint256)50_storage",
-            "contract": "ContextUpgradeable",
-            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
-          },
-          {
-            "label": "_owner",
-            "offset": 0,
-            "slot": "51",
-            "type": "t_address",
-            "contract": "OwnableUpgradeable",
-            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
-          },
-          {
-            "label": "__gap",
-            "offset": 0,
-            "slot": "52",
-            "type": "t_array(t_uint256)49_storage",
-            "contract": "OwnableUpgradeable",
-            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
-          },
-          {
             "label": "_status",
             "offset": 0,
-            "slot": "101",
+            "slot": "1",
             "type": "t_uint256",
             "contract": "ReentrancyGuardUpgradeable",
             "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
@@ -1716,58 +1267,50 @@
           {
             "label": "__gap",
             "offset": 0,
-            "slot": "102",
+            "slot": "2",
             "type": "t_array(t_uint256)49_storage",
             "contract": "ReentrancyGuardUpgradeable",
             "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:74"
           },
           {
-            "label": "treasury",
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "courseData",
             "offset": 0,
             "slot": "151",
-            "type": "t_address",
-            "contract": "ReBakedDAO",
-            "src": "contracts/ReBakedDAO.sol:27"
+            "type": "t_mapping(t_bytes32,t_struct(Course)8168_storage)",
+            "contract": "LearnToEarn",
+            "src": "contracts/LearnToEarn.sol:17"
           },
           {
-            "label": "projectData",
+            "label": "learnerData",
             "offset": 0,
             "slot": "152",
-            "type": "t_mapping(t_bytes32,t_struct(Project)3867_storage)",
-            "contract": "ReBakedDAO",
-            "src": "contracts/ReBakedDAO.sol:30"
-          },
-          {
-            "label": "packageData",
-            "offset": 0,
-            "slot": "153",
-            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_struct(Package)3900_storage))",
-            "contract": "ReBakedDAO",
-            "src": "contracts/ReBakedDAO.sol:33"
-          },
-          {
-            "label": "approvedUser",
-            "offset": 0,
-            "slot": "154",
-            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_bool)))",
-            "contract": "ReBakedDAO",
-            "src": "contracts/ReBakedDAO.sol:36"
-          },
-          {
-            "label": "collaboratorData",
-            "offset": 0,
-            "slot": "155",
-            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Collaborator)3915_storage)))",
-            "contract": "ReBakedDAO",
-            "src": "contracts/ReBakedDAO.sol:39"
-          },
-          {
-            "label": "observerData",
-            "offset": 0,
-            "slot": "156",
-            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Observer)3922_storage)))",
-            "contract": "ReBakedDAO",
-            "src": "contracts/ReBakedDAO.sol:42"
+            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Learner)8178_storage))",
+            "contract": "LearnToEarn",
+            "src": "contracts/LearnToEarn.sol:20"
           }
         ],
         "types": {
@@ -1783,6 +1326,10 @@
             "label": "uint256[50]",
             "numberOfBytes": "1600"
           },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
           "t_bool": {
             "label": "bool",
             "numberOfBytes": "1"
@@ -1791,239 +1338,264 @@
             "label": "bytes32",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_bool)": {
-            "label": "mapping(address => bool)",
+          "t_mapping(t_address,t_struct(Learner)8178_storage)": {
+            "label": "mapping(address => struct Learner)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(Collaborator)3915_storage)": {
-            "label": "mapping(address => struct Collaborator)",
+          "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Learner)8178_storage))": {
+            "label": "mapping(bytes32 => mapping(address => struct Learner))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(Observer)3922_storage)": {
-            "label": "mapping(address => struct Observer)",
+          "t_mapping(t_bytes32,t_struct(Course)8168_storage)": {
+            "label": "mapping(bytes32 => struct Course)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_mapping(t_address,t_bool))": {
-            "label": "mapping(bytes32 => mapping(address => bool))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Collaborator)3915_storage))": {
-            "label": "mapping(bytes32 => mapping(address => struct Collaborator))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Observer)3922_storage))": {
-            "label": "mapping(bytes32 => mapping(address => struct Observer))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_bool)))": {
-            "label": "mapping(bytes32 => mapping(bytes32 => mapping(address => bool)))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Collaborator)3915_storage)))": {
-            "label": "mapping(bytes32 => mapping(bytes32 => mapping(address => struct Collaborator)))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Observer)3922_storage)))": {
-            "label": "mapping(bytes32 => mapping(bytes32 => mapping(address => struct Observer)))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_struct(Package)3900_storage))": {
-            "label": "mapping(bytes32 => mapping(bytes32 => struct Package))",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_struct(Package)3900_storage)": {
-            "label": "mapping(bytes32 => struct Package)",
-            "numberOfBytes": "32"
-          },
-          "t_mapping(t_bytes32,t_struct(Project)3867_storage)": {
-            "label": "mapping(bytes32 => struct Project)",
-            "numberOfBytes": "32"
-          },
-          "t_struct(Collaborator)3915_storage": {
-            "label": "struct Collaborator",
+          "t_struct(Course)8168_storage": {
+            "label": "struct Course",
             "members": [
               {
-                "label": "mgp",
-                "type": "t_uint256",
+                "label": "creator",
+                "type": "t_address",
                 "offset": 0,
                 "slot": "0"
               },
               {
-                "label": "bonus",
-                "type": "t_uint256",
+                "label": "rewardAddress",
+                "type": "t_address",
                 "offset": 0,
                 "slot": "1"
               },
-              {
-                "label": "timeCreated",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "2"
-              },
-              {
-                "label": "timeMgpApproved",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "3"
-              },
-              {
-                "label": "timeMgpPaid",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "4"
-              },
-              {
-                "label": "timeBonusPaid",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "5"
-              },
-              {
-                "label": "isRemoved",
-                "type": "t_bool",
-                "offset": 0,
-                "slot": "6"
-              }
-            ],
-            "numberOfBytes": "224"
-          },
-          "t_struct(Observer)3922_storage": {
-            "label": "struct Observer",
-            "members": [
-              {
-                "label": "timeCreated",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "0"
-              },
-              {
-                "label": "timePaid",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "1"
-              },
-              {
-                "label": "isRemoved",
-                "type": "t_bool",
-                "offset": 0,
-                "slot": "2"
-              }
-            ],
-            "numberOfBytes": "96"
-          },
-          "t_struct(Package)3900_storage": {
-            "label": "struct Package",
-            "members": [
               {
                 "label": "budget",
                 "type": "t_uint256",
                 "offset": 0,
-                "slot": "0"
-              },
-              {
-                "label": "budgetAllocated",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "1"
-              },
-              {
-                "label": "budgetPaid",
-                "type": "t_uint256",
-                "offset": 0,
                 "slot": "2"
               },
               {
-                "label": "budgetObservers",
+                "label": "budgetAvailable",
                 "type": "t_uint256",
                 "offset": 0,
                 "slot": "3"
               },
               {
-                "label": "budgetObserversPaid",
+                "label": "bonus",
                 "type": "t_uint256",
                 "offset": 0,
                 "slot": "4"
               },
               {
-                "label": "bonus",
+                "label": "totalLearnersClaimedBonus",
                 "type": "t_uint256",
                 "offset": 0,
                 "slot": "5"
               },
               {
-                "label": "bonusPaid",
+                "label": "timeCreated",
                 "type": "t_uint256",
                 "offset": 0,
                 "slot": "6"
               },
               {
-                "label": "collaboratorsPaidBonus",
+                "label": "timeEndBonus",
                 "type": "t_uint256",
                 "offset": 0,
                 "slot": "7"
               },
               {
-                "label": "timeCreated",
+                "label": "timeRemoved",
                 "type": "t_uint256",
                 "offset": 0,
                 "slot": "8"
               },
               {
-                "label": "timeFinished",
-                "type": "t_uint256",
+                "label": "isBonusToken",
+                "type": "t_bool",
                 "offset": 0,
                 "slot": "9"
               },
               {
-                "label": "totalObservers",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "10"
-              },
-              {
-                "label": "totalCollaborators",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "11"
-              },
-              {
-                "label": "collaboratorsLimit",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "12"
-              },
-              {
-                "label": "approvedCollaborators",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "13"
-              },
-              {
-                "label": "timeCanceled",
-                "type": "t_uint256",
-                "offset": 0,
-                "slot": "14"
-              },
-              {
-                "label": "isActive",
+                "label": "canMintNFT",
                 "type": "t_bool",
-                "offset": 0,
-                "slot": "15"
+                "offset": 1,
+                "slot": "9"
+              },
+              {
+                "label": "isUsingDuration",
+                "type": "t_bool",
+                "offset": 2,
+                "slot": "9"
               }
             ],
-            "numberOfBytes": "512"
+            "numberOfBytes": "320"
           },
-          "t_struct(Project)3867_storage": {
-            "label": "struct Project",
+          "t_struct(Learner)8178_storage": {
+            "label": "struct Learner",
             "members": [
               {
-                "label": "initiator",
+                "label": "timeStarted",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "timeCompleted",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "timeRewarded",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "nftIds",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "278e23fc18ca509cf3c2c5cd733a689ca4d635e11e46a22f1638e316a98c31a8": {
+      "address": "0xC09c36dA5Aef276b2093a69489CCa8162475624f",
+      "txHash": "0xaeb6c25706580b4447cc0e4ea3e916e8dea5d9db6db71dbc8fdd9aaf7c27f4c5",
+      "layout": {
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:74"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "courseData",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_mapping(t_bytes32,t_struct(Course)8168_storage)",
+            "contract": "LearnToEarn",
+            "src": "contracts/LearnToEarn.sol:17"
+          },
+          {
+            "label": "learnerData",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Learner)8178_storage))",
+            "contract": "LearnToEarn",
+            "src": "contracts/LearnToEarn.sol:20"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(Learner)8178_storage)": {
+            "label": "mapping(address => struct Learner)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Learner)8178_storage))": {
+            "label": "mapping(bytes32 => mapping(address => struct Learner))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(Course)8168_storage)": {
+            "label": "mapping(bytes32 => struct Course)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Course)8168_storage": {
+            "label": "struct Course",
+            "members": [
+              {
+                "label": "creator",
                 "type": "t_address",
                 "offset": 0,
                 "slot": "0"
               },
               {
-                "label": "token",
+                "label": "rewardAddress",
                 "type": "t_address",
                 "offset": 0,
                 "slot": "1"
@@ -2035,43 +1607,91 @@
                 "slot": "2"
               },
               {
-                "label": "budgetAllocated",
+                "label": "budgetAvailable",
                 "type": "t_uint256",
                 "offset": 0,
                 "slot": "3"
               },
               {
-                "label": "budgetPaid",
+                "label": "bonus",
                 "type": "t_uint256",
                 "offset": 0,
                 "slot": "4"
               },
               {
-                "label": "timeCreated",
+                "label": "totalLearnersClaimedBonus",
                 "type": "t_uint256",
                 "offset": 0,
                 "slot": "5"
               },
               {
-                "label": "timeFinished",
+                "label": "timeCreated",
                 "type": "t_uint256",
                 "offset": 0,
                 "slot": "6"
               },
               {
-                "label": "totalPackages",
+                "label": "timeEndBonus",
                 "type": "t_uint256",
                 "offset": 0,
                 "slot": "7"
               },
               {
-                "label": "totalFinishedPackages",
+                "label": "timeRemoved",
                 "type": "t_uint256",
                 "offset": 0,
                 "slot": "8"
+              },
+              {
+                "label": "isBonusToken",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "canMintNFT",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "9"
+              },
+              {
+                "label": "isUsingDuration",
+                "type": "t_bool",
+                "offset": 2,
+                "slot": "9"
               }
             ],
-            "numberOfBytes": "288"
+            "numberOfBytes": "320"
+          },
+          "t_struct(Learner)8178_storage": {
+            "label": "struct Learner",
+            "members": [
+              {
+                "label": "timeStarted",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "timeCompleted",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "timeRewarded",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "nftIds",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
           },
           "t_uint256": {
             "label": "uint256",

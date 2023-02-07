@@ -512,6 +512,85 @@ describe("LearnToEarn contract", () => {
 		});
 	});
 
+	describe("removeCourse", () => {
+		let courseId1: string;
+		let courseId2: string;
+		let courseId3: string;
+		let timeStart: number;
+		beforeEach(async () => {
+			await tokenFactory.setLearnToEarn(learnToEarn.address);
+			let tx: ContractTransaction = await tokenFactory.deployNFT(nftName, nftSymbol, nftURI);
+			let receipt: ContractReceipt = await tx.wait();
+			let args: Result = receipt.events!.find(ev => ev.event === "DeployedNFT")!.args!;
+
+			await iouToken.connect(creator).approve(learnToEarn.address, MAX_UINT256);
+
+			tx = await learnToEarn.connect(creator).createCourse(iouToken.address, TOKEN_100, TOKEN_1, await getTimestamp(), ONE_DAY * 60, true, true);
+			receipt = await tx.wait();
+			args = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
+			courseId1 = args[0];
+
+			const NEXT_30_DAYS = (await getTimestamp()) + ONE_DAY * 30;
+			tx = await learnToEarn.connect(creator).createCourse(iouToken.address, TOKEN_1.mul(2), TOKEN_1.mul(2), await getTimestamp(), NEXT_30_DAYS, false, true);
+			receipt = await tx.wait();
+			args = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
+			courseId2 = args[0];
+
+			for (let i = 0; i < 20; i++) {
+				await erc721Test.connect(deployer).mintNFT(creator.address, nftURI);
+			}
+
+			tx = await learnToEarn.connect(creator).createCourse(erc721Test.address, 20, 3, await getTimestamp(), NEXT_30_DAYS, false, false);
+			receipt = await tx.wait();
+			args = receipt.events!.find(ev => ev.event === "CreatedCourse")!.args!;
+			courseId3 = args[0];
+
+			timeStart = (await getTimestamp()) + ONE_DAY;
+		});
+
+		it("[Fail]: Caller is not the creator of course", async () => {
+			await expect(learnToEarn.connect(learner1).removeCourse(courseId1)).to.revertedWith("caller is not course creator");
+		});
+
+		it("[Fail]: Course has been removed", async () => {
+			await learnToEarn.connect(creator).removeCourse(courseId1);
+			await expect(learnToEarn.connect(creator).removeCourse(courseId1)).to.revertedWith("Course has been removed");
+		});
+
+		it("[OK]: Remove course successfully", async () => {
+			await skipTime(ONE_DAY * 10);
+			await expect(learnToEarn.connect(creator).removeCourse(courseId1))
+				.to.emit(learnToEarn, "RemovedCourse")
+				.withArgs(courseId1, creator.address)
+				.to.changeTokenBalances(iouToken, [learnToEarn.address, creator.address], [TOKEN_100.mul(-1), TOKEN_100]);
+
+			let course = await learnToEarn.getCourseData(courseId1);
+			let timestamp = await getTimestamp();
+			expect(course.budgetAvailable).to.equal(0);
+			expect(course.timeRemoved).to.closeTo(timestamp, 10);
+
+			await learnToEarn.connect(creator).completeCourse(courseId2, learner1.address, timeStart, []);
+			await expect(learnToEarn.connect(creator).removeCourse(courseId2))
+				.to.emit(learnToEarn, "RemovedCourse")
+				.withArgs(courseId2, creator.address)
+				.to.changeTokenBalances(iouToken, [learnToEarn.address, creator.address], [0, 0]);
+
+			course = await learnToEarn.getCourseData(courseId2);
+			timestamp = await getTimestamp();
+			expect(course.budgetAvailable).to.equal(0);
+			expect(course.timeRemoved).to.closeTo(timestamp, 10);
+
+			await expect(learnToEarn.connect(creator).removeCourse(courseId3))
+				.to.emit(learnToEarn, "RemovedCourse")
+				.withArgs(courseId3, creator.address);
+
+			course = await learnToEarn.getCourseData(courseId3);
+			timestamp = await getTimestamp();
+			expect(course.budgetAvailable).to.equal(0);
+			expect(course.timeRemoved).to.closeTo(timestamp, 10);
+		});
+	});
+
 	describe("canGetBonus", () => {
 		let courseId1: string;
 		let courseId2: string;
@@ -568,4 +647,3 @@ describe("LearnToEarn contract", () => {
 		})
 	});
 });
-
