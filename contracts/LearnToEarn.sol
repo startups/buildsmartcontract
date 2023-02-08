@@ -153,7 +153,13 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * emit {ClaimedReward} events if learner can receive rewards
      * emit {CompletedCourse} events
      */
-    function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256[] memory _nftIds) external onlyCreator(_courseId) activeCourse(_courseId) {
+    function completeCourse(
+        bytes32 _courseId,
+        address _learner,
+        uint256 _timeStarted,
+        uint256 _timeCompleted,
+        uint256[] memory _nftIds
+    ) external onlyCreator(_courseId) activeCourse(_courseId) {
         Course storage course = courseData[_courseId];
         require(course.timeCreated <= _timeStarted && _timeStarted < block.timestamp, "Invalid time start");
 
@@ -161,9 +167,9 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         require(learner.timeCompleted == 0, "already completed");
 
         learner.timeStarted = _timeStarted;
-        bool canLearnerGetBonus = canGetBonus(_courseId, _learner);
+        bool canLearnerGetBonus = canGetBonus(_courseId, _learner, _timeCompleted);
 
-        learner.timeCompleted = block.timestamp;
+        learner.timeCompleted = _timeCompleted;
 
         if (canLearnerGetBonus) {
             course.budgetAvailable -= course.bonus;
@@ -240,13 +246,13 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @param _courseId Id of the course
      * @param _learner Address of the learner
      */
-    function canGetBonus(bytes32 _courseId, address _learner) public view returns (bool) {
+    function canGetBonus(bytes32 _courseId, address _learner, uint256 _timeCompleted) public view returns (bool) {
         if (courseData[_courseId].budgetAvailable < courseData[_courseId].bonus || (learnerData[_courseId][_learner].timeCompleted > 0)) return false;
 
         if (courseData[_courseId].isUsingDuration) {
-            return block.timestamp <= learnerData[_courseId][_learner].timeStarted + courseData[_courseId].timeEndBonus;
+            return _timeCompleted <= learnerData[_courseId][_learner].timeStarted + courseData[_courseId].timeEndBonus;
         }
-        return courseData[_courseId].timeEndBonus == 0 || block.timestamp <= courseData[_courseId].timeEndBonus;
+        return courseData[_courseId].timeEndBonus == 0 || _timeCompleted <= courseData[_courseId].timeEndBonus;
     }
 
     /**

@@ -60,9 +60,9 @@ interface ILearnToEarn {
      * @param _courseId Id of course
      * @param _learner Address of learner
      * @param _timeStarted Time when learner enrollred in course
-     * @param _nftId List Id of nfts that learner will receive
+     * @param _nftIds List Id of nfts that learner will receive
      */
-    function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256[] memory _nftId) external;
+    function completeCourse(bytes32 _courseId, address _learner, uint256 _timeStarted, uint256 _timeCompleted, uint256[] memory _nftIds) external;
 
     /**
      * @notice Creator can withdraw tokens bonus after time bonus ended
