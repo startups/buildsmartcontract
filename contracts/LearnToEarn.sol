@@ -241,13 +241,12 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @param _learner Address of the learner
      */
     function canGetBonus(bytes32 _courseId, address _learner) public view returns (bool) {
-        uint256 timeCompleted = block.timestamp;
         if (courseData[_courseId].budgetAvailable < courseData[_courseId].bonus || (learnerData[_courseId][_learner].timeCompleted > 0)) return false;
 
         if (courseData[_courseId].isUsingDuration) {
-            return timeCompleted <= learnerData[_courseId][_learner].timeStarted + courseData[_courseId].timeEndBonus;
+            return block.timestamp <= learnerData[_courseId][_learner].timeStarted + courseData[_courseId].timeEndBonus;
         }
-        return courseData[_courseId].timeEndBonus == 0 || timeCompleted <= courseData[_courseId].timeEndBonus;
+        return courseData[_courseId].timeEndBonus == 0 || block.timestamp <= courseData[_courseId].timeEndBonus;
     }
 
     /**
