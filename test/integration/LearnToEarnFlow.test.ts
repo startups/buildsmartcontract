@@ -36,7 +36,7 @@ let learner2BT: BT;
 let learner3BT: BT;
 let learner4BT: BT;
 
-describe.only("Integration test LearnToEarn contract", () => {
+describe("Integration test LearnToEarn contract", () => {
 	before(async () => {
 		[deployer, creator, learner1, learner2, learner3, learner4, ...accounts] = await ethers.getSigners();
 		const IOUToken = (await ethers.getContractFactory("IOUToken")) as IOUToken__factory;
@@ -119,7 +119,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY);
 			const timeStarted = await getTimestamp();
 			await skipTime(ONE_DAY * 14);
-			await expect(learnToEarn.connect(creator).completeCourse(courseId1, learner1.address, timeStarted, []))
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId1, learner1.address, timeStarted, currentTimestamp, []))
 				.to.emit(learnToEarn, "ClaimedReward")
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId1, learner1.address)
@@ -135,7 +136,7 @@ describe.only("Integration test LearnToEarn contract", () => {
 			expect(courseLearner1.timeCompleted).to.closeTo(timestamp, 10);
 			expect(courseLearner1.timeRewarded).to.closeTo(timestamp, 10);
 
-			await expect(learnToEarn.connect(creator).completeCourse(courseId1, learner2.address, timeStarted, []))
+			await expect(learnToEarn.connect(creator).completeCourse(courseId1, learner2.address, timeStarted, timestamp, []))
 				.to.emit(learnToEarn, "ClaimedReward")
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId1, learner2.address)
@@ -165,7 +166,9 @@ describe.only("Integration test LearnToEarn contract", () => {
 
 		it("Learner 3 complete and receive bonus", async () => {
 			const timeStarted = await getTimestamp();
-			await expect(learnToEarn.connect(creator).completeCourse(courseId1, learner3.address, timeStarted, []))
+			await skipTime(ONE_DAY * 10);
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId1, learner3.address, timeStarted, currentTimestamp, []))
 				.to.emit(learnToEarn, "ClaimedReward")
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId1, learner3.address)
@@ -231,7 +234,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY);
 			const timeStarted = await getTimestamp();
 			await skipTime(ONE_DAY * 14);
-			await expect(learnToEarn.connect(creator).completeCourse(courseId2, learner1.address, timeStarted, []))
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId2, learner1.address, timeStarted, currentTimestamp, []))
 				.to.emit(learnToEarn, "ClaimedReward")
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId2, learner1.address)
@@ -247,7 +251,7 @@ describe.only("Integration test LearnToEarn contract", () => {
 			expect(courseLearner1.timeCompleted).to.closeTo(timestamp, 10);
 			expect(courseLearner1.timeRewarded).to.closeTo(timestamp, 10);
 
-			await expect(learnToEarn.connect(creator).completeCourse(courseId2, learner2.address, timeStarted, []))
+			await expect(learnToEarn.connect(creator).completeCourse(courseId2, learner2.address, timeStarted, timestamp, []))
 				.to.emit(learnToEarn, "ClaimedReward")
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId2, learner2.address)
@@ -267,7 +271,9 @@ describe.only("Integration test LearnToEarn contract", () => {
 		it("Skip 45 days and Learner 3 complete but not receive bonus", async () => {
 			await skipTime(ONE_DAY * 45);
 			const timeStarted = await getTimestamp();
-			await expect(learnToEarn.connect(creator).completeCourse(courseId2, learner3.address, timeStarted, []))
+			await skipTime(ONE_DAY * 10);
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId2, learner3.address, timeStarted, currentTimestamp, []))
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId2, learner3.address);
 
@@ -347,7 +353,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY);
 			const timeStarted = await getTimestamp();
 			await skipTime(ONE_DAY * 14);
-			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner1.address, timeStarted, [1, 3]))
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner1.address, timeStarted, currentTimestamp, [1, 3]))
 				.to.emit(learnToEarn, "ClaimedReward")
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId3, learner1.address);
@@ -366,7 +373,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 				expect(await erc721Test.ownerOf(courseLearner1.nftIds[i])).to.equal(learner1.address);
 			}
 
-			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner2.address, timeStarted, [2, 4]))
+			currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner2.address, timeStarted, currentTimestamp, [2, 4]))
 				.to.emit(learnToEarn, "ClaimedReward")
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId3, learner2.address);
@@ -388,7 +396,9 @@ describe.only("Integration test LearnToEarn contract", () => {
 
 		it("Learner 3 completed but not receive NFT(s) because of out budget", async () => {
 			const timeStarted = await getTimestamp();
-			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner3.address, timeStarted, [1, 3]))
+			await skipTime(ONE_DAY * 10);
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner3.address, timeStarted, currentTimestamp, [1, 3]))
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId3, learner3.address);
 
@@ -418,7 +428,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 		it("Learner 4 complete and receive NFT(s)", async () => {
 			const timeStarted = await getTimestamp();
 			await skipTime(ONE_DAY * 10);
-			await learnToEarn.connect(creator).completeCourse(courseId3, learner4.address, timeStarted, [5, 6]);
+			let currentTimestamp = await getTimestamp();
+			await learnToEarn.connect(creator).completeCourse(courseId3, learner4.address, timeStarted, currentTimestamp, [5, 6]);
 
 			const course3 = await learnToEarn.getCourseData(courseId3);
 			expect(course3.budgetAvailable).to.equal(0);
@@ -505,7 +516,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY);
 			const timeStarted = await getTimestamp();
 			await skipTime(ONE_DAY * 14);
-			await expect(learnToEarn.connect(creator).completeCourse(courseId4, learner1.address, timeStarted, [1, 3]))
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId4, learner1.address, timeStarted, currentTimestamp, [1, 3]))
 				.to.emit(learnToEarn, "ClaimedReward")
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId4, learner1.address);
@@ -525,7 +537,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 				expect(await nftRewardContract.ownerOf(courseLearner1.nftIds[i])).to.equal(learner1.address);
 			}
 
-			await expect(learnToEarn.connect(creator).completeCourse(courseId4, learner2.address, timeStarted, [1, 3]))
+			currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId4, learner2.address, timeStarted, currentTimestamp, [1, 3]))
 				.to.emit(learnToEarn, "ClaimedReward")
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId4, learner2.address);
@@ -548,7 +561,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 		it("Learner 3 completed but not receive NFT(s) because out of deadline", async () => {
 			const timeStarted = await getTimestamp();
 			await skipTime(ONE_DAY * 60 + 1);
-			await expect(learnToEarn.connect(creator).completeCourse(courseId4, learner3.address, timeStarted, [1, 3]))
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId4, learner3.address, timeStarted, currentTimestamp, [1, 3]))
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId4, learner3.address);
 
@@ -567,7 +581,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY);
 			const timeStarted = await getTimestamp();
 			await skipTime(ONE_DAY * 14);
-			await expect(learnToEarn.connect(creator).completeCourse(courseId4, learner4.address, timeStarted, [1, 3]))
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId4, learner4.address, timeStarted, currentTimestamp, [1, 3]))
 				.to.emit(learnToEarn, "ClaimedReward")
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId4, learner4.address);
@@ -641,7 +656,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY);
 			const timeStarted = await getTimestamp();
 			await skipTime(ONE_DAY * 14);
-			await expect(learnToEarn.connect(creator).completeCourse(courseId5, learner1.address, timeStarted, []))
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId5, learner1.address, timeStarted, currentTimestamp, []))
 				.to.emit(learnToEarn, "ClaimedReward")
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId5, learner1.address)
@@ -657,7 +673,7 @@ describe.only("Integration test LearnToEarn contract", () => {
 			expect(courseLearner1.timeCompleted).to.closeTo(timestamp, 10);
 			expect(courseLearner1.timeRewarded).to.closeTo(timestamp, 10);
 
-			await expect(learnToEarn.connect(creator).completeCourse(courseId5, learner2.address, timeStarted, []))
+			await expect(learnToEarn.connect(creator).completeCourse(courseId5, learner2.address, timeStarted, timestamp, []))
 				.to.emit(learnToEarn, "ClaimedReward")
 				.to.emit(learnToEarn, "CompletedCourse")
 				.withArgs(courseId5, learner2.address)
@@ -684,7 +700,9 @@ describe.only("Integration test LearnToEarn contract", () => {
 
 		it("Learner 1 complete and receive bonus but reverted", async () => {
 			const timeStarted = await getTimestamp();
-			await expect(learnToEarn.connect(creator).completeCourse(courseId5, learner1.address, timeStarted, [])).to.revertedWith("already completed");
+			await skipTime(ONE_DAY * 10);
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId5, learner1.address, timeStarted, currentTimestamp, [])).to.revertedWith("already completed");
 		});
 
 		it("Creator withdraw budget", async () => {
@@ -744,7 +762,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY);
 			const timeStarted = await getTimestamp();
 			await skipTime(ONE_DAY * 14);
-			await expect(learnToEarn.connect(creator).completeCourse(courseId6, learner1.address, timeStarted, [])).to.changeTokenBalances(iouToken, [learnToEarn.address, learner1.address], [`-${TOKEN_1.mul(10)}`, TOKEN_1.mul(10)]);
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId6, learner1.address, timeStarted, currentTimestamp, [])).to.changeTokenBalances(iouToken, [learnToEarn.address, learner1.address], [`-${TOKEN_1.mul(10)}`, TOKEN_1.mul(10)]);
 
 			let course6 = await learnToEarn.getCourseData(courseId6);
 			expect(course6.budgetAvailable).to.equal(TOKEN_1.mul(20));
@@ -756,7 +775,7 @@ describe.only("Integration test LearnToEarn contract", () => {
 			expect(courseLearner1.timeCompleted).to.closeTo(timestamp, 10);
 			expect(courseLearner1.timeRewarded).to.closeTo(timestamp, 10);
 
-			await expect(learnToEarn.connect(creator).completeCourse(courseId6, learner2.address, timeStarted, [])).to.changeTokenBalances(iouToken, [learnToEarn.address, learner2.address], [`-${TOKEN_1.mul(10)}`, TOKEN_1.mul(10)]);
+			await expect(learnToEarn.connect(creator).completeCourse(courseId6, learner2.address, timeStarted, timestamp, [])).to.changeTokenBalances(iouToken, [learnToEarn.address, learner2.address], [`-${TOKEN_1.mul(10)}`, TOKEN_1.mul(10)]);
 
 			course6 = await learnToEarn.getCourseData(courseId6);
 			expect(course6.budgetAvailable).to.equal(TOKEN_1.mul(10));
@@ -768,7 +787,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 			expect(courseLearner2.timeCompleted).to.closeTo(timestamp, 10);
 			expect(courseLearner2.timeRewarded).to.closeTo(timestamp, 10);
 
-			await expect(learnToEarn.connect(creator).completeCourse(courseId6, learner3.address, timeStarted, [])).to.changeTokenBalances(iouToken, [learnToEarn.address, learner3.address], [`-${TOKEN_1.mul(10)}`, TOKEN_1.mul(10)]);
+			currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId6, learner3.address, timeStarted, currentTimestamp, [])).to.changeTokenBalances(iouToken, [learnToEarn.address, learner3.address], [`-${TOKEN_1.mul(10)}`, TOKEN_1.mul(10)]);
 
 			course6 = await learnToEarn.getCourseData(courseId6);
 			expect(course6.budgetAvailable).to.equal(0);
@@ -863,7 +883,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY);
 			const timeStarted = await getTimestamp();
 			await skipTime(ONE_DAY * 14);
-			await learnToEarn.connect(creator).completeCourse(courseId7, learner1.address, timeStarted, [10, 12]);
+			let currentTimestamp = await getTimestamp();
+			await learnToEarn.connect(creator).completeCourse(courseId7, learner1.address, timeStarted, currentTimestamp, [10, 12]);
 
 			let course7 = await learnToEarn.getCourseData(courseId7);
 			expect(course7.budgetAvailable).to.equal(2);
@@ -879,7 +900,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 				expect(await erc721Test.ownerOf(courseLearner1.nftIds[i])).to.equal(learner1.address);
 			}
 
-			await learnToEarn.connect(creator).completeCourse(courseId7, learner2.address, timeStarted, [11, 13]);
+			currentTimestamp = await getTimestamp();
+			await learnToEarn.connect(creator).completeCourse(courseId7, learner2.address, timeStarted, currentTimestamp, [11, 13]);
 
 			course7 = await learnToEarn.getCourseData(courseId7);
 			expect(course7.budgetAvailable).to.equal(0);
@@ -918,7 +940,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 		it("Learner 3 complete and receive NFT(s)", async () => {
 			const timeStarted = await getTimestamp();
 			await skipTime(ONE_DAY * 14);
-			await learnToEarn.connect(creator).completeCourse(courseId7, learner3.address, timeStarted, [14, 15]);
+			let currentTimestamp = await getTimestamp();
+			await learnToEarn.connect(creator).completeCourse(courseId7, learner3.address, timeStarted, currentTimestamp, [14, 15]);
 
 			let course7 = await learnToEarn.getCourseData(courseId7);
 			expect(course7.budgetAvailable).to.equal(2);
@@ -1000,7 +1023,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 			await skipTime(ONE_DAY);
 			const timeStarted = await getTimestamp();
 			await skipTime(ONE_DAY * 14);
-			await expect(learnToEarn.connect(creator).completeCourse(courseId8, learner1.address, timeStarted, [18, 19])).to.revertedWith("ERC721: caller is not token owner nor approved");
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId8, learner1.address, timeStarted, currentTimestamp, [18, 19])).to.revertedWith("ERC721: caller is not token owner nor approved");
 		});
 
 		it("Creator mint new NFTs to transfer to Learner 1", async () => {
@@ -1013,7 +1037,9 @@ describe.only("Integration test LearnToEarn contract", () => {
 		it("Transfer NFTs for Learner 1", async () => {
 			await erc721Test.connect(creator).setApprovalForAll(learnToEarn.address, true);
 			const timeStarted = await getTimestamp();
-			await learnToEarn.connect(creator).completeCourse(courseId8, learner1.address, timeStarted, [22, 23]);
+			await skipTime(ONE_DAY * 10);
+			let currentTimestamp = await getTimestamp();
+			await learnToEarn.connect(creator).completeCourse(courseId8, learner1.address, timeStarted, currentTimestamp, [22, 23]);
 
 			let course8 = await learnToEarn.getCourseData(courseId8);
 			expect(course8.budgetAvailable).to.equal(6);
@@ -1056,7 +1082,9 @@ describe.only("Integration test LearnToEarn contract", () => {
 			await erc721Test.connect(creator).setApprovalForAll(learnToEarn.address, true);
 			await skipTime(ONE_DAY);
 			const timeStarted = await getTimestamp();
-			await learnToEarn.connect(creator).completeCourse(courseId8, learner3.address, timeStarted, [26, 27]);
+			await skipTime(ONE_DAY * 10);
+			let currentTimestamp = await getTimestamp();
+			await learnToEarn.connect(creator).completeCourse(courseId8, learner3.address, timeStarted, currentTimestamp, [26, 27]);
 
 			let course8 = await learnToEarn.getCourseData(courseId8);
 			expect(course8.budgetAvailable).to.equal(8);
@@ -1072,7 +1100,8 @@ describe.only("Integration test LearnToEarn contract", () => {
 				expect(await erc721Test.ownerOf(courseLearner3.nftIds[i])).to.equal(learner3.address);
 			}
 
-			await learnToEarn.connect(creator).completeCourse(courseId8, learner2.address, timeStarted, [28, 29]);
+			currentTimestamp = await getTimestamp();
+			await learnToEarn.connect(creator).completeCourse(courseId8, learner2.address, timeStarted, currentTimestamp, [28, 29]);
 
 			course8 = await learnToEarn.getCourseData(courseId8);
 			expect(course8.budgetAvailable).to.equal(6);

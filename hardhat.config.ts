@@ -53,7 +53,7 @@ const config: HardhatUserConfig = {
 			polygonMumbai: process.env.POLYGON_TEST_API_KEY!,
 			bscTestnet: process.env.BSC_TEST_API_KEY!,
 			auroraTestnet: process.env.AURORA_TEST_API_KEY!,
-			arbitrumGoerli: "FTZHM5RTPBMCT6WWQCVHHXCFKIKCVDJQKZ"
+			arbitrumGoerli: process.env.ARBITRUM_GOERLI_TEST_API_KEY!
 		},
 		customChains: [
 			{
