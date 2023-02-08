@@ -32,7 +32,7 @@ const nftName = "Pioneer Certificate",
 	nftURI = "https://ipfs.io/ipfs/QmNZiPk974vDsPmQii3YbrMKfi12KTSNM7XMiYyiea4VYZ/example";
 let timeStart: number;
 
-describe.only("LearnToEarn contract", () => {
+describe("LearnToEarn contract", () => {
 	beforeEach(async () => {
 		[deployer, creator, learner1, learner2, ...accounts] = await ethers.getSigners();
 		const IOUToken = (await ethers.getContractFactory("IOUToken")) as IOUToken__factory;

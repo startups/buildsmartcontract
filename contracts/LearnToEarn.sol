@@ -147,7 +147,8 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
      * @notice Mark learner completed course and transfer bonus to learner
      * @param _courseId Id of course
      * @param _learner Address of learner
-     * @param _timeStarted Time when learner enrolled in course (miliseconds)
+     * @param _timeStarted Time when learner enrolled in course (seconds)
+     * @param _timeCompleted Time when learner complete course (seconds)
      * @param _nftIds List Id of nfts that learner will receive if bonus is nfts
      *
      * emit {ClaimedReward} events if learner can receive rewards

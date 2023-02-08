@@ -36,7 +36,7 @@ let learner2BT: BT;
 let learner3BT: BT;
 let learner4BT: BT;
 
-describe.only("Integration test LearnToEarn contract", () => {
+describe("Integration test LearnToEarn contract", () => {
 	before(async () => {
 		[deployer, creator, learner1, learner2, learner3, learner4, ...accounts] = await ethers.getSigners();
 		const IOUToken = (await ethers.getContractFactory("IOUToken")) as IOUToken__factory;
