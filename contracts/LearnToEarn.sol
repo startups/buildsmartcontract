@@ -163,6 +163,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
     ) external onlyCreator(_courseId) activeCourse(_courseId) {
         Course storage course = courseData[_courseId];
         require(course.timeCreated <= _timeStarted && _timeStarted < block.timestamp, "Invalid time start");
+        require(_timeCompleted > _timeStarted, "Invalid time complete");
 
         Learner storage learner = learnerData[_courseId][_learner];
         require(learner.timeCompleted == 0, "already completed");
