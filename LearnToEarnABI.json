@@ -1,0 +1,376 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "courseId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "budget",
+        "type": "uint256"
+      }
+    ],
+    "name": "AddedBudget",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "courseId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "learner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "rewardAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "bonus",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "nftIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "ClaimedReward",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "courseId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "learner",
+        "type": "address"
+      }
+    ],
+    "name": "CompletedCourse",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "courseId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "bonus",
+        "type": "uint256"
+      }
+    ],
+    "name": "CreatedCourse",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "version",
+        "type": "uint8"
+      }
+    ],
+    "name": "Initialized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "courseId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      }
+    ],
+    "name": "RemovedCourse",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "courseId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawnBudget",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "_courseId", "type": "bytes32" },
+      { "internalType": "uint256", "name": "_budget", "type": "uint256" }
+    ],
+    "name": "addBudget",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "_courseId", "type": "bytes32" },
+      { "internalType": "address", "name": "_learner", "type": "address" },
+      { "internalType": "uint256", "name": "_timeCompleted", "type": "uint256" }
+    ],
+    "name": "canGetBonus",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "_courseId", "type": "bytes32" },
+      { "internalType": "address", "name": "_learner", "type": "address" },
+      { "internalType": "uint256", "name": "_timeStarted", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "_timeCompleted",
+        "type": "uint256"
+      },
+      { "internalType": "uint256[]", "name": "_nftIds", "type": "uint256[]" }
+    ],
+    "name": "completeCourse",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_rewardAddress",
+        "type": "address"
+      },
+      { "internalType": "uint256", "name": "_budget", "type": "uint256" },
+      { "internalType": "uint256", "name": "_bonus", "type": "uint256" },
+      { "internalType": "uint256", "name": "_timeStart", "type": "uint256" },
+      { "internalType": "uint256", "name": "_timeEndBonus", "type": "uint256" },
+      { "internalType": "bool", "name": "_isUsingDuration", "type": "bool" },
+      { "internalType": "bool", "name": "_isBonusToken", "type": "bool" }
+    ],
+    "name": "createCourse",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "_courseId", "type": "bytes32" }
+    ],
+    "name": "getCourseData",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "creator", "type": "address" },
+          {
+            "internalType": "address",
+            "name": "rewardAddress",
+            "type": "address"
+          },
+          { "internalType": "uint256", "name": "budget", "type": "uint256" },
+          {
+            "internalType": "uint256",
+            "name": "budgetAvailable",
+            "type": "uint256"
+          },
+          { "internalType": "uint256", "name": "bonus", "type": "uint256" },
+          {
+            "internalType": "uint256",
+            "name": "totalLearnersClaimedBonus",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timeCreated",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timeEndBonus",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timeRemoved",
+            "type": "uint256"
+          },
+          { "internalType": "bool", "name": "isBonusToken", "type": "bool" },
+          { "internalType": "bool", "name": "canMintNFT", "type": "bool" },
+          { "internalType": "bool", "name": "isUsingDuration", "type": "bool" }
+        ],
+        "internalType": "struct Course",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "_courseId", "type": "bytes32" },
+      { "internalType": "address", "name": "_learner", "type": "address" }
+    ],
+    "name": "getLearnerData",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "timeStarted",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timeCompleted",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timeRewarded",
+            "type": "uint256"
+          },
+          { "internalType": "uint256[]", "name": "nftIds", "type": "uint256[]" }
+        ],
+        "internalType": "struct Learner",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "_courseId", "type": "bytes32" }
+    ],
+    "name": "removeCourse",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "newOwner", "type": "address" }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "_courseId", "type": "bytes32" }
+    ],
+    "name": "withdrawBudget",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

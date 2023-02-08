@@ -1,251 +1,251 @@
 {
-    "manifestVersion": "3.2",
-    "admin": {
-      "address": "0xDd19Cf85BC9f83ab5E4C4fcD9248FC462ecd0581",
-      "txHash": "0x54c07e6d039384b63cb0322d6cd62845d59f3bd40817603bea05a7e9fedcd148"
-    },
-    "proxies": [
-      {
-        "address": "0xD7036094b4341297FF47467259F0639Dc94b91D8",
-        "txHash": "0x9f268fc98c7c070bb81fc74fbc79ac094dbb2c94d332f76fdc97bece93ab34da",
-        "kind": "transparent"
-      }
-    ],
-    "impls": {
-      "dcfa3160d75112d91457a8f139669873cefb2843685c76061bbab4f1b45439e4": {
-        "address": "0x9b075656A75a7656749B20B3Edca1F05c6fc272B",
-        "txHash": "0xbc1cd69b9aec7f90c8baabdb28fe05c409a5f6dca93a74aa1a7d8e0d4935b49d",
-        "layout": {
-          "storage": [
-            {
-              "label": "_initialized",
-              "offset": 0,
-              "slot": "0",
-              "type": "t_uint8",
-              "contract": "Initializable",
-              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:62",
-              "retypedFrom": "bool"
-            },
-            {
-              "label": "_initializing",
-              "offset": 1,
-              "slot": "0",
-              "type": "t_bool",
-              "contract": "Initializable",
-              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:67"
-            },
-            {
-              "label": "_status",
-              "offset": 0,
-              "slot": "1",
-              "type": "t_uint256",
-              "contract": "ReentrancyGuardUpgradeable",
-              "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:38"
-            },
-            {
-              "label": "__gap",
-              "offset": 0,
-              "slot": "2",
-              "type": "t_array(t_uint256)49_storage",
-              "contract": "ReentrancyGuardUpgradeable",
-              "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:74"
-            },
-            {
-              "label": "__gap",
-              "offset": 0,
-              "slot": "51",
-              "type": "t_array(t_uint256)50_storage",
-              "contract": "ContextUpgradeable",
-              "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
-            },
-            {
-              "label": "_owner",
-              "offset": 0,
-              "slot": "101",
-              "type": "t_address",
-              "contract": "OwnableUpgradeable",
-              "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
-            },
-            {
-              "label": "__gap",
-              "offset": 0,
-              "slot": "102",
-              "type": "t_array(t_uint256)49_storage",
-              "contract": "OwnableUpgradeable",
-              "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
-            },
-            {
-              "label": "courseData",
-              "offset": 0,
-              "slot": "151",
-              "type": "t_mapping(t_bytes32,t_struct(Course)3430_storage)",
-              "contract": "LearnToEarn",
-              "src": "contracts\\LearnToEarn.sol:17"
-            },
-            {
-              "label": "learnerData",
-              "offset": 0,
-              "slot": "152",
-              "type": "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Learner)3440_storage))",
-              "contract": "LearnToEarn",
-              "src": "contracts\\LearnToEarn.sol:20"
-            }
-          ],
-          "types": {
-            "t_address": {
-              "label": "address",
-              "numberOfBytes": "20"
-            },
-            "t_array(t_uint256)49_storage": {
-              "label": "uint256[49]",
-              "numberOfBytes": "1568"
-            },
-            "t_array(t_uint256)50_storage": {
-              "label": "uint256[50]",
-              "numberOfBytes": "1600"
-            },
-            "t_array(t_uint256)dyn_storage": {
-              "label": "uint256[]",
-              "numberOfBytes": "32"
-            },
-            "t_bool": {
-              "label": "bool",
-              "numberOfBytes": "1"
-            },
-            "t_bytes32": {
-              "label": "bytes32",
-              "numberOfBytes": "32"
-            },
-            "t_mapping(t_address,t_struct(Learner)3440_storage)": {
-              "label": "mapping(address => struct Learner)",
-              "numberOfBytes": "32"
-            },
-            "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Learner)3440_storage))": {
-              "label": "mapping(bytes32 => mapping(address => struct Learner))",
-              "numberOfBytes": "32"
-            },
-            "t_mapping(t_bytes32,t_struct(Course)3430_storage)": {
-              "label": "mapping(bytes32 => struct Course)",
-              "numberOfBytes": "32"
-            },
-            "t_struct(Course)3430_storage": {
-              "label": "struct Course",
-              "members": [
-                {
-                  "label": "creator",
-                  "type": "t_address",
-                  "offset": 0,
-                  "slot": "0"
-                },
-                {
-                  "label": "rewardAddress",
-                  "type": "t_address",
-                  "offset": 0,
-                  "slot": "1"
-                },
-                {
-                  "label": "budget",
-                  "type": "t_uint256",
-                  "offset": 0,
-                  "slot": "2"
-                },
-                {
-                  "label": "budgetAvailable",
-                  "type": "t_uint256",
-                  "offset": 0,
-                  "slot": "3"
-                },
-                {
-                  "label": "bonus",
-                  "type": "t_uint256",
-                  "offset": 0,
-                  "slot": "4"
-                },
-                {
-                  "label": "totalLearnersClaimedBonus",
-                  "type": "t_uint256",
-                  "offset": 0,
-                  "slot": "5"
-                },
-                {
-                  "label": "timeCreated",
-                  "type": "t_uint256",
-                  "offset": 0,
-                  "slot": "6"
-                },
-                {
-                  "label": "timeEndBonus",
-                  "type": "t_uint256",
-                  "offset": 0,
-                  "slot": "7"
-                },
-                {
-                  "label": "timeRemoved",
-                  "type": "t_uint256",
-                  "offset": 0,
-                  "slot": "8"
-                },
-                {
-                  "label": "isBonusToken",
-                  "type": "t_bool",
-                  "offset": 0,
-                  "slot": "9"
-                },
-                {
-                  "label": "canMintNFT",
-                  "type": "t_bool",
-                  "offset": 1,
-                  "slot": "9"
-                },
-                {
-                  "label": "isUsingDuration",
-                  "type": "t_bool",
-                  "offset": 2,
-                  "slot": "9"
-                }
-              ],
-              "numberOfBytes": "320"
-            },
-            "t_struct(Learner)3440_storage": {
-              "label": "struct Learner",
-              "members": [
-                {
-                  "label": "timeStarted",
-                  "type": "t_uint256",
-                  "offset": 0,
-                  "slot": "0"
-                },
-                {
-                  "label": "timeCompleted",
-                  "type": "t_uint256",
-                  "offset": 0,
-                  "slot": "1"
-                },
-                {
-                  "label": "timeRewarded",
-                  "type": "t_uint256",
-                  "offset": 0,
-                  "slot": "2"
-                },
-                {
-                  "label": "nftIds",
-                  "type": "t_array(t_uint256)dyn_storage",
-                  "offset": 0,
-                  "slot": "3"
-                }
-              ],
-              "numberOfBytes": "128"
-            },
-            "t_uint256": {
-              "label": "uint256",
-              "numberOfBytes": "32"
-            },
-            "t_uint8": {
-              "label": "uint8",
-              "numberOfBytes": "1"
-            }
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0xDd19Cf85BC9f83ab5E4C4fcD9248FC462ecd0581",
+    "txHash": "0x54c07e6d039384b63cb0322d6cd62845d59f3bd40817603bea05a7e9fedcd148"
+  },
+  "proxies": [
+    {
+      "address": "0xD7036094b4341297FF47467259F0639Dc94b91D8",
+      "txHash": "0x9f268fc98c7c070bb81fc74fbc79ac094dbb2c94d332f76fdc97bece93ab34da",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "dcfa3160d75112d91457a8f139669873cefb2843685c76061bbab4f1b45439e4": {
+      "address": "0x9b075656A75a7656749B20B3Edca1F05c6fc272B",
+      "txHash": "0xbc1cd69b9aec7f90c8baabdb28fe05c409a5f6dca93a74aa1a7d8e0d4935b49d",
+      "layout": {
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:74"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "courseData",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_mapping(t_bytes32,t_struct(Course)3430_storage)",
+            "contract": "LearnToEarn",
+            "src": "contracts/LearnToEarn.sol:17"
+          },
+          {
+            "label": "learnerData",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Learner)3440_storage))",
+            "contract": "LearnToEarn",
+            "src": "contracts/LearnToEarn.sol:20"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(Learner)3440_storage)": {
+            "label": "mapping(address => struct Learner)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Learner)3440_storage))": {
+            "label": "mapping(bytes32 => mapping(address => struct Learner))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(Course)3430_storage)": {
+            "label": "mapping(bytes32 => struct Course)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Course)3430_storage": {
+            "label": "struct Course",
+            "members": [
+              {
+                "label": "creator",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "rewardAddress",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "budget",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "budgetAvailable",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "bonus",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "totalLearnersClaimedBonus",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "timeCreated",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "timeEndBonus",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "timeRemoved",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "isBonusToken",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "canMintNFT",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "9"
+              },
+              {
+                "label": "isUsingDuration",
+                "type": "t_bool",
+                "offset": 2,
+                "slot": "9"
+              }
+            ],
+            "numberOfBytes": "320"
+          },
+          "t_struct(Learner)3440_storage": {
+            "label": "struct Learner",
+            "members": [
+              {
+                "label": "timeStarted",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "timeCompleted",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "timeRewarded",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "nftIds",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
           }
         }
       }
     }
   }
+}
