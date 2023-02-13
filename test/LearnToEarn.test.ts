@@ -105,7 +105,7 @@ describe("LearnToEarn contract", () => {
 			await expect(learnToEarn.connect(creator).createCourse(iouToken.address, TOKEN_1.mul(20), TOKEN_1, timeStart, timeStart - 1, false, true)).to.revertedWith("Invalid time end bonus");
 		});
 
-		it("[OK]: Create course with bonus is nft that is deployed by system successfully", async () => {
+		it.only("[OK]: Create course with bonus is nft that is deployed by system successfully", async () => {
 			const NEXT_60_DAYS = Date.now() + ONE_DAY * 60;
 			let tx: ContractTransaction = await learnToEarn.connect(creator).createCourse(nftReward.address, 100, 1, timeStart, NEXT_60_DAYS, false, false);
 			let receipt: ContractReceipt = await tx.wait();

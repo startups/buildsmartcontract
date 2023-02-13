@@ -8,6 +8,7 @@ import { IERC721Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ER
 import { ERC165CheckerUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
 import { ILearnToEarn, Course, Learner } from "./interfaces/ILearnToEarn.sol";
 import { INFTReward } from "./interfaces/INFTReward.sol";
+import "hardhat/console.sol";
 
 contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnToEarn {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -93,7 +94,8 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
             _canMintNFT = _rewardAddress.supportsInterface(type(INFTReward).interfaceId);
 
             if (!_canMintNFT) {
-                require(IERC721Upgradeable(_rewardAddress).balanceOf(_msgSender()) >= _budget, "Balance of creator is not enough");
+                require(_rewardAddress.supportsInterface(type(IERC721Upgradeable).interfaceId), "Reward contract is not ERC721");
+                require(IERC721Upgradeable(_rewardAddress).balanceOf(_msgSender()) >= _budget, "Insufficient creator's balance");
             }
         }
 
