@@ -93,7 +93,8 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
             _canMintNFT = _rewardAddress.supportsInterface(type(INFTReward).interfaceId);
 
             if (!_canMintNFT) {
-                require(IERC721Upgradeable(_rewardAddress).balanceOf(_msgSender()) >= _budget, "Balance of creator is not enough");
+                require(_rewardAddress.supportsInterface(type(IERC721Upgradeable).interfaceId), "Reward contract is not ERC721");
+                require(IERC721Upgradeable(_rewardAddress).balanceOf(_msgSender()) >= _budget, "Insufficient creator's balance");
             }
         }
 

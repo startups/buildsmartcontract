@@ -96,7 +96,7 @@ describe("LearnToEarn contract", () => {
 		});
 
 		it("[Fail]: Creator with external nft contract but balance of creator is not enough", async () => {
-			await expect(learnToEarn.connect(creator).createCourse(erc721Test.address, 20, 1, timeStart, ONE_DAY * 60, true, false)).to.revertedWith("Balance of creator is not enough");
+			await expect(learnToEarn.connect(creator).createCourse(erc721Test.address, 20, 1, timeStart, ONE_DAY * 60, true, false)).to.revertedWith("Insufficient creator's balance");
 		});
 
 		it("[Fail]: Invalid time end bonus", async () => {
