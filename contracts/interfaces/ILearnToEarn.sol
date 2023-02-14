@@ -25,7 +25,7 @@ struct Learner {
 
 
 interface ILearnToEarn {
-    event CreatedCourse(bytes32 indexed courseId, address creator, address token, uint256 bonus);
+    event CreatedCourse(bytes32 indexed courseId, address creator, address token, uint256 bonus, uint256 timeStarted);
     event AddedBudget(bytes32 indexed courseId, uint256 budget);
     event CompletedCourse(bytes32 indexed courseId, address learner);
     event ClaimedReward(bytes32 indexed courseId, address indexed learner, address indexed rewardAddress, uint256 bonus, uint256[] nftIds);

@@ -117,7 +117,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
             IERC20Upgradeable(_rewardAddress).safeTransferFrom(_msgSender(), address(this), _budget);
         }
 
-        emit CreatedCourse(_courseId, _msgSender(), _rewardAddress, _bonus);
+        emit CreatedCourse(_courseId, _msgSender(), _rewardAddress, _bonus, _timeStart);
     }
 
     /**
