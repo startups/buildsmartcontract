@@ -846,7 +846,8 @@ describe("Integration test LearnToEarn contract", () => {
 
 		it("Create course 7 with external NFT contract and time bonus to next 45 days but reverted because of have not minted NFT before", async () => {
 			const NEXT_45_DAYS = (await getTimestamp()) + ONE_DAY * 45;
-			await expect(learnToEarn.connect(creator).createCourse(erc721Test.address, 4, 2,(await getTimestamp()) + 14, NEXT_45_DAYS, false, false)).to.revertedWith("Balance of creator is not enough");
+			await expect(learnToEarn.connect(creator).createCourse(erc721Test.address, 4, 2,(await getTimestamp()) + 14, NEXT_45_DAYS, false, false))
+				.to.revertedWith("Insufficient creator's balance");
 		});
 
 		it("Creator mint NFTs", async () => {
