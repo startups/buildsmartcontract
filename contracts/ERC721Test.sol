@@ -36,4 +36,20 @@ contract ERC721Test is ERC721URIStorage, Ownable {
 
         emit MintedNFT(_to, tokenIds, _uri);
     }
+
+    function mint(string memory _uri) external {
+        tokenIds++;
+        _safeMint(_msgSender(), tokenIds);
+        _setTokenURI(tokenIds, _uri);
+
+        emit MintedNFT(_msgSender(), tokenIds, _uri);
+    }
+
+    function mintBatch(string[] memory _uris) external onlyOwner {
+        for(uint256 i = 0; i < _uris.length; i++) {
+            tokenIds++;
+            _safeMint(_msgSender(), tokenIds);
+            _setTokenURI(tokenIds, _uris[i]);
+        }
+    }
 }
