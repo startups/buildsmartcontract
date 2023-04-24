@@ -1,0 +1,34 @@
+name: Echidna Fuzzer
+on: pull_request
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup node LTS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14.18.2
+
+      - name: Install packages
+        run: |
+          cp .env.dev .env
+          npm install
+      - name: Compile contracts
+        run: npx hardhat compile
+
+      - name: Run Echidna
+        uses: crytic/echidna-action@v2
+        with:
+          solc-version: 0.8.16
+          files: .
+          contract: LearnToEarn
+          test-mode: exploration
+          crytic-args: --hardhat-ignore-compile

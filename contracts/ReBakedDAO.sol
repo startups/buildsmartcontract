@@ -20,6 +20,9 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
     using CollaboratorLibrary for Collaborator;
     using ObserverLibrary for Observer;
 
+    // percent of royalty fee / 1e6
+    uint256 public constant ROYALTY_FEE = 50000;
+
     // Percent Precision PPM (parts per million)
     uint256 public constant PCT_PRECISION = 1e6;
 
@@ -31,9 +34,6 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
 
     // projectId => packageId => Package
     mapping(bytes32 => mapping(bytes32 => Package)) private packageData;
-
-    // projectId => packageId => address collaborator
-    mapping(bytes32 => mapping(bytes32 => mapping(address => bool))) private approvedUser;
 
     // projectId => packageId => address collaborator
     mapping(bytes32 => mapping(bytes32 => mapping(address => Collaborator))) private collaboratorData;
@@ -133,7 +133,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         bytes32 _packageId = _generatePackageId(_projectId, 0);
         Package storage package = packageData[_projectId][_packageId];
         package._createPackage(_budget, _observerBudget, _bonus, _collaboratorsLimit);
-        IERC20Upgradeable(project.token).safeTransferFrom(_msgSender(), treasury, (total * 5) / 100);
+        IERC20Upgradeable(project.token).safeTransferFrom(_msgSender(), treasury, (total * ROYALTY_FEE) / PCT_PRECISION);
 
         if (_observers.length > 0) {
             require(_observerBudget > 0, "invalid observers budget");
@@ -159,7 +159,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         address[] memory _collaborators,
         address[] memory _observers,
         uint256[] memory _scores
-    ) external onlyInitiator(_projectId) {
+    ) external onlyInitiator(_projectId) nonReentrant {
         Package storage package = packageData[_projectId][_packageId];
         require(_collaborators.length == package.totalCollaborators, "invalid collaborators list");
         require(_collaborators.length == _scores.length, "arrays' length mismatch");
@@ -202,7 +202,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         address[] memory _collaborators,
         address[] memory _observers,
         bool _workStarted
-    ) external onlyInitiator(_projectId) {
+    ) external onlyInitiator(_projectId) nonReentrant {
         Package storage package = packageData[_projectId][_packageId];
         require(_collaborators.length == package.totalCollaborators, "invalid collaborators length");
         require(_observers.length == package.totalObservers, "invalid observers length");
@@ -214,8 +214,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
             for (uint256 i = 0; i < _observers.length; i++) _payObserverFee(_projectId, _packageId, _observers[i]);
         }
 
-        uint256 budgetToBeReverted_ = (package.budget - package.budgetPaid) + package.bonus;
-        budgetToBeReverted_ += (package.budgetObservers - package.budgetObserversPaid);
+        uint256 budgetToBeReverted_ = (package.budget - package.budgetPaid) + package.bonus + (package.budgetObservers - package.budgetObserversPaid);
         projectData[_projectId]._revertPackageBudget(budgetToBeReverted_);
 
         emit CanceledPackage(_projectId, _packageId, budgetToBeReverted_);
@@ -255,8 +254,6 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         bytes32 _packageId,
         address _collaborator
     ) external onlyInitiator(_projectId) {
-        approvedUser[_projectId][_packageId][_collaborator] = true;
-
         collaboratorData[_projectId][_packageId][_collaborator]._approveCollaborator();
         packageData[_projectId][_packageId]._approveCollaborator();
 
@@ -276,10 +273,10 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         bytes32 _packageId,
         address _collaborator,
         bool _shouldPayMgp
-    ) external onlyInitiator(_projectId) {
-        require(!approvedUser[_projectId][_packageId][_collaborator], "collaborator approved already!");
-
+    ) external onlyInitiator(_projectId) nonReentrant {
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
+        require(collaborator.timeMgpApproved == 0, "collaborator approved already!");
+
         if (_shouldPayMgp) {
             _payCollaboratorRewards(_projectId, _packageId, _collaborator, 0);
         }
@@ -297,9 +294,9 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * Emit {RemovedCollaborator}
      */
     function selfRemove(bytes32 _projectId, bytes32 _packageId) external {
-        require(!approvedUser[_projectId][_packageId][_msgSender()], "collaborator approved already!");
-
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_msgSender()];
+        require(collaborator.timeMgpApproved == 0, "collaborator approved already!");
+
         collaborator._removeCollaborator();
         packageData[_projectId][_packageId]._removeCollaborator(false, collaborator.mgp);
 
