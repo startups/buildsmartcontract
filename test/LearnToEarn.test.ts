@@ -228,6 +228,11 @@ describe("LearnToEarn contract", () => {
 			await expect(learnToEarn.connect(creator).addBudget(courseId2, 4)).to.revertedWith("Balance of creator is not enough");
 		});
 
+		it('[Fail]: Course has been removed', async () => {
+			await learnToEarn.connect(creator).removeCourse(courseId1);
+			await expect(learnToEarn.connect(creator).addBudget(courseId1, TOKEN_50)).to.revertedWith('Course has been removed');
+		})
+
 		it("[OK]: Add budget token successfully", async () => {
 			await expect(learnToEarn.connect(creator).addBudget(courseId1, TOKEN_50))
 				.to.emit(learnToEarn, "AddedBudget")
@@ -327,6 +332,17 @@ describe("LearnToEarn contract", () => {
 			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner1.address, timeStart, currentTimestamp, [1, 6, 7])).to.revertedWith("ERC721: caller is not token owner nor approved");
 			await expect(learnToEarn.connect(creator).completeCourse(courseId3, learner1.address, timeStart, currentTimestamp, [1, 2, 3])).to.revertedWith("ERC721: caller is not token owner nor approved");
 		});
+
+		it('[Fail]: Course has been removed', async () => {
+			await learnToEarn.connect(creator).removeCourse(courseId1);
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId1, learner1.address, timeStart, currentTimestamp, [])).to.revertedWith('Course has been removed');
+		});
+
+		it('[Fail]: Invalid time complete', async () => {
+			let currentTimestamp = await getTimestamp();
+			await expect(learnToEarn.connect(creator).completeCourse(courseId1, learner1.address, currentTimestamp, currentTimestamp, [])).to.revertedWith('Invalid time complete');
+		})
 
 		it("[OK]: Complete course with token awards successfully", async () => {
 			await skipTime(10 * ONE_DAY);
@@ -495,6 +511,11 @@ describe("LearnToEarn contract", () => {
 			await learnToEarn.connect(creator).completeCourse(courseId2, learner2.address, timeStart, currentTimestamp, []);
 			await skipTime(ONE_DAY * 20 + 1);
 			await expect(learnToEarn.connect(creator).withdrawBudget(courseId2)).to.revertedWith("Out of budget");
+		});
+
+		it('[Fail]: Course has been removed', async () => {
+			await learnToEarn.connect(creator).removeCourse(courseId1);
+			await expect(learnToEarn.connect(creator).withdrawBudget(courseId1)).to.revertedWith('Course has been removed');
 		});
 
 		it("[OK]: Withdraw successfully", async () => {

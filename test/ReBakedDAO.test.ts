@@ -162,6 +162,10 @@ describe("ReBakedDAO", () => {
 			await expect(reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 11, [])).to.revertedWith("incorrect collaborators limit");
 		});
 
+		it("[Fail]: Invalid observers budget", async () => {
+			await expect(reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, 0, 3, [observer1.address])).to.revertedWith("invalid observers budget");
+		});
+
 		it("[OK]: Create new package successfully", async () => {
 			tx = await reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 3, []);
 			receipt = await tx.wait();
@@ -492,13 +496,9 @@ describe("ReBakedDAO", () => {
 
 		it("[Fail]: Finish package but invalid collaborators list", async () => {
 			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId1, [], [], [1e6])).to.revertedWith("invalid collaborators list");
-		});
-
-		it("[Fail]: Finish package but invalid collaborators list", async () => {
+			
 			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId1, [collaborator1.address], [observer1.address], [1e6])).to.revertedWith("invalid observers list");
-		});
-
-		it("[Fail]: Finish package but invalid collaborators list", async () => {
+			
 			await reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator1.address);
 			await expect(reBakedDAO.connect(initiator).finishPackage(projectId, packageId1, [collaborator1.address], [], [])).to.revertedWith("arrays' length mismatch");
 		});
@@ -570,13 +570,11 @@ describe("ReBakedDAO", () => {
 		});
 
 		it("[Fail]: Caller is not the initiator of project", async () => {
-			await expect(reBakedDAO.connect(accounts[1]).cancelPackage(projectId, packageId1, [], [], true))
-				.to.revertedWith("caller is not project initiator");
+			await expect(reBakedDAO.connect(accounts[1]).cancelPackage(projectId, packageId1, [], [], true)).to.revertedWith("caller is not project initiator");
 		});
 
 		it("[Fail]: Cancel package but package is not existed", async () => {
-			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, formatBytes32String("test"), [], [], true))
-				.to.revertedWith("no such package");
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, formatBytes32String("test"), [], [], true)).to.revertedWith("no such package");
 		});
 
 		it("[Fail]: Cancel package but package is not active", async () => {
@@ -611,20 +609,15 @@ describe("ReBakedDAO", () => {
 
 		it("[OK]: Cancel package with workStarted == true successfully", async () => {
 			await reBakedDAO.connect(initiator).addObservers(projectId, packageId1, [observer1.address]);
-			await expect(reBakedDAO.connect(initiator).cancelPackage(
-				projectId,
-				packageId1,
-				[collaborator1.address, collaborator2.address],
-				[observer1.address],
-				true
-			)).to.emit(reBakedDAO, "CanceledPackage")
-					.withArgs(projectId, packageId1, parseUnits("90", 18))
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, packageId1, [collaborator1.address, collaborator2.address], [observer1.address], true))
+				.to.emit(reBakedDAO, "CanceledPackage")
+				.withArgs(projectId, packageId1, parseUnits("90", 18))
 				.to.emit(reBakedDAO, "PaidCollaboratorRewards")
-					.withArgs(projectId, packageId1, collaborator1.address, TOKEN_10, "0")
+				.withArgs(projectId, packageId1, collaborator1.address, TOKEN_10, "0")
 				.to.emit(reBakedDAO, "PaidCollaboratorRewards")
-					.withArgs(projectId, packageId1, collaborator2.address, TOKEN_10, "0")
+				.withArgs(projectId, packageId1, collaborator2.address, TOKEN_10, "0")
 				.to.emit(reBakedDAO, "PaidObserverFee")
-					.withArgs(projectId, packageId1, observer1.address, TOKEN_40);
+				.withArgs(projectId, packageId1, observer1.address, TOKEN_40);
 
 			const currentPackage = await reBakedDAO.getPackageData(projectId, packageId1);
 			const timestamp = await getTimestamp();
@@ -637,18 +630,13 @@ describe("ReBakedDAO", () => {
 		});
 
 		it("[OK]: Cancel package with workStarted == true and 0 observers", async () => {
-			await expect(reBakedDAO.connect(initiator).cancelPackage(
-				projectId,
-				packageId1,
-				[collaborator1.address, collaborator2.address],
-				[],
-				true
-			)).to.emit(reBakedDAO, "CanceledPackage")
-					.withArgs(projectId, packageId1, parseUnits("130", 18))
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, packageId1, [collaborator1.address, collaborator2.address], [], true))
+				.to.emit(reBakedDAO, "CanceledPackage")
+				.withArgs(projectId, packageId1, parseUnits("130", 18))
 				.to.emit(reBakedDAO, "PaidCollaboratorRewards")
-					.withArgs(projectId, packageId1, collaborator1.address, TOKEN_10, "0")
+				.withArgs(projectId, packageId1, collaborator1.address, TOKEN_10, "0")
 				.to.emit(reBakedDAO, "PaidCollaboratorRewards")
-					.withArgs(projectId, packageId1, collaborator2.address, TOKEN_10, "0")
+				.withArgs(projectId, packageId1, collaborator2.address, TOKEN_10, "0")
 				.to.not.emit(reBakedDAO, "PaidObserverFee");
 
 			const currentPackage = await reBakedDAO.getPackageData(projectId, packageId1);
@@ -665,9 +653,8 @@ describe("ReBakedDAO", () => {
 			packageId2 = packageReceipt2.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
 			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId2, collaborator2.address, TOKEN_20);
 
-			await expect(
-				reBakedDAO.connect(initiator).cancelPackage(projectId, packageId2, [collaborator2.address], [], true)
-			).to.emit(reBakedDAO, "CanceledPackage")
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, packageId2, [collaborator2.address], [], true))
+				.to.emit(reBakedDAO, "CanceledPackage")
 				.withArgs(projectId, packageId2, parseUnits("150", 18));
 
 			const currentPackage2 = await reBakedDAO.getPackageData(projectId, packageId2);
@@ -686,9 +673,8 @@ describe("ReBakedDAO", () => {
 
 		it("[OK]: Cancel package with workStarted == false successfully", async () => {
 			await reBakedDAO.connect(initiator).addObservers(projectId, packageId1, [observer1.address]);
-			await expect(
-				reBakedDAO.connect(initiator).cancelPackage(projectId, packageId1, [collaborator1.address, collaborator2.address], [observer1.address], false)
-			).to.emit(reBakedDAO, "CanceledPackage")
+			await expect(reBakedDAO.connect(initiator).cancelPackage(projectId, packageId1, [collaborator1.address, collaborator2.address], [observer1.address], false))
+				.to.emit(reBakedDAO, "CanceledPackage")
 				.withArgs(projectId, packageId1, TOKEN_100.add(TOKEN_10).add(TOKEN_40))
 				.to.not.emit(reBakedDAO, "PaidCollaboratorRewards")
 				.to.not.emit(reBakedDAO, "PaidObserverFee");
@@ -855,7 +841,11 @@ describe("ReBakedDAO", () => {
 		});
 
 		it("[Fail]: Add observer exceeding max observer", async () => {
-			await reBakedDAO.connect(initiator).addObservers(projectId, packageId1, accounts.slice(4, 14).map(e => e.address));
+			await reBakedDAO.connect(initiator).addObservers(
+				projectId,
+				packageId1,
+				accounts.slice(4, 14).map(e => e.address)
+			);
 			await expect(reBakedDAO.connect(initiator).addObservers(projectId, packageId1, [accounts[15].address])).to.revertedWith("max observers reached");
 		});
 
@@ -866,7 +856,7 @@ describe("ReBakedDAO", () => {
 		it("[OK]: Add observer successfully", async () => {
 			await reBakedDAO.connect(initiator).addObservers(projectId, packageId1, [observer1.address]);
 			await reBakedDAO.connect(initiator).addObservers(projectId, packageId2, [observer1.address]);
-			
+
 			let timestamp = await getTimestamp();
 			const addedObserver11 = await reBakedDAO.getObserverData(projectId, packageId1, observer1.address);
 			let package1 = await reBakedDAO.getPackageData(projectId, packageId1);
@@ -932,6 +922,77 @@ describe("ReBakedDAO", () => {
 		});
 	});
 
+	describe("Testing updateObservers function", () => {
+		beforeEach(async () => {
+			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
+			tx = await reBakedDAO.connect(initiator).createProject(iouToken.address, TOKEN_1000);
+			receipt = await tx.wait();
+			args = receipt.events!.find(ev => ev.event === "CreatedProject")!.args!;
+			projectId = args[0];
+
+			let packageTx: ContractTransaction = await reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 5, []);
+			let packageReceipt: ContractReceipt = await packageTx.wait();
+			packageId1 = packageReceipt.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
+
+			packageTx = await reBakedDAO.connect(initiator).createPackage(projectId, TOKEN_100, TOKEN_10, TOKEN_40, 5, []);
+			packageReceipt = await packageTx.wait();
+			packageId2 = packageReceipt.events!.find(ev => ev.event === "CreatedPackage")!.args![1];
+
+			await reBakedDAO.connect(initiator).addCollaborator(projectId, packageId1, collaborator1.address, TOKEN_10);
+
+			reBakedDAO.connect(initiator).approveCollaborator(projectId, packageId1, collaborator1.address);
+			await reBakedDAO.connect(initiator).addObservers(projectId, packageId1, [observer1.address, observer2.address]);
+			await reBakedDAO.connect(initiator).addObservers(projectId, packageId2, [observer1.address]);
+		});
+
+		it("[Fail]: Caller is not project initiator", async () => {
+			await expect(reBakedDAO.connect(deployer).updateObservers(projectId, packageId1, [], [])).to.revertedWith("caller is not project initiator");
+
+			await expect(reBakedDAO.connect(accounts[10]).updateObservers(projectId, packageId1, [], [])).to.revertedWith("caller is not project initiator");
+		});
+
+		it("[Fail]: empty observers arrays!", async () => {
+			await expect(reBakedDAO.connect(initiator).updateObservers(projectId, packageId1, [], [])).to.revertedWith("empty observers arrays!");
+		});
+
+		it("[Fail]: observer already added", async () => {
+			await expect(reBakedDAO.connect(initiator).updateObservers(projectId, packageId1, [observer1.address], [])).to.revertedWith("observer already added");
+			await expect(reBakedDAO.connect(initiator).updateObservers(projectId, packageId1, [accounts[10].address, observer2.address], [])).to.revertedWith("observer already added");
+		});
+
+		it("[Fail]: no such observer", async () => {
+			await expect(reBakedDAO.connect(initiator).updateObservers(projectId, packageId1, [], [accounts[10].address])).to.revertedWith("no such observer");
+			await expect(reBakedDAO.connect(initiator).updateObservers(projectId, packageId1, [], [observer1.address, observer2.address, accounts[10].address])).to.revertedWith("no such observer");
+		});
+
+		it("[OK] update observer successful", async () => {
+			const [observer3, observer4] = [accounts[10], accounts[11]];
+			await expect(reBakedDAO.connect(initiator).updateObservers(projectId, packageId1, [observer3.address, observer4.address], [observer1.address]))
+				.to.emit(reBakedDAO, "AddedObservers")
+				.to.emit(reBakedDAO, "RemovedObservers");
+
+			const observer1Data = await reBakedDAO.getObserverData(projectId, packageId1, observer1.address);
+			expect(observer1Data.isRemoved).to.be.true;
+			const observer3Data = await reBakedDAO.getObserverData(projectId, packageId1, observer3.address);
+			const timestamp = await getTimestamp();
+			expect(observer3Data.timeCreated).to.closeTo(timestamp, 10);
+
+			let observer4Data = await reBakedDAO.getObserverData(projectId, packageId1, observer4.address);
+			expect(observer4Data.timeCreated).to.closeTo(timestamp, 10);
+
+			let packageData = await reBakedDAO.getPackageData(projectId, packageId1);
+			expect(packageData.totalObservers).to.equal(3);
+
+			await expect(reBakedDAO.connect(initiator).updateObservers(projectId, packageId2, [observer4.address], [])).to.emit(reBakedDAO, "AddedObservers");
+
+			observer4Data = await reBakedDAO.getObserverData(projectId, packageId2, observer4.address);
+			expect(observer4Data.timeCreated).to.closeTo(timestamp, 10);
+
+			packageData = await reBakedDAO.getPackageData(projectId, packageId2);
+			expect(packageData.totalObservers).to.equal(2);
+		});
+	});
+
 	describe("Testing `removeObservers` function", () => {
 		beforeEach(async () => {
 			await iouToken.connect(initiator).approve(reBakedDAO.address, MAX_UINT256);
@@ -956,8 +1017,7 @@ describe("ReBakedDAO", () => {
 		});
 
 		it("[Fail]: Caller is not the initiator of project", async () => {
-			await expect(reBakedDAO.connect(accounts[1]).removeObservers(projectId, packageId1, [observer1.address]))
-				.to.revertedWith("caller is not project initiator");
+			await expect(reBakedDAO.connect(accounts[1]).removeObservers(projectId, packageId1, [observer1.address])).to.revertedWith("caller is not project initiator");
 		});
 
 		it("[Fail]: Remove observer from a package that is not active", async () => {
@@ -973,6 +1033,10 @@ describe("ReBakedDAO", () => {
 		it("[Fail]: Remove invalid observer", async () => {
 			await expect(reBakedDAO.connect(initiator).removeObservers(projectId, packageId2, [observer2.address])).to.revertedWith("no such observer");
 		});
+
+		it('[Fail]: empty observers array!', async () => {
+			await expect(reBakedDAO.connect(initiator).removeObservers(projectId, packageId2, [])).to.revertedWith("empty observers array!");
+		})
 
 		it("[OK]: Remove observer successfully", async () => {
 			await reBakedDAO.connect(initiator).removeObservers(projectId, packageId1, [observer1.address]);
