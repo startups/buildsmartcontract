@@ -1,4 +1,4 @@
-name: Echidna Analysis
+name: Echidna Fuzzer
 on: pull_request
 
 concurrency:
@@ -6,12 +6,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  analyze:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -25,17 +21,14 @@ jobs:
         run: |
           cp .env.dev .env
           npm install
+      - name: Compile contracts
+        run: npx hardhat compile
 
-      - name: Run Slither
-        uses: crytic/slither-action@v0.3.0
-        id: slither
+      - name: Run Echidna
+        uses: crytic/echidna-action@v2
         with:
-          node-version: 16
-          sarif: results.sarif
-          fail-on: none
-
-      - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: ${{ steps.slither.outputs.sarif }}
-
+          solc-version: 0.8.16
+          files: .
+          contract: LearnToEarn
+          test-mode: exploration
+          crytic-args: --hardhat-ignore-compile
