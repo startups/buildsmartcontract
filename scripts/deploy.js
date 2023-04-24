@@ -1,4 +1,4 @@
-const { ethers, upgrades } = require("hardhat");
+const { ethers, upgrades, run } = require("hardhat");
 const fs = require("fs");
 
 async function main() {
@@ -59,9 +59,9 @@ async function main() {
   // await reBakedDAO.deployed();
 
   // Upgrading
-  const reBakedDAO = await upgrades.upgradeProxy("0x42472dB3d10d5AA6dE423F876CA555f803eF8ADD", ReBakedDAO);
+  // const reBakedDAO = await upgrades.upgradeProxy("0x42472dB3d10d5AA6dE423F876CA555f803eF8ADD", ReBakedDAO);
 
-  console.log("ReBakedDAO               deployed to:", reBakedDAO.address);
+  // console.log("ReBakedDAO               deployed to:", reBakedDAO.address);
 
   // const tx = await tokenFactory.setReBakedDao(reBakedDAO.address);
   // await tx.wait();
@@ -75,6 +75,18 @@ async function main() {
   //   "ReBakedDAO": reBakedDAO.address,
   // };
   // fs.writeFileSync("contracts.json", JSON.stringify(contractAddresses));
+
+  // const USDC = await ethers.getContractFactory('IOUToken');
+  // const usdc = await USDC.deploy(deployer.address, ethers.utils.parseUnits('10000'), 'USDC', 'USDC');
+  // await usdc.deployed();
+
+  // console.log(usdc.address);
+
+  await run('verify:verify', {
+    address: "0x1F3C3321d6fb4b376809d13E1d935A7542e2a23c",
+    constructorArguments: [deployer.address, ethers.utils.parseUnits('10000'), 'USDC', 'USDC']
+  })
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere
