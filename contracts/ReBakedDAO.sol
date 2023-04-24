@@ -36,9 +36,6 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
     mapping(bytes32 => mapping(bytes32 => Package)) private packageData;
 
     // projectId => packageId => address collaborator
-    // mapping(bytes32 => mapping(bytes32 => mapping(address => bool))) private approvedUser;
-
-    // projectId => packageId => address collaborator
     mapping(bytes32 => mapping(bytes32 => mapping(address => Collaborator))) private collaboratorData;
 
     // projectId => packageId => address observer
