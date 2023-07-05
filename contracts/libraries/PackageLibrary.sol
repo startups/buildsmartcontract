@@ -48,15 +48,6 @@ library PackageLibrary {
     }
 
     /**
-     * @notice Adds observer to package
-     * @param package_ reference to Package struct
-     */
-    function _addObserver(Package storage package_) internal onlyActivePackage(package_) {
-        require(package_.totalObservers < MAX_OBSERVERS, "max observers reached");
-        package_.totalObservers++;
-    }
-
-    /**
      * @notice Adds observers to package
      * @param package_ reference to Package struct
      * @param count_ number of observers
@@ -64,14 +55,6 @@ library PackageLibrary {
     function _addObservers(Package storage package_, uint256 count_) internal onlyActivePackage(package_) {
         require(package_.totalObservers + count_ <= MAX_OBSERVERS, "max observers reached");
         package_.totalObservers += count_;
-    }
-
-    /**
-     * @notice Removes observer from package
-     * @param package_ reference to Package struct
-     */
-    function _removeObserver(Package storage package_) internal onlyActivePackage(package_) {
-        package_.totalObservers--;
     }
 
     /**

@@ -364,15 +364,6 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
     ) external onlyInitiator(_projectId) {
         require(_observersIn.length > 0 || _observersOut.length > 0, "empty observers arrays!");
 
-        if (_observersIn.length > 0) {
-            for (uint256 i = 0; i < _observersIn.length; i++) {
-                observerData[_projectId][_packageId][_observersIn[i]]._addObserver();
-            }
-            packageData[_projectId][_packageId]._addObservers(_observersIn.length);
-
-            emit AddedObservers(_projectId, _packageId, _observersIn);
-        }
-
         if (_observersOut.length > 0) {
             for (uint256 i = 0; i < _observersOut.length; i++) {
                 observerData[_projectId][_packageId][_observersOut[i]]._removeObserver();
@@ -381,6 +372,15 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
             packageData[_projectId][_packageId]._removeObservers(_observersOut.length);
 
             emit RemovedObservers(_projectId, _packageId, _observersOut);
+        }
+
+        if (_observersIn.length > 0) {
+            for (uint256 i = 0; i < _observersIn.length; i++) {
+                observerData[_projectId][_packageId][_observersIn[i]]._addObserver();
+            }
+            packageData[_projectId][_packageId]._addObservers(_observersIn.length);
+
+            emit AddedObservers(_projectId, _packageId, _observersIn);
         }
     }
 
