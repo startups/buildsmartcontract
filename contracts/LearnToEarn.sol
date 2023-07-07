@@ -255,6 +255,7 @@ contract LearnToEarn is ReentrancyGuardUpgradeable, OwnableUpgradeable, ILearnTo
         if (courseData[_courseId].isUsingDuration) {
             return _timeCompleted <= learnerData[_courseId][_learner].timeStarted + courseData[_courseId].timeEndBonus;
         }
+        //slither-disable-next-line incorrect-equality
         return courseData[_courseId].timeEndBonus == 0 || _timeCompleted <= courseData[_courseId].timeEndBonus;
     }
 
