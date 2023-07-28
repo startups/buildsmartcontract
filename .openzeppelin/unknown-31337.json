@@ -5426,7 +5426,7 @@
             "label": "templateNFTReward",
             "offset": 0,
             "slot": "102",
-            "type": "t_contract(INFTReward)12197",
+            "type": "t_contract(INFTReward)12198",
             "contract": "TokenFactory",
             "src": "contracts/TokenFactory.sol:40"
           }
@@ -5448,7 +5448,7 @@
             "label": "bool",
             "numberOfBytes": "1"
           },
-          "t_contract(INFTReward)12197": {
+          "t_contract(INFTReward)12198": {
             "label": "contract INFTReward",
             "numberOfBytes": "20"
           },
@@ -5465,7 +5465,7 @@
     },
     "401465431738a554514e3d576e6ddf47c6b886fe6f52c24bfd98409cb3505730": {
       "address": "0x0B306BF915C4d645ff596e518fAf3F9669b97016",
-      "txHash": "0x619b0fdb374bbd0ff992bb034903765702142566b0e1b2d27b2963f6c136472e",
+      "txHash": "0x9f9f3a11a5e516fed6db16fca2a15b902215c5fb6b1ab3b976c37d3949929679",
       "layout": {
         "storage": [
           {
@@ -5529,7 +5529,7 @@
             "label": "courseData",
             "offset": 0,
             "slot": "151",
-            "type": "t_mapping(t_bytes32,t_struct(Course)12027_storage)",
+            "type": "t_mapping(t_bytes32,t_struct(Course)12028_storage)",
             "contract": "LearnToEarn",
             "src": "contracts/LearnToEarn.sol:93"
           },
@@ -5537,7 +5537,7 @@
             "label": "learnerData",
             "offset": 0,
             "slot": "152",
-            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Learner)12037_storage))",
+            "type": "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Learner)12038_storage))",
             "contract": "LearnToEarn",
             "src": "contracts/LearnToEarn.sol:96"
           }
@@ -5567,19 +5567,19 @@
             "label": "bytes32",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(Learner)12037_storage)": {
+          "t_mapping(t_address,t_struct(Learner)12038_storage)": {
             "label": "mapping(address => struct Learner)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Learner)12037_storage))": {
+          "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Learner)12038_storage))": {
             "label": "mapping(bytes32 => mapping(address => struct Learner))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_struct(Course)12027_storage)": {
+          "t_mapping(t_bytes32,t_struct(Course)12028_storage)": {
             "label": "mapping(bytes32 => struct Course)",
             "numberOfBytes": "32"
           },
-          "t_struct(Course)12027_storage": {
+          "t_struct(Course)12028_storage": {
             "label": "struct Course",
             "members": [
               {
@@ -5657,7 +5657,7 @@
             ],
             "numberOfBytes": "320"
           },
-          "t_struct(Learner)12037_storage": {
+          "t_struct(Learner)12038_storage": {
             "label": "struct Learner",
             "members": [
               {
@@ -5891,7 +5891,7 @@
     },
     "a7c0acedd717288b8b17e6e7f61ef32cf922627e1115750a0f49094d7d9e5dc2": {
       "address": "0x3CA5269B5c54d4C807Ca0dF7EeB2CB7a5327E77d",
-      "txHash": "0x96dd2daa172a7c57be4dd03b845fec11886a07a7199290b66079163863d663e4",
+      "txHash": "0xa62145f74b06c4a3b33dff072181f9e16b7a2a7e90a9885b83ce3fdb991d50de",
       "layout": {
         "storage": [
           {
@@ -5963,7 +5963,7 @@
             "label": "projectData",
             "offset": 0,
             "slot": "152",
-            "type": "t_mapping(t_bytes32,t_struct(Project)14730_storage)",
+            "type": "t_mapping(t_bytes32,t_struct(Project)14731_storage)",
             "contract": "ReBakedDAO",
             "src": "contracts/ReBakedDAO.sol:125"
           },
@@ -5971,7 +5971,7 @@
             "label": "packageData",
             "offset": 0,
             "slot": "153",
-            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_struct(Package)14763_storage))",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_struct(Package)14764_storage))",
             "contract": "ReBakedDAO",
             "src": "contracts/ReBakedDAO.sol:128"
           },
@@ -5979,7 +5979,7 @@
             "label": "collaboratorData",
             "offset": 0,
             "slot": "154",
-            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Collaborator)14778_storage)))",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Collaborator)14779_storage)))",
             "contract": "ReBakedDAO",
             "src": "contracts/ReBakedDAO.sol:131"
           },
@@ -5987,7 +5987,7 @@
             "label": "observerData",
             "offset": 0,
             "slot": "155",
-            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Observer)14785_storage)))",
+            "type": "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Observer)14786_storage)))",
             "contract": "ReBakedDAO",
             "src": "contracts/ReBakedDAO.sol:134"
           }
@@ -6013,43 +6013,43 @@
             "label": "bytes32",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(Collaborator)14778_storage)": {
+          "t_mapping(t_address,t_struct(Collaborator)14779_storage)": {
             "label": "mapping(address => struct Collaborator)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(Observer)14785_storage)": {
+          "t_mapping(t_address,t_struct(Observer)14786_storage)": {
             "label": "mapping(address => struct Observer)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Collaborator)14778_storage))": {
+          "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Collaborator)14779_storage))": {
             "label": "mapping(bytes32 => mapping(address => struct Collaborator))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Observer)14785_storage))": {
+          "t_mapping(t_bytes32,t_mapping(t_address,t_struct(Observer)14786_storage))": {
             "label": "mapping(bytes32 => mapping(address => struct Observer))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Collaborator)14778_storage)))": {
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Collaborator)14779_storage)))": {
             "label": "mapping(bytes32 => mapping(bytes32 => mapping(address => struct Collaborator)))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Observer)14785_storage)))": {
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_mapping(t_address,t_struct(Observer)14786_storage)))": {
             "label": "mapping(bytes32 => mapping(bytes32 => mapping(address => struct Observer)))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_struct(Package)14763_storage))": {
+          "t_mapping(t_bytes32,t_mapping(t_bytes32,t_struct(Package)14764_storage))": {
             "label": "mapping(bytes32 => mapping(bytes32 => struct Package))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_struct(Package)14763_storage)": {
+          "t_mapping(t_bytes32,t_struct(Package)14764_storage)": {
             "label": "mapping(bytes32 => struct Package)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_struct(Project)14730_storage)": {
+          "t_mapping(t_bytes32,t_struct(Project)14731_storage)": {
             "label": "mapping(bytes32 => struct Project)",
             "numberOfBytes": "32"
           },
-          "t_struct(Collaborator)14778_storage": {
+          "t_struct(Collaborator)14779_storage": {
             "label": "struct Collaborator",
             "members": [
               {
@@ -6097,7 +6097,7 @@
             ],
             "numberOfBytes": "224"
           },
-          "t_struct(Observer)14785_storage": {
+          "t_struct(Observer)14786_storage": {
             "label": "struct Observer",
             "members": [
               {
@@ -6121,7 +6121,7 @@
             ],
             "numberOfBytes": "96"
           },
-          "t_struct(Package)14763_storage": {
+          "t_struct(Package)14764_storage": {
             "label": "struct Package",
             "members": [
               {
@@ -6223,7 +6223,7 @@
             ],
             "numberOfBytes": "512"
           },
-          "t_struct(Project)14730_storage": {
+          "t_struct(Project)14731_storage": {
             "label": "struct Project",
             "members": [
               {
