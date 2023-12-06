@@ -19,7 +19,7 @@ jobs:
       - name: Setup node LTS
         uses: actions/setup-node@v3
         with:
-          node-version: 18.12.1
+          node-version: 16.20.2
 
       - name: Install packages
         run: |
