@@ -19,12 +19,12 @@ jobs:
       - name: Setup node LTS
         uses: actions/setup-node@v3
         with:
-          node-version: 16.20.2
+          node-version: 18.12.1
 
       - name: Install packages
         run: |
           cp .env.dev .env
-          npm install --legacy-peer-deps
+          npm install --force
 
       - name: Run Slither
         uses: crytic/slither-action@v0.3.0
