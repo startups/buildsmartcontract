@@ -58,4 +58,7 @@ package-lock.json
 # deployed contracts
 deployed/local*
 deployed/hardhat*
-.openzeppelin/unknown*.json
+# .openzeppelin/unknown*.json
+
+# slither analyzer
+slither-report.sarif

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity 0.8.16;
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /**
@@ -7,8 +7,8 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  *  @author ReBaked Team
  */
 contract IOUToken is ERC20 {
-    constructor(address reBakedDao_, uint256 totalSupply_) ERC20("IOU Token", "IOUT") {
-        _mint(reBakedDao_, totalSupply_);
+    constructor(address account_, uint256 totalSupply_, string memory name_, string memory symbol_) ERC20(name_, symbol_) {
+        _mint(account_, totalSupply_);
     }
 
     /**

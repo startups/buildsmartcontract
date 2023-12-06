@@ -1,4 +1,4 @@
-name: Contract Checker
+name: Echidna Fuzzer
 on: pull_request
 
 concurrency:
@@ -8,12 +8,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout current project
+      - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          path: .
 
       - name: Setup node LTS
         uses: actions/setup-node@v3
@@ -24,9 +21,14 @@ jobs:
         run: |
           cp .env.dev .env
           npm install
+      - name: Compile contracts
+        run: npx hardhat compile
 
-      - name: Run solhint
-        run: npm run solhint
-
-      - name: Run test coverage
-        run: npm run coverage
+      - name: Run Echidna
+        uses: crytic/echidna-action@v2
+        with:
+          solc-version: 0.8.16
+          files: .
+          contract: LearnToEarn
+          test-mode: exploration
+          crytic-args: --hardhat-ignore-compile

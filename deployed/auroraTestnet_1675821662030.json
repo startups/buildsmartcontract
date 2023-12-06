@@ -1,0 +1,7 @@
+{
+  "NFTReward_deploy": "0x1148f77868B1F392dd1a4508B7d66041631939c2",
+  "TokenFactory_proxy": "0xfEEaA5E390e8837B8ffcb1324D1b88090bBD4E63",
+  "TokenFactory_verify": "0x635AA6D983E5D7Fc7ac44827d5C4048c703A62E4",
+  "LearnToEarn_proxy": "0xB4501DdA26b1179914B29C00a22F67aC18fbB3EC",
+  "LearnToEarn_verify": "0xdB24E5a4353D62e382F6b71e1dC4CaFF44ddb062"
+}

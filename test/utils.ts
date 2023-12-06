@@ -132,7 +132,7 @@ export class BalanceTracker {
     else return expect(BalanceTracker.updateFee(transaction));
   }
 
-  constructor(wallet: string, tokens = []) {
+  constructor(wallet: string, tokens: string[] = []) {
     this.wallet = wallet;
     this.coins = [...this.coins, ...tokens];
 

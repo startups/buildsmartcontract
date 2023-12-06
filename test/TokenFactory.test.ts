@@ -2,74 +2,94 @@ import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
 import { parseUnits, parseEther } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { ReBakedDAO, ReBakedDAO__factory, TokenFactory, TokenFactory__factory, IOUToken, IOUToken__factory } from "../typechain-types";
+import { TokenFactory, TokenFactory__factory, LearnToEarn, LearnToEarn__factory, NFTReward__factory, NFTReward } from "../typechain-types";
 import { ZERO_ADDRESS } from "./utils";
 
 // Contract Factories
 let deployer: SignerWithAddress;
-let treasury: SignerWithAddress;
 let accounts: SignerWithAddress[];
-let reBakedDAO: ReBakedDAO;
 let tokenFactory: TokenFactory;
-let iouToken: IOUToken;
+let learnToEarn: LearnToEarn;
+let nftReward: NFTReward;
 
 // Useful variables
 const TOKEN_10 = parseUnits("10", 18);
 
-let initiator: SignerWithAddress;
 
 describe("Testing TokenFactory contract", () => {
 	beforeEach(async () => {
-		[deployer, initiator, treasury, ...accounts] = await ethers.getSigners();
+		[deployer, ...accounts] = await ethers.getSigners();
+		const NFTReward_factory = (await ethers.getContractFactory("NFTReward")) as NFTReward__factory;
 		const TokenFactory = (await ethers.getContractFactory("TokenFactory")) as TokenFactory__factory;
-		const IOUToken = (await ethers.getContractFactory("IOUToken")) as IOUToken__factory;
-		const ReBakedDAO = (await ethers.getContractFactory("ReBakedDAO")) as ReBakedDAO__factory;
+		const LearnToEarn = (await ethers.getContractFactory("LearnToEarn")) as LearnToEarn__factory;
 
-		tokenFactory = (await upgrades.deployProxy(TokenFactory, [])) as TokenFactory;
-		iouToken = await IOUToken.deploy(initiator.address, "10000000000000000000000");
-		reBakedDAO = (await upgrades.deployProxy(ReBakedDAO, [treasury.address, tokenFactory.address])) as ReBakedDAO;
-		await reBakedDAO.deployed();
+        nftReward = await NFTReward_factory.deploy();
+        await nftReward.deployed();
+
+		tokenFactory = (await upgrades.deployProxy(TokenFactory, [nftReward.address])) as TokenFactory;
+		learnToEarn = (await upgrades.deployProxy(LearnToEarn, [])) as LearnToEarn;
+		await tokenFactory.deployed();
 	});
+
+	describe("Validate parameters of initilizer function", () => {
+		it("Invalid NFTReward address", async () => {
+			const TokenFactory = (await ethers.getContractFactory("TokenFactory")) as TokenFactory__factory;
+			await expect(upgrades.deployProxy(TokenFactory, [accounts[0].address])).to.revertedWith("Invalid NFTReward address")
+		});
+
+		it("Deploy successfully", async () => {
+			const NFTReward_factory = (await ethers.getContractFactory("NFTReward")) as NFTReward__factory;
+			const TokenFactory = (await ethers.getContractFactory("TokenFactory")) as TokenFactory__factory;
+
+			const nftReward: NFTReward = await NFTReward_factory.deploy();
+			await nftReward.deployed();
+	
+			tokenFactory = (await upgrades.deployProxy(TokenFactory, [nftReward.address])) as TokenFactory;
+			
+			expect(await tokenFactory.templateNFTReward()).to.equal(nftReward.address);
+		});
+	})
 
 	describe("Validating initialized state of contracts", () => {
 		it("Validating initialized state of ReBakedDAO", async () => {
 			expect(await tokenFactory.owner()).to.equal(deployer.address);
-			expect(await tokenFactory.reBakedDao()).to.equal(ZERO_ADDRESS);
+			expect(await tokenFactory.learnToEarn()).to.equal(ZERO_ADDRESS);
+			expect(await tokenFactory.templateNFTReward()).to.equal(nftReward.address);
 		});
 	});
 
-	describe("Testing `setReBakedDAO` function", () => {
+	describe("Testing `setLearnToEarn` function", () => {
 		it("[Fail]: Caller is not the owner", async () => {
-			await expect(tokenFactory.connect(treasury).setReBakedDao(reBakedDAO.address)).to.revertedWith("Ownable: caller is not the owner");
+			await expect(tokenFactory.connect(accounts[0]).setLearnToEarn(learnToEarn.address)).to.revertedWith("Ownable: caller is not the owner");
 		});
 
-		it("[OK]: Set reBakedDAO successfully", async () => {
-			await tokenFactory.connect(deployer).setReBakedDao(reBakedDAO.address);
-			expect(await tokenFactory.reBakedDao()).to.equal(reBakedDAO.address);
+		it("[Fail]: Set zero address to learnToEarn", async () => {
+			await expect(tokenFactory.connect(deployer).setLearnToEarn(ZERO_ADDRESS)).to.revertedWith("learnToEarn address is not valid");
+		})
+
+		it("[OK]: Set learnToEarn successfully", async () => {
+			await tokenFactory.connect(deployer).setLearnToEarn(learnToEarn.address);
+			expect(await tokenFactory.learnToEarn()).to.equal(learnToEarn.address);
 		});
 	});
 
 	describe("Testing `deployToken` function", () => {
-		it("[Fail]: Rebaked DAO is not set", async () => {
-			await expect(tokenFactory.connect(deployer).deployToken(TOKEN_10)).to.revertedWith("reBakedDao address is not set");
-		});
-
-		it("[Fail]: Caller is not ReBakedDAO", async () => {
-			await tokenFactory.connect(deployer).setReBakedDao(reBakedDAO.address);
-			await expect(tokenFactory.connect(deployer).deployToken(TOKEN_10)).to.revertedWith("can be called only from reBakedDao contract");
-		});
-
 		it("[OK]: Deploy new token successfully", async () => {
-			await tokenFactory.connect(deployer).setReBakedDao(reBakedDAO.address);
-			const tx = await reBakedDAO.connect(initiator).createProject(ZERO_ADDRESS, TOKEN_10);
-			const receipt = await tx.wait();
-			const args = receipt.events!.find((ev) => ev.event === "CreatedProject")!.args!;
-			const projectId = args[0];
+			await expect(tokenFactory.connect(accounts[0]).deployToken(TOKEN_10, "IOU", "IOU"))
+				.to.emit(tokenFactory, 'DeployedToken')
+		});
+	});
+	
+	describe("Testing `deployNFT` function", () => {
 
-			await reBakedDAO.connect(deployer).approveProject(projectId);
-			await reBakedDAO.connect(initiator).startProject(projectId);
-			const project = await reBakedDAO.getProjectData(projectId);
-			expect(project.token).not.equal(ZERO_ADDRESS);
+		it("[Fail]: LearnToEarn address is not valid", async () => {
+			await expect(tokenFactory.connect(accounts[0]).deployNFT("HI", "HI", "hi")).to.revertedWith("LearnToEarn address is not valid");
+		})
+
+		it("[OK]: Deploy new nft contract successfully", async () => {
+			await tokenFactory.connect(deployer).setLearnToEarn(learnToEarn.address);
+			await expect(tokenFactory.connect(accounts[0]).deployNFT("HI", "HI", "hi"))
+				.to.emit(tokenFactory, 'DeployedNFT')
 		});
 	});
 });
