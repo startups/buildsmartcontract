@@ -8,6 +8,7 @@ const table = new Table();
 
 async function main() {
 	const [deployer, owner, ...signers]: SignerWithAddress[] = await ethers.getSigners();
+	console.log(` Account deploy: ${deployer.address}`);
 
 	const RebakedDAO_factory = (await ethers.getContractFactory("ReBakedDAO")) as ReBakedDAO__factory;
 	const NFTReward_factory = (await ethers.getContractFactory("NFTReward")) as NFTReward__factory;
@@ -16,7 +17,10 @@ async function main() {
 
 	console.log("============DEPLOYING CONTRACTS============");
 
-	const rebakedDAO: ReBakedDAO = (await upgrades.deployProxy(RebakedDAO_factory, [deployer.address])) as ReBakedDAO;
+	// Config treasury address
+	const treasury = "0xc8429C05315Ae47FFc0789A201E5F53E93D591D4"; // Ex: treasury = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
+
+	const rebakedDAO: ReBakedDAO = (await upgrades.deployProxy(RebakedDAO_factory, [treasury])) as ReBakedDAO;
 	await rebakedDAO.deployed();
 	const rebakedDAOVerifyAddress: string = await upgrades.erc1967.getImplementationAddress(rebakedDAO.address);
 	table.add([
