@@ -18,7 +18,7 @@ async function main() {
 	console.log("============DEPLOYING CONTRACTS============");
 
 	// Config treasury address
-	const treasury = "0xc8429C05315Ae47FFc0789A201E5F53E93D591D4"; // Ex: treasury = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
+	const treasury = "<Wallet treasury>"; // Ex: treasury = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
 
 	const rebakedDAO: ReBakedDAO = (await upgrades.deployProxy(RebakedDAO_factory, [treasury])) as ReBakedDAO;
 	await rebakedDAO.deployed();
