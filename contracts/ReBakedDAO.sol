@@ -228,12 +228,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _mgp MGP amount
      * Emit {AddedCollaborator}
      */
-    function addCollaborator(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address _collaborator,
-        uint256 _mgp
-    ) external onlyInitiator(_projectId) nonZero(_mgp) {
+    function addCollaborator(bytes32 _projectId, bytes32 _packageId, address _collaborator, uint256 _mgp) external onlyInitiator(_projectId) nonZero(_mgp) {
         require(_collaborator != address(0), "collaborator's address is zero");
 
         collaboratorData[_projectId][_packageId][_collaborator]._addCollaborator(_mgp);
@@ -249,11 +244,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _collaborator collaborator's address
      * Emit {ApprovedCollaborator}
      */
-    function approveCollaborator(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address _collaborator
-    ) external onlyInitiator(_projectId) {
+    function approveCollaborator(bytes32 _projectId, bytes32 _packageId, address _collaborator) external onlyInitiator(_projectId) {
         collaboratorData[_projectId][_packageId][_collaborator]._approveCollaborator();
         packageData[_projectId][_packageId]._approveCollaborator();
 
@@ -303,11 +294,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         emit RemovedCollaborator(_projectId, _packageId, _msgSender());
     }
 
-    function _addObservers(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address[] memory _observers
-    ) private {
+    function _addObservers(bytes32 _projectId, bytes32 _packageId, address[] memory _observers) private {
         require(_observers.length > 0, "empty observers array!");
 
         for (uint256 i = 0; i < _observers.length; i++) {
@@ -326,11 +313,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _observers observers' addresses
      * Emit {AddedObservers}
      */
-    function addObservers(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address[] memory _observers
-    ) external onlyInitiator(_projectId) {
+    function addObservers(bytes32 _projectId, bytes32 _packageId, address[] memory _observers) external onlyInitiator(_projectId) {
         _addObservers(_projectId, _packageId, _observers);
     }
 
@@ -341,19 +324,10 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _observers observers' addresses
      * Emit {RemovedObservers}
      */
-    function removeObservers(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address[] memory _observers
-    ) external onlyInitiator(_projectId) {
+    function removeObservers(bytes32 _projectId, bytes32 _packageId, address[] memory _observers) external onlyInitiator(_projectId) {
         require(_observers.length > 0, "empty observers array!");
 
-        for (uint256 i = 0; i < _observers.length; i++) {
-            observerData[_projectId][_packageId][_observers[i]]._removeObserver();
-        }
-        packageData[_projectId][_packageId]._removeObservers(_observers.length);
-
-        emit RemovedObservers(_projectId, _packageId, _observers);
+        _removeObservers(_projectId, _packageId, _observers);
     }
 
     function updateObservers(
@@ -365,13 +339,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
         require(_observersIn.length > 0 || _observersOut.length > 0, "empty observers arrays!");
 
         if (_observersOut.length > 0) {
-            for (uint256 i = 0; i < _observersOut.length; i++) {
-                observerData[_projectId][_packageId][_observersOut[i]]._removeObserver();
-            }
-
-            packageData[_projectId][_packageId]._removeObservers(_observersOut.length);
-
-            emit RemovedObservers(_projectId, _packageId, _observersOut);
+            _removeObservers(_projectId, _packageId, _observersOut);
         }
 
         if (_observersIn.length > 0) {
@@ -409,11 +377,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _packageId Id of the package
      * @param _collaborator Collaborator address
      */
-    function getCollaboratorData(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address _collaborator
-    ) external view returns (Collaborator memory) {
+    function getCollaboratorData(bytes32 _projectId, bytes32 _packageId, address _collaborator) external view returns (Collaborator memory) {
         return collaboratorData[_projectId][_packageId][_collaborator];
     }
 
@@ -423,11 +387,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _packageId Id of the package
      * @param _collaborator Collaborator address
      */
-    function getCollaboratorRewards(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address _collaborator
-    ) public view returns (uint256, uint256) {
+    function getCollaboratorRewards(bytes32 _projectId, bytes32 _packageId, address _collaborator) public view returns (uint256, uint256) {
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
 
         return (collaborator.mgp, collaborator.bonus);
@@ -439,11 +399,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _packageId Id of the package
      * @param _observer Observer address
      */
-    function getObserverData(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address _observer
-    ) external view returns (Observer memory) {
+    function getObserverData(bytes32 _projectId, bytes32 _packageId, address _observer) external view returns (Observer memory) {
         return observerData[_projectId][_packageId][_observer];
     }
 
@@ -453,13 +409,9 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _packageId Id of the package
      * @param _observer Observer address
      */
-    function getObserverFee(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address _observer
-    ) public view returns (uint256) {
+    function getObserverFee(bytes32 _projectId, bytes32 _packageId, address _observer) public view returns (uint256) {
         Observer storage observer = observerData[_projectId][_packageId][_observer];
-        if (observer.timePaid > 0 || observer.timeCreated == 0 || observer.isRemoved) {
+        if (observer.timePaid > 0 || observer.timeCreated == 0) {
             return 0;
         }
         return packageData[_projectId][_packageId]._getObserverFee();
@@ -475,20 +427,15 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _score Bonus score of collaborator
      * Emit {PaidCollaboratorRewards}
      */
-    function _payCollaboratorRewards(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address _collaborator,
-        uint256 _score
-    ) private {
+    function _payCollaboratorRewards(bytes32 _projectId, bytes32 _packageId, address _collaborator, uint256 _score) private {
         Collaborator storage collaborator = collaboratorData[_projectId][_packageId][_collaborator];
         Package storage package = packageData[_projectId][_packageId];
 
         uint256 bonus_ = 0;
         if (package.bonus > 0 && _score > 0) {
             bonus_ = (package.collaboratorsPaidBonus + 1 == package.totalCollaborators)
-                    ? (package.bonus - package.bonusPaid)
-                    : (package.bonus * _score) / PCT_PRECISION;
+                ? (package.bonus - package.bonusPaid)
+                : (package.bonus * _score) / PCT_PRECISION;
         }
 
         collaboratorData[_projectId][_packageId][_collaborator]._payReward(bonus_);
@@ -505,11 +452,7 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
      * @param _observer observer address
      * Emit {PaidObserverFee}
      */
-    function _payObserverFee(
-        bytes32 _projectId,
-        bytes32 _packageId,
-        address _observer
-    ) private {
+    function _payObserverFee(bytes32 _projectId, bytes32 _packageId, address _observer) private {
         observerData[_projectId][_packageId][_observer]._payObserverFee();
 
         uint256 amount_ = packageData[_projectId][_packageId]._getObserverFee();
@@ -546,5 +489,22 @@ contract ReBakedDAO is IReBakedDAO, OwnableUpgradeable, ReentrancyGuardUpgradeab
     function _generatePackageId(bytes32 _projectId, uint256 _nonce) private view returns (bytes32 _packageId) {
         _packageId = _generateId(_nonce);
         require(packageData[_projectId][_packageId].timeCreated == 0, "duplicate package id");
+    }
+
+    /**
+     * @notice Removes observer from packages
+     * @param _projectId Id of the project
+     * @param _packageId package id
+     * @param _observers observers' addresses
+     * Emit {RemovedObservers}
+     */
+    function _removeObservers(bytes32 _projectId, bytes32 _packageId, address[] memory _observers) private {
+        for (uint256 i = 0; i < _observers.length; i++) {
+            require(observerData[_projectId][_packageId][_observers[i]].timeCreated > 0, "no such observer");
+            delete observerData[_projectId][_packageId][_observers[i]];
+        }
+        packageData[_projectId][_packageId]._removeObservers(_observers.length);
+
+        emit RemovedObservers(_projectId, _packageId, _observers);
     }
 }

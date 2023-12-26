@@ -45,5 +45,4 @@ struct Collaborator {
 struct Observer {
     uint256 timeCreated;
     uint256 timePaid;
-    bool isRemoved;
 }

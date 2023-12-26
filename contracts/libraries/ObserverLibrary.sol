@@ -7,7 +7,7 @@ library ObserverLibrary {
 	@notice Throws if there is no such observer
 	 */
     modifier onlyActiveObserver(Observer storage observer_) {
-        require(observer_.timeCreated > 0 && !observer_.isRemoved, "no such observer");
+        require(observer_.timeCreated > 0, "no such observer");
         _;
     }
 
@@ -18,14 +18,6 @@ library ObserverLibrary {
     function _addObserver(Observer storage _observer) internal {
         require(_observer.timeCreated == 0, "observer already added");
         _observer.timeCreated = block.timestamp;
-    }
-
-    /**
-     * @notice Remove observer from package
-     * @param _observer Observer address
-     */
-    function _removeObserver(Observer storage _observer) internal onlyActiveObserver(_observer) {
-        _observer.isRemoved = true;
     }
 
     /**

@@ -972,7 +972,8 @@ describe("ReBakedDAO", () => {
 				.to.emit(reBakedDAO, "RemovedObservers");
 
 			const observer1Data = await reBakedDAO.getObserverData(projectId, packageId1, observer1.address);
-			expect(observer1Data.isRemoved).to.be.true;
+			expect(observer1Data.timeCreated).to.equal(0);
+			expect(observer1Data.timePaid).to.equal(0);
 			const observer3Data = await reBakedDAO.getObserverData(projectId, packageId1, observer3.address);
 			const timestamp = await getTimestamp();
 			expect(observer3Data.timeCreated).to.closeTo(timestamp, 10);
@@ -1051,6 +1052,9 @@ describe("ReBakedDAO", () => {
 			package2 = await reBakedDAO.getPackageData(projectId, packageId2);
 			expect(package1.totalObservers).to.equal(0);
 			expect(package2.totalObservers).to.equal(0);
+
+			await reBakedDAO.connect(initiator).addObservers(projectId, packageId1, [observer2.address]);
+			await reBakedDAO.connect(initiator).addObservers(projectId, packageId2, [observer1.address]);
 		});
 	});
 
@@ -1189,4 +1193,3 @@ describe("ReBakedDAO", () => {
 		});
 	});
 });
-
