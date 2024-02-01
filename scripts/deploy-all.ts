@@ -18,7 +18,7 @@ async function main() {
 	console.log("============DEPLOYING CONTRACTS============");
 
 	// Config treasury address
-	const treasury = "0xc8429C05315Ae47FFc0789A201E5F53E93D591D4"; // Ex: treasury = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
+	const treasury = process.env.TREASURY_ADDRESS;
 
 	const rebakedDAO: ReBakedDAO = (await upgrades.deployProxy(RebakedDAO_factory, [treasury])) as ReBakedDAO;
 	await rebakedDAO.deployed();
@@ -67,7 +67,7 @@ async function main() {
 // and properly handle errors.
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

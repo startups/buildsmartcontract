@@ -24,7 +24,7 @@ jobs:
       - name: Install packages
         run: |
           cp .env.dev .env
-          npm install
+          npm install --force
 
       - name: Run Slither
         uses: crytic/slither-action@v0.3.0
